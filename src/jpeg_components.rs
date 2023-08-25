@@ -113,7 +113,6 @@ impl JpegSegment {
             JpegMarker::SOI => 0,
             JpegMarker::EOI => 0,
             JpegMarker::SOS => find_next_marker(bytes, offset + 2),
-            // _ => (u16::from(bytes[offset+2]) << 8 | u16::from(bytes[offset+3]))
             _ => (bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize),
         };
 
@@ -125,7 +124,7 @@ impl JpegSegment {
             last_offset: offset + length + 2,
             data: match length {
                 0 => vec![],
-                _ => bytes[offset + 4..offset + 4 + length].to_vec(),
+                _ => bytes[offset + 4..offset + 2 + length].to_vec(),
             },
         };
     }
