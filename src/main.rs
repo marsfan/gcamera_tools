@@ -72,16 +72,6 @@ fn main() {
 
     let mut file = std::fs::File::create("just_photo.jpg").unwrap();
     for segment in jpeg_segments.iter() {
-        file.write_all(&[segment.magic]).unwrap();
-        file.write_all(&[segment.marker as u8]).unwrap();
-        match segment.marker {
-            JpegMarker::SOI => {}
-            JpegMarker::EOI => {}
-            JpegMarker::SOS => file.write_all(&[0x00, 0x0C]).unwrap(),
-            _ => file
-                .write_all(&((segment.length - 2) as u16).to_be_bytes())
-                .unwrap(),
-        };
-        file.write_all(&segment.data).unwrap();
+        file.write_all(&segment.clone().to_bytes()).unwrap();
     }
 }

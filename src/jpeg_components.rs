@@ -82,7 +82,7 @@ impl TryFrom<u8> for JpegMarker {
         };
     }
 }
-
+#[derive(Debug, Clone)]
 pub struct JpegSegment {
     pub magic: u8,
     pub marker: JpegMarker,
@@ -127,5 +127,21 @@ impl JpegSegment {
                 _ => bytes[offset + 4..offset + 2 + length].to_vec(),
             },
         };
+    }
+
+    pub fn to_bytes(self) -> Vec<u8> {
+        let mut bytes = vec![self.magic, self.marker as u8];
+
+        // Add length bytes
+        match self.marker {
+            JpegMarker::SOI => {}
+            JpegMarker::EOI => {}
+            JpegMarker::SOS => bytes.extend([0x00, 0x0C]),
+            _ => bytes.extend(((self.length - 2) as u16).to_be_bytes()),
+        }
+
+        // Add the data bytes
+        bytes.extend(self.data.iter());
+        return bytes;
     }
 }
