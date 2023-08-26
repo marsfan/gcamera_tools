@@ -4,7 +4,7 @@
 use std::convert::TryFrom;
 
 #[repr(u8)]
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum JpegMarker {
     TEM = 0x01,
     SOF0 = 0xC0,
