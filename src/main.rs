@@ -1,12 +1,11 @@
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
 use gcamera_tools::debug_components::DebugComponents;
-use gcamera_tools::jpeg_components::JpegMarker;
-use gcamera_tools::jpeg_components::JpegSegment;
+use gcamera_tools::jpeg_components::{JpegMarker, JpegSegment};
 use std::env;
 use std::fs;
+use std::io::Write;
 use std::process::exit;
-
 struct Arguments {
     pub input_path: String,
 }
@@ -70,4 +69,19 @@ fn main() {
         debug_components.afdebug.magic,
         debug_components.awbdebug.magic
     );
+
+    let mut file = std::fs::File::create("just_photo.jpg").unwrap();
+    for segment in jpeg_segments.iter() {
+        file.write_all(&[segment.magic]).unwrap();
+        file.write_all(&[segment.marker as u8]).unwrap();
+        match segment.marker {
+            JpegMarker::SOI => {}
+            JpegMarker::EOI => {}
+            JpegMarker::SOS => file.write_all(&[0x00, 0x0C]).unwrap(),
+            _ => file
+                .write_all(&((segment.length - 2) as u16).to_be_bytes())
+                .unwrap(),
+        };
+        file.write_all(&segment.data).unwrap();
+    }
 }
