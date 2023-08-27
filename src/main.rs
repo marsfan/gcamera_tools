@@ -40,6 +40,7 @@ fn main() {
         exit(1);
     });
 
+    // Read the file and verify it is a JPEG
     let contents = fs::read(args.input_path).unwrap_or_else(|err| {
         eprintln!("Problem reading image: {err}");
         exit(1);
@@ -49,6 +50,7 @@ fn main() {
         eprintln!("Provided file is not a JPEG image.");
     }
 
+    // Get the JPEG segments from the image.
     let mut jpeg_segments: Vec<JpegSegment> = Vec::new();
 
     jpeg_segments.push(JpegSegment::from_bytes(&contents, 0));
@@ -57,9 +59,11 @@ fn main() {
         jpeg_segments.push(JpegSegment::from_bytes(&contents, prev.last_offset))
     }
 
+    // Get the debug segments from the image.
     let debug_components =
         DebugComponents::from_bytes(&contents[jpeg_segments.last().unwrap().last_offset..]);
 
+    // Save the segments.
     let mut file = std::fs::File::create("just_photo.jpg").unwrap();
     for segment in jpeg_segments.iter() {
         file.write_all(&segment.clone().to_bytes()).unwrap();
