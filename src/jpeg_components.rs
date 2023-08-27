@@ -130,18 +130,20 @@ impl JpegSegment {
     }
 
     pub fn to_bytes(self) -> Vec<u8> {
-        let mut bytes = vec![self.magic, self.marker as u8];
-
         // Add length bytes
-        match self.marker {
-            JpegMarker::SOI => {}
-            JpegMarker::EOI => {}
-            JpegMarker::SOS => bytes.extend([0x00, 0x0C]),
-            _ => bytes.extend(((self.length - 2) as u16).to_be_bytes()),
-        }
+        let length_bytes: Vec<u8> = match self.marker {
+            JpegMarker::SOI => Vec::new(),
+            JpegMarker::EOI => Vec::new(),
+            JpegMarker::SOS => vec![0x00, 0x0C],
+            _ => ((self.length - 2) as u16).to_be_bytes().to_vec(),
+        };
 
-        // Add the data bytes
-        bytes.extend(self.data.iter());
-        return bytes;
+        return [
+            &[self.magic],
+            &[self.marker as u8],
+            length_bytes.as_slice(),
+            self.data.as_slice(),
+        ]
+        .concat();
     }
 }
