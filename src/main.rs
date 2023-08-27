@@ -60,16 +60,6 @@ fn main() {
     let debug_components =
         DebugComponents::from_bytes(&contents[jpeg_segments.last().unwrap().last_offset..]);
 
-    for (index, segment) in jpeg_segments.iter().enumerate() {
-        println!("Segment {index} has marker {:?}", segment.marker);
-    }
-    println!(
-        "{}, {}, {}",
-        debug_components.aecdebug.magic,
-        debug_components.afdebug.magic,
-        debug_components.awbdebug.magic
-    );
-
     let mut file = std::fs::File::create("just_photo.jpg").unwrap();
     for segment in jpeg_segments.iter() {
         file.write_all(&segment.clone().to_bytes()).unwrap();
