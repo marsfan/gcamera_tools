@@ -64,4 +64,7 @@ fn main() {
     for segment in jpeg_segments.iter() {
         file.write_all(&segment.clone().to_bytes()).unwrap();
     }
+
+    let mut file = std::fs::File::create("just_debug.bin").unwrap();
+    file.write_all(&debug_components.to_bytes()).unwrap();
 }
