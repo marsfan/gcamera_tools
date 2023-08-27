@@ -23,12 +23,6 @@ fn find_magic_start(data: &[u8], magic: &[u8]) -> Result<usize, &'static str> {
     return Err("Could not find start of magic.");
 }
 
-pub struct DebugComponents {
-    pub aecdebug: DebugChunk,
-    pub afdebug: DebugChunk,
-    pub awbdebug: DebugChunk,
-}
-
 // TODO: Could possibly use "bytes.window" instead?
 fn find_awb_end(bytes: &[u8]) -> usize {
     let magic = "\x00\x00\x00\x1cftypisom".as_bytes();
@@ -40,6 +34,12 @@ fn find_awb_end(bytes: &[u8]) -> usize {
         }
     }
     return bytes.len() - 1;
+}
+
+pub struct DebugComponents {
+    pub aecdebug: DebugChunk,
+    pub afdebug: DebugChunk,
+    pub awbdebug: DebugChunk,
 }
 
 impl DebugComponents {

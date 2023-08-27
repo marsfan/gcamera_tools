@@ -97,7 +97,7 @@ fn find_next_marker(bytes: &[u8], start_addr: usize) -> usize {
     for (index, byte) in bytes_chunk.iter().enumerate() {
         if byte == &0xFF {
             let marker = JpegMarker::try_from(bytes_chunk[index + 1]);
-            if matches!(marker, Ok(_)) {
+            if marker.is_ok() {
                 return index;
             }
         }
@@ -130,7 +130,6 @@ impl JpegSegment {
     }
 
     pub fn to_bytes(self) -> Vec<u8> {
-        // Add length bytes
         let length_bytes: Vec<u8> = match self.marker {
             JpegMarker::SOI => Vec::new(),
             JpegMarker::EOI => Vec::new(),
