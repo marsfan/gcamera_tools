@@ -20,7 +20,10 @@ fn main() {
     });
 
     // Get the JPEG segments from the image.
-    let image = CameraImage::from_bytes(contents).unwrap();
+    let image = CameraImage::from_bytes(contents).unwrap_or_else(|err| {
+        eprintln!("Problem parsing image: {err}");
+        exit(1);
+    });
 
     // Save the separate parts of the image.
     image.save_image("just_photo.jpg").unwrap();
