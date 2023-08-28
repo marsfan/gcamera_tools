@@ -29,10 +29,10 @@ impl CameraImage {
         }
 
         let mut jpeg_segments: Vec<JpegSegment> = Vec::new();
-        jpeg_segments.push(JpegSegment::from_bytes(&bytes, 0).unwrap());
+        jpeg_segments.push(JpegSegment::from_bytes(&bytes, 0)?);
         while !matches!(jpeg_segments.last().unwrap().marker, JpegMarker::EOI) {
             let prev = jpeg_segments.last().unwrap();
-            jpeg_segments.push(JpegSegment::from_bytes(&bytes, prev.last_offset).unwrap());
+            jpeg_segments.push(JpegSegment::from_bytes(&bytes, prev.last_offset)?);
         }
 
         let debug_components =
