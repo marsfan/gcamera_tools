@@ -82,7 +82,7 @@ impl TryFrom<u8> for JpegMarker {
         };
     }
 }
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct JpegSegment {
     pub magic: u8,
     pub marker: JpegMarker,
@@ -129,7 +129,7 @@ impl JpegSegment {
         };
     }
 
-    pub fn to_bytes(self) -> Vec<u8> {
+    pub fn to_bytes(&self) -> Vec<u8> {
         let length_bytes: Vec<u8> = match self.marker {
             JpegMarker::SOI => Vec::new(),
             JpegMarker::EOI => Vec::new(),
