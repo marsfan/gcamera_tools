@@ -81,6 +81,6 @@ impl DebugComponents {
     pub fn write_data(self, filepath: &str) -> std::io::Result<()> {
         let mut file = std::fs::File::create(filepath)?;
         file.write_all(&self.to_bytes())?;
-        Ok(())
+        return Ok(());
     }
 }
