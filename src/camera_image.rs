@@ -22,21 +22,21 @@ impl CameraImage {
     /// * `bytes`: The bytes to create the image from.
     ///
     /// # Returns
-    /// Result containing either the created instead, or an error message.
+    /// Result holding the created instance, or an error message
     pub fn from_bytes(bytes: Vec<u8>) -> Result<Self, &'static str> {
         if bytes[0..2] != vec![0xFF, 0xD8] {
             return Err("Not a valid JPEG File.");
         }
 
         let mut jpeg_segments: Vec<JpegSegment> = Vec::new();
-        jpeg_segments.push(JpegSegment::from_bytes(&bytes, 0));
+        jpeg_segments.push(JpegSegment::from_bytes(&bytes, 0).unwrap());
         while !matches!(jpeg_segments.last().unwrap().marker, JpegMarker::EOI) {
             let prev = jpeg_segments.last().unwrap();
-            jpeg_segments.push(JpegSegment::from_bytes(&bytes, prev.last_offset));
+            jpeg_segments.push(JpegSegment::from_bytes(&bytes, prev.last_offset).unwrap());
         }
 
         let debug_components =
-            DebugComponents::from_bytes(&bytes[jpeg_segments.last().unwrap().last_offset..]);
+            DebugComponents::from_bytes(&bytes[jpeg_segments.last().unwrap().last_offset..])?;
 
         return Ok(Self {
             jpeg_segments,

@@ -86,15 +86,15 @@ impl DebugComponents {
     /// * `bytes`: The bytes to create the instance from.
     ///
     /// # Returns
-    /// Result containing either the instance, or an error
-    pub fn from_bytes(bytes: &[u8]) -> Self {
+    /// Result containing either the instance, or an error message
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, &'static str> {
         // TODO: Proper Error Handling
-        let aec_start = find_magic_start(bytes, b"aecDebug").unwrap();
-        let af_start = find_magic_start(&bytes[aec_start..], b"afDebug").unwrap() + aec_start;
-        let awb_start = find_magic_start(&bytes[af_start..], b"awbDebug").unwrap() + af_start;
+        let aec_start = find_magic_start(bytes, b"aecDebug")?;
+        let af_start = find_magic_start(&bytes[aec_start..], b"afDebug")? + aec_start;
+        let awb_start = find_magic_start(&bytes[af_start..], b"awbDebug")? + af_start;
         let awb_end = find_awb_end(&bytes[awb_start..]) + awb_start;
 
-        return DebugComponents {
+        return Ok(DebugComponents {
             aecdebug: DebugChunk {
                 magic: String::from_utf8(bytes[aec_start..aec_start + 8].to_vec()).unwrap(),
                 data: bytes[aec_start + 8..af_start].to_vec(),
@@ -107,7 +107,7 @@ impl DebugComponents {
                 magic: String::from_utf8(bytes[awb_start..awb_start + 8].to_vec()).unwrap(),
                 data: bytes[awb_start + 8..awb_end].to_vec(),
             },
-        };
+        });
     }
 
     /// Convert the debug data back into bytes.

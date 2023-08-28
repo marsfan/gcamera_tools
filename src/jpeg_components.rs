@@ -145,8 +145,8 @@ impl JpegSegment {
     ///
     /// # Returns
     /// Result containing either the created segment, or an error message.
-    pub fn from_bytes(bytes: &[u8], offset: usize) -> Self {
-        let marker = JpegMarker::try_from(bytes[offset + 1]).unwrap();
+    pub fn from_bytes(bytes: &[u8], offset: usize) -> Result<Self, ()> {
+        let marker = JpegMarker::try_from(bytes[offset + 1])?;
 
         let length = match marker {
             JpegMarker::SOI => 0,
@@ -155,7 +155,7 @@ impl JpegSegment {
             _ => (bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize),
         };
 
-        return JpegSegment {
+        return Ok(JpegSegment {
             magic: bytes[offset],
             marker,
             length: length + 2,
@@ -165,7 +165,7 @@ impl JpegSegment {
                 0 => vec![],
                 _ => bytes[offset + 4..offset + 2 + length].to_vec(),
             },
-        };
+        });
     }
 
     /// Convert the segment to bytes.
