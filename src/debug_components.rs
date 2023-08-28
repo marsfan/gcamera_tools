@@ -1,5 +1,8 @@
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
+
+use std::io::Write;
+
 pub struct DebugChunk {
     pub magic: String,
     pub data: Vec<u8>,
@@ -73,5 +76,11 @@ impl DebugComponents {
             self.awbdebug.to_bytes(),
         ]
         .concat();
+    }
+
+    pub fn write_data(self, filepath: &str) -> std::io::Result<()> {
+        let mut file = std::fs::File::create(filepath)?;
+        file.write_all(&self.to_bytes())?;
+        Ok(())
     }
 }

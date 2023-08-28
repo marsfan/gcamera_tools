@@ -45,6 +45,5 @@ fn main() {
         file.write_all(&segment.to_bytes()).unwrap();
     }
 
-    let mut file = std::fs::File::create("just_debug.bin").unwrap();
-    file.write_all(&debug_components.to_bytes()).unwrap();
+    debug_components.write_data("just_debug.bin").unwrap();
 }
