@@ -1,3 +1,5 @@
+#![deny(clippy::implicit_return)]
+#![allow(clippy::needless_return)]
 use crate::debug_components::DebugComponents;
 use crate::jpeg_components::JpegMarker;
 use crate::jpeg_components::JpegSegment;
