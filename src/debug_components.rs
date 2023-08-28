@@ -1,20 +1,38 @@
+//! Logic for working with camera debug information in an image.
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
 
 use std::io::Write;
 
+/// A single chunk of debug data.
 pub struct DebugChunk {
+    /// The magic at the start of the chunk
     pub magic: String,
+    /// The data in the chunk
     pub data: Vec<u8>,
 }
 
 impl DebugChunk {
+    /// Serialize the chunk back into binary bytes.
+    ///
+    /// # Returns
+    /// The chunk as a vector of bytes.
     pub fn to_bytes(self) -> Vec<u8> {
         return [self.magic.into_bytes(), self.data].concat();
     }
 }
 
 // FIXME: Need a way to handle being out of range
+/// Find the start index of the given magic using a linear search.
+///
+/// # Arguments
+/// * `data`: The data to search through for the magic.
+/// # `magic`: The magic byes to search for.
+///
+/// # Returns
+///
+/// Result holding either the index of the start of the magic, or
+/// an error string.
 fn find_magic_start(data: &[u8], magic: &[u8]) -> Result<usize, &'static str> {
     for (position, _) in data.iter().enumerate() {
         let last_byte = position + magic.len();
@@ -26,7 +44,17 @@ fn find_magic_start(data: &[u8], magic: &[u8]) -> Result<usize, &'static str> {
     return Err("Could not find start of magic.");
 }
 
+// TODO: Better logic since there could be other data than just MP4
 // TODO: Could possibly use "bytes.window" instead?
+/// Search for the end of the awbDebug chunk.
+///
+/// This searches for either the header for a mp4 section (i.e. for a Motion Photo)
+///
+/// # Arguments
+/// * `bytes`: The bytes to search through.
+///
+/// # Returns
+/// The index of the end of the awbDebug chunk
 fn find_awb_end(bytes: &[u8]) -> usize {
     let magic = "\x00\x00\x00\x1cftypisom".as_bytes();
     let length = bytes.len();
@@ -39,13 +67,26 @@ fn find_awb_end(bytes: &[u8]) -> usize {
     return bytes.len() - 1;
 }
 
+/// All of the debug information from the image.
 pub struct DebugComponents {
+    /// Contents of the aecDebug portion
     pub aecdebug: DebugChunk,
+
+    /// Contents of the afDebug portion
     pub afdebug: DebugChunk,
+
+    /// Contents of the awbDebug portion.
     pub awbdebug: DebugChunk,
 }
 
 impl DebugComponents {
+    /// Create an instance from the bytes.
+    ///
+    /// # Arguments
+    /// * `bytes`: The bytes to create the instance from.
+    ///
+    /// # Returns
+    /// Result containing either the instance, or an error
     pub fn from_bytes(bytes: &[u8]) -> Self {
         // TODO: Proper Error Handling
         let aec_start = find_magic_start(bytes, b"aecDebug").unwrap();
@@ -69,6 +110,10 @@ impl DebugComponents {
         };
     }
 
+    /// Convert the debug data back into bytes.
+    ///
+    /// # Returns
+    /// The data as a vector of bytes.
     pub fn to_bytes(self) -> Vec<u8> {
         return [
             self.aecdebug.to_bytes(),
@@ -78,7 +123,14 @@ impl DebugComponents {
         .concat();
     }
 
-    pub fn write_data(self, filepath: &str) -> std::io::Result<()> {
+    /// Save the data to a file.
+    ///
+    /// # Arguments
+    /// * `filepath`: Path to the file to save the data to.
+    ///
+    /// # Returns
+    /// Result of saving the data
+    pub fn save_data(self, filepath: &str) -> std::io::Result<()> {
         let mut file = std::fs::File::create(filepath)?;
         file.write_all(&self.to_bytes())?;
         return Ok(());

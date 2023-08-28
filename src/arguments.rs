@@ -1,12 +1,23 @@
+//! Argument Parser for the command line tool.
+//!
+//! This module provides the logic used by the command-line tool to read
+//! arguments from the command line.
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
 use std::env;
 
+/// Structure holding the parsed arguments.
 pub struct Arguments {
+    /// Path of the image to process.
     pub input_path: String,
 }
 
 impl Arguments {
+    /// Parse the arguments from the command line.
+    ///
+    /// # Returns:
+    ///     A result that containing either the parsed arguments, or an error
+    ///     message.
     pub fn from_cli() -> Result<Arguments, &'static str> {
         let mut args = env::args();
         // Skip over the executable path

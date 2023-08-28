@@ -1,8 +1,10 @@
+//! Logic for working with the actual JPEG image
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
 
 use std::convert::TryFrom;
 
+/// Enum of the different JPEG segment markers.
 #[repr(u8)]
 #[derive(Debug, Copy, Clone)]
 pub enum JpegMarker {
@@ -43,6 +45,13 @@ pub enum JpegMarker {
 
 impl TryFrom<u8> for JpegMarker {
     type Error = ();
+    /// Create an instaced based on the byte value.
+    ///
+    /// # Arguments
+    /// * `value` The byte value to create the instance from.
+    ///
+    /// # Resturns
+    /// Result of creating the instance.
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         return match value {
             0x01 => Ok(Self::TEM),
@@ -82,17 +91,39 @@ impl TryFrom<u8> for JpegMarker {
         };
     }
 }
+
+/// A single JPEG segment.
 #[derive(Debug)]
 pub struct JpegSegment {
+    /// The magic byte for the segment. Should always be 0xFF
     pub magic: u8,
+
+    /// The marker indicating the segment type.
     pub marker: JpegMarker,
+
+    /// The length of the segment
+    /// For the SOS segment, this is only the length of the SOS heaader.
     pub length: usize,
+
+    /// Offset into the file that the segment is found at.
     pub file_offset: usize,
+
+    /// Offset in the file to the end of the segment.
     pub last_offset: usize,
+
+    /// The data bytes of the segment.
     pub data: Vec<u8>,
 }
 
-fn find_next_marker(bytes: &[u8], start_addr: usize) -> usize {
+/// Linear search for the next JPEG Segment.
+///
+/// # Arguments
+/// * `bytes`: The bytes to search for the next segment.
+/// * `start_addr`: Offset into bytes start searching at.
+///
+/// # Returns
+/// Offset that the next marker is at.
+fn find_next_segment(bytes: &[u8], start_addr: usize) -> usize {
     let bytes_chunk = bytes[start_addr..].to_vec();
     for (index, byte) in bytes_chunk.iter().enumerate() {
         if byte == &0xFF {
@@ -106,13 +137,21 @@ fn find_next_marker(bytes: &[u8], start_addr: usize) -> usize {
 }
 
 impl JpegSegment {
+    /// Create a new from bytes.
+    ///
+    /// # Arguments
+    /// * `bytes`: The bytes to create the segment from.
+    /// * `offset`: Offset into bytes to start creating the segment at.
+    ///
+    /// # Returns
+    /// Result containing either the created segment, or an error message.
     pub fn from_bytes(bytes: &[u8], offset: usize) -> Self {
         let marker = JpegMarker::try_from(bytes[offset + 1]).unwrap();
 
         let length = match marker {
             JpegMarker::SOI => 0,
             JpegMarker::EOI => 0,
-            JpegMarker::SOS => find_next_marker(bytes, offset + 2),
+            JpegMarker::SOS => find_next_segment(bytes, offset + 2),
             _ => (bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize),
         };
 
@@ -129,6 +168,10 @@ impl JpegSegment {
         };
     }
 
+    /// Convert the segment to bytes.
+    ///
+    /// # Returns
+    /// Bytes of the JPEG segment.
     pub fn to_bytes(&self) -> Vec<u8> {
         let length_bytes: Vec<u8> = match self.marker {
             JpegMarker::SOI => Vec::new(),

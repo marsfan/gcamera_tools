@@ -5,6 +5,7 @@ use gcamera_tools::camera_image::CameraImage;
 use std::fs;
 use std::process::exit;
 
+/// Main function that is run from the command line.
 fn main() {
     // Get the path to the image
     let args = Arguments::from_cli().unwrap_or_else(|err| {

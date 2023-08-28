@@ -1,3 +1,4 @@
+//! Top-Level logic for processing an image.
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
 use crate::debug_components::DebugComponents;
@@ -5,12 +6,23 @@ use crate::jpeg_components::JpegMarker;
 use crate::jpeg_components::JpegSegment;
 use std::io::Write;
 
+/// Struct holding all the data for a single image.
 pub struct CameraImage {
+    /// Vector of the segments in the JPEG portion of the image.
     jpeg_segments: Vec<JpegSegment>,
+    /// The camera debug information stored in the image.
     debug_components: DebugComponents,
 }
 
 impl CameraImage {
+    /// Create a new instance from a vector of bytes.
+    ///
+    /// # Arguments
+    ///
+    /// * `bytes`: The bytes to create the image from.
+    ///
+    /// # Returns
+    /// Result containing either the created instead, or an error message.
     pub fn from_bytes(bytes: Vec<u8>) -> Result<Self, &'static str> {
         if bytes[0..2] != vec![0xFF, 0xD8] {
             return Err("Not a valid JPEG File.");
@@ -32,6 +44,13 @@ impl CameraImage {
         });
     }
 
+    /// Save the JPEG component of the image.
+    ///
+    /// # Arguments
+    /// * `filepath`: Path to save the image to.
+    ///
+    /// # Returns
+    /// Result of saving the file.
     pub fn save_image(&self, filepath: &str) -> std::io::Result<()> {
         let mut file = std::fs::File::create(filepath)?;
         for segment in &self.jpeg_segments {
@@ -40,7 +59,14 @@ impl CameraImage {
         return Ok(());
     }
 
+    /// Save the debug data from the image.
+    ///
+    /// # Arguments
+    /// * `filepath`: Path to save the data to
+    ///
+    /// # Returns
+    /// Result from saving the file.
     pub fn save_debug_data(self, filepath: &str) -> std::io::Result<()> {
-        return self.debug_components.write_data(filepath);
+        return self.debug_components.save_data(filepath);
     }
 }
