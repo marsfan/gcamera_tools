@@ -5,6 +5,7 @@
 use std::io::Write;
 
 /// A single chunk of debug data.
+#[derive(Debug, PartialEq, Eq)]
 pub struct DebugChunk {
     /// The magic at the start of the chunk
     pub magic: String,
@@ -60,16 +61,17 @@ fn find_magic_start(data: &[u8], magic: &[u8]) -> Result<usize, &'static str> {
 fn find_awb_end(bytes: &[u8]) -> usize {
     let magic = "\x00\x00\x00\x1cftypisom".as_bytes();
     let length = bytes.len();
-    let range_end = length - magic.len();
+    let range_end = length - magic.len() + 1;
     for (offset, _) in bytes[..range_end].iter().enumerate() {
         if &bytes[offset..offset + magic.len()] == magic {
             return offset;
         }
     }
-    return bytes.len() - 1;
+    return bytes.len();
 }
 
 /// All of the debug information from the image.
+#[derive(Debug, PartialEq, Eq)]
 pub struct DebugComponents {
     /// Contents of the aecDebug portion
     pub aecdebug: DebugChunk,
@@ -136,5 +138,164 @@ impl DebugComponents {
         let mut file = std::fs::File::create(filepath)?;
         file.write_all(&self.to_bytes())?;
         return Ok(());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod chunk_tests {
+        use super::*;
+
+        #[test]
+        fn test_to_bytes() {
+            let chunk = DebugChunk {
+                magic: String::from("hello"),
+                data: vec![0x01, 0x02, 0x03, 0xFF, 0xAB],
+            };
+
+            let expected = vec![0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB];
+
+            assert_eq!(chunk.to_bytes(), expected);
+        }
+    }
+
+    mod find_magic_start_tests {
+        use super::*;
+
+        #[test]
+        fn test_magic_found() {
+            let test_bytes = [0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB];
+            let magic = [0x01, 0x02];
+
+            let found_offset = find_magic_start(&test_bytes, &magic);
+
+            assert_eq!(found_offset, Ok(5));
+        }
+
+        #[test]
+        fn test_magic_not_found() {
+            let test_bytes = [0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB];
+            let magic = [0x01, 0x03];
+
+            let function_result = find_magic_start(&test_bytes, &magic);
+
+            assert_eq!(function_result, Err("Could not find start of magic."))
+        }
+    }
+
+    mod find_awb_end_tests {
+        use crate::debug_components::find_awb_end;
+
+        #[test]
+        fn test_end_from_magic() {
+            let test_bytes =
+                "hello how are you\x00\x00\x00\x1cftypisom this is more data.".as_bytes();
+
+            let function_result = find_awb_end(&test_bytes);
+
+            assert_eq!(function_result, 17);
+        }
+        #[test]
+        fn test_end_from_magic_no_trailing() {
+            let test_bytes = "hello how are you\x00\x00\x00\x1cftypisom".as_bytes();
+
+            let function_result = find_awb_end(&test_bytes);
+
+            assert_eq!(function_result, 17);
+        }
+
+        #[test]
+        fn test_end_from_vec_end() {
+            let test_bytes = "hello how are you.".as_bytes();
+
+            let function_result = find_awb_end(&test_bytes);
+
+            assert_eq!(function_result, 18);
+        }
+    }
+
+    mod test_debug_components {
+        use crate::debug_components::{DebugChunk, DebugComponents};
+
+        #[test]
+        fn test_no_magic_found() {
+            let test_bytes = "hello how are you".as_bytes();
+            let result = DebugComponents::from_bytes(test_bytes);
+
+            assert_eq!(result, Err("Could not find start of magic."));
+        }
+
+        #[test]
+        fn test_successful_creation() {
+            let test_bytes = "aecDebug abc afDebug def awbDebug ghi".as_bytes();
+            let result = DebugComponents::from_bytes(test_bytes);
+
+            let expected_struct = DebugComponents {
+                aecdebug: DebugChunk {
+                    magic: String::from("aecDebug"),
+                    data: vec![0x20, 0x61, 0x62, 0x63, 0x20],
+                },
+                afdebug: DebugChunk {
+                    magic: String::from("afDebug"),
+                    data: vec![0x20, 0x64, 0x65, 0x66, 0x20],
+                },
+                awbdebug: DebugChunk {
+                    magic: String::from("awbDebug"),
+                    data: vec![0x20, 0x67, 0x68, 0x69],
+                },
+            };
+
+            assert_eq!(result, Ok(expected_struct));
+        }
+
+        #[test]
+        fn test_successful_creation_with_mp4() {
+            let test_bytes =
+                "aecDebug abc afDebug def awbDebug ghi\x00\x00\x00\x1cftypisom".as_bytes();
+            let result = DebugComponents::from_bytes(test_bytes);
+
+            let expected_struct = DebugComponents {
+                aecdebug: DebugChunk {
+                    magic: String::from("aecDebug"),
+                    data: vec![0x20, 0x61, 0x62, 0x63, 0x20],
+                },
+                afdebug: DebugChunk {
+                    magic: String::from("afDebug"),
+                    data: vec![0x20, 0x64, 0x65, 0x66, 0x20],
+                },
+                awbdebug: DebugChunk {
+                    magic: String::from("awbDebug"),
+                    data: vec![0x20, 0x67, 0x68, 0x69],
+                },
+            };
+
+            assert_eq!(result, Ok(expected_struct));
+        }
+
+        #[test]
+        fn test_to_bytes() {
+            let debug_components = DebugComponents {
+                aecdebug: DebugChunk {
+                    magic: String::from("aecDebug"),
+                    data: vec![0x20, 0x61, 0x62, 0x63, 0x20],
+                },
+                afdebug: DebugChunk {
+                    magic: String::from("afDebug"),
+                    data: vec![0x20, 0x64, 0x65, 0x66, 0x20],
+                },
+                awbdebug: DebugChunk {
+                    magic: String::from("awbDebug"),
+                    data: vec![0x20, 0x67, 0x68, 0x69],
+                },
+            };
+
+            let generated_bytes = debug_components.to_bytes();
+
+            let expected_bytes = "aecDebug abc afDebug def awbDebug ghi".as_bytes();
+
+            assert_eq!(generated_bytes, expected_bytes);
+        }
     }
 }
