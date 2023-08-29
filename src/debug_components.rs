@@ -22,7 +22,6 @@ impl DebugChunk {
     }
 }
 
-// FIXME: Need a way to handle being out of range
 /// Find the start index of the given magic using a linear search.
 ///
 /// # Arguments
@@ -34,7 +33,10 @@ impl DebugChunk {
 /// Result holding either the index of the start of the magic, or
 /// an error string.
 fn find_magic_start(data: &[u8], magic: &[u8]) -> Result<usize, &'static str> {
-    for (position, _) in data.iter().enumerate() {
+    // End point must be total length minus magic length, or we we attempt to
+    // read outside the array.
+    let loop_end_point = data.len() - magic.len();
+    for (position, _) in data[..loop_end_point].iter().enumerate() {
         let last_byte = position + magic.len();
         let chunk = data[position..last_byte].to_vec();
         if chunk == magic {
