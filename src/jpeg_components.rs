@@ -321,6 +321,230 @@ impl NewJpegSegment {
             Self::COM { .. } => 0xFE,
         };
     }
+
+    fn to_bytes(&self) -> Vec<u8> {
+        return match self {
+            Self::TEM { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::SOF0 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::SOF1 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::SOF2 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::SOF3 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::DHT { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::SOF5 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::SOF6 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::SOF7 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::SOI => vec![0xFF, self.to_u8()],
+            Self::EOI => vec![0xFF, self.to_u8()],
+            Self::SOS { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::DQT { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::DNL { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::DRI { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::DHP { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP0 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP1 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP2 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP3 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP4 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP5 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP6 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP7 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP8 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP9 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP10 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP11 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP12 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP13 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP14 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::APP15 { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+            Self::COM { length, data } => [
+                &[0xFF],
+                &[self.to_u8()],
+                length.to_be_bytes().to_vec().as_slice(),
+                data.as_slice(),
+            ]
+            .concat(),
+        };
+    }
 }
 
 /// A single JPEG segment.
