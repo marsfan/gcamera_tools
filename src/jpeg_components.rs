@@ -115,7 +115,7 @@ fn find_next_segment(bytes: &[u8]) -> Result<usize, &'static str> {
 #[derive(Debug)]
 pub struct JpegSegment {
     /// The magic byte for the segment. Should always be 0xFF
-    pub magic: u8,
+    magic: u8,
 
     /// The marker indicating the segment type.
     pub marker: JpegMarker,
