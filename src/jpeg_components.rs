@@ -1,7 +1,6 @@
 //! Logic for working with the actual JPEG image
 #![deny(clippy::implicit_return)]
 // TODO: Can this be made to only apply to the enum?
-#![allow(clippy::upper_case_acronyms)] // Allow this one so we can have capital enum for JPEG marker
 #![allow(clippy::needless_return)]
 
 /// Enum of the different JPEG segment markers.
