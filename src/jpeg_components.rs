@@ -95,17 +95,16 @@ impl JpegMarker {
 ///
 /// # Arguments
 /// * `bytes`: The bytes to search for the next segment.
-/// * `start_addr`: Offset into bytes start searching at.
 ///
 /// # Returns
 /// Offset that the next marker is at, or an error message
-fn find_next_segment(bytes: &[u8], start_addr: usize) -> Result<usize, &'static str> {
-    let bytes_chunk = bytes[start_addr..].to_vec();
+fn find_next_segment(bytes: &[u8]) -> Result<usize, &'static str> {
+    let bytes_chunk = bytes.to_vec();
     for (index, byte) in bytes_chunk.iter().enumerate() {
         if byte == &0xFF {
             let marker = JpegMarker::from_u8(bytes_chunk[index + 1]);
             if marker.is_ok() {
-                return Ok(index + start_addr);
+                return Ok(index);
             }
         }
     }
@@ -123,10 +122,7 @@ pub struct JpegSegment {
 
     /// The length of the segment
     /// For the SOS segment, this is only the length of the SOS heaader.
-    pub length: usize,
-
-    /// Offset into the file that the segment is found at.
-    pub file_offset: usize,
+    length: usize,
 
     /// Offset in the file to the end of the segment.
     pub last_offset: usize,
@@ -147,22 +143,21 @@ impl JpegSegment {
     pub fn from_bytes(bytes: &[u8], offset: usize) -> Result<Self, &'static str> {
         let marker = JpegMarker::from_u8(bytes[offset + 1])?;
 
-        let length = match marker {
+        let data_length = match marker {
             JpegMarker::SOI => 0,
             JpegMarker::EOI => 0,
-            JpegMarker::SOS => find_next_segment(bytes, offset + 2)? - (offset + 2),
+            JpegMarker::SOS => find_next_segment(&bytes[offset + 2..])?,
             _ => (bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize),
         };
 
         return Ok(JpegSegment {
             magic: bytes[offset],
             marker,
-            length: length + 2,
-            file_offset: offset,
-            last_offset: offset + length + 2,
-            data: match length {
+            length: data_length + 2,
+            last_offset: offset + data_length + 2,
+            data: match data_length {
                 0 => vec![],
-                _ => bytes[offset + 4..offset + 2 + length].to_vec(),
+                _ => bytes[offset + 4..offset + 2 + data_length].to_vec(),
             },
         });
     }
