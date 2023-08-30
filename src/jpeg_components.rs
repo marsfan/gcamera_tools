@@ -154,10 +154,7 @@ impl JpegSegment {
             _ => Some((bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize)),
         };
 
-        let data_bytes = match data_length {
-            Some(len) => Some(bytes[offset + 4..offset + 2 + len].to_vec()),
-            None => None,
-        };
+        let data_bytes = data_length.map(|len| return bytes[offset + 4..offset + 2 + len].to_vec());
 
         return Ok(JpegSegment {
             magic: bytes[offset],
