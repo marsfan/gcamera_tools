@@ -91,6 +91,26 @@ impl JpegMarker {
     }
 }
 
+/// Linear search for the next JPEG Segment.
+///
+/// # Arguments
+/// * `bytes`: The bytes to search for the next segment.
+/// * `start_addr`: Offset into bytes start searching at.
+///
+/// # Returns
+/// Offset that the next marker is at, or an error message
+fn find_next_segment(bytes: &[u8], start_addr: usize) -> Result<usize, &'static str> {
+    let bytes_chunk = bytes[start_addr..].to_vec();
+    for (index, byte) in bytes_chunk.iter().enumerate() {
+        if byte == &0xFF {
+            let marker = JpegMarker::from_u8(bytes_chunk[index + 1]);
+            if marker.is_ok() {
+                return Ok(index + start_addr);
+            }
+        }
+    }
+    return Err("Could not find next marker.");
+}
 enum NewJpegSegment {
     TEM { length: u16, data: Vec<u8> },
     SOF0 { length: u16, data: Vec<u8> }, // TODO: Proper Parsing
@@ -190,10 +210,14 @@ impl NewJpegSegment {
                     length,
                     data: bytes[data_start..data_end].to_vec(),
                 }),
-                0xDA => Ok(Self::SOS {
-                    length,
-                    data: bytes[data_start..data_end].to_vec(),
-                }),
+                0xDA => {
+                    let next_segment_start = find_next_segment(&bytes, 0)?;
+
+                    Ok(Self::SOS {
+                        length,
+                        data: bytes[data_start..next_segment_start].to_vec(),
+                    })
+                }
                 0xDB => Ok(Self::DQT {
                     length,
                     data: bytes[data_start..data_end].to_vec(),
@@ -570,27 +594,6 @@ pub struct JpegSegment {
     pub data: Vec<u8>,
 }
 
-/// Linear search for the next JPEG Segment.
-///
-/// # Arguments
-/// * `bytes`: The bytes to search for the next segment.
-/// * `start_addr`: Offset into bytes start searching at.
-///
-/// # Returns
-/// Offset that the next marker is at, or an error message
-fn find_next_segment(bytes: &[u8], start_addr: usize) -> Result<usize, &'static str> {
-    let bytes_chunk = bytes[start_addr..].to_vec();
-    for (index, byte) in bytes_chunk.iter().enumerate() {
-        if byte == &0xFF {
-            let marker = JpegMarker::from_u8(bytes_chunk[index + 1]);
-            if marker.is_ok() {
-                return Ok(index);
-            }
-        }
-    }
-    return Err("Could not find next marker.");
-}
-
 impl JpegSegment {
     /// Create a new segment from bytes.
     ///
@@ -606,7 +609,7 @@ impl JpegSegment {
         let length = match marker {
             JpegMarker::SOI => 0,
             JpegMarker::EOI => 0,
-            JpegMarker::SOS => find_next_segment(bytes, offset + 2)?,
+            JpegMarker::SOS => find_next_segment(bytes, offset + 2)? - (offset + 2),
             _ => (bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize),
         };
 
