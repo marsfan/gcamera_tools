@@ -5,7 +5,7 @@
 
 /// Enum of the different JPEG segment markers.
 #[repr(u8)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum JpegMarker {
     TEM = 0x01,
     SOF0 = 0xC0,
@@ -211,5 +211,63 @@ impl JpegSegment {
 
         // The 2 at the start is for the marker and magic bytes
         return 2 + len_size + data_size;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    mod jpeg_marker_tests {
+        use super::*;
+        /// Test converting each valid enum option both to and from
+        /// the given u8 value.
+        #[test]
+        fn test_to_from_u8_success() {
+            let test_cases = vec![
+                (0x01, JpegMarker::TEM),
+                (0xC0, JpegMarker::SOF0),
+                (0xC1, JpegMarker::SOF1),
+                (0xC2, JpegMarker::SOF2),
+                (0xC3, JpegMarker::SOF3),
+                (0xC4, JpegMarker::DHT),
+                (0xC5, JpegMarker::SOF5),
+                (0xC6, JpegMarker::SOF6),
+                (0xC7, JpegMarker::SOF7),
+                (0xD8, JpegMarker::SOI),
+                (0xD9, JpegMarker::EOI),
+                (0xDA, JpegMarker::SOS),
+                (0xDB, JpegMarker::DQT),
+                (0xDC, JpegMarker::DNL),
+                (0xDD, JpegMarker::DRI),
+                (0xDE, JpegMarker::DHP),
+                (0xE0, JpegMarker::APP0),
+                (0xE1, JpegMarker::APP1),
+                (0xE2, JpegMarker::APP2),
+                (0xE3, JpegMarker::APP3),
+                (0xE4, JpegMarker::APP4),
+                (0xE5, JpegMarker::APP5),
+                (0xE6, JpegMarker::APP6),
+                (0xE7, JpegMarker::APP7),
+                (0xE8, JpegMarker::APP8),
+                (0xE9, JpegMarker::APP9),
+                (0xEA, JpegMarker::APP10),
+                (0xEB, JpegMarker::APP11),
+                (0xEC, JpegMarker::APP12),
+                (0xED, JpegMarker::APP13),
+                (0xEE, JpegMarker::APP14),
+                (0xEF, JpegMarker::APP15),
+                (0xFE, JpegMarker::COM),
+            ];
+            for (byte, marker) in test_cases {
+                assert_eq!(JpegMarker::from_u8(byte), Ok(marker));
+                assert_eq!(marker as u8, byte);
+            }
+        }
+
+        /// Test getting an error for invalid byte input
+        #[test]
+        fn test_invalid_from_u8() {
+            assert_eq!(JpegMarker::from_u8(0xFF), Err("Unknown JPEG segment type."));
+        }
     }
 }
