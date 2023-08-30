@@ -28,15 +28,23 @@ impl CameraImage {
             return Err("Not a valid JPEG File.");
         }
 
+        // FIXME: Figure out how to do this would mutable?
         let mut jpeg_segments: Vec<JpegSegment> = Vec::new();
         jpeg_segments.push(JpegSegment::from_bytes(&bytes, 0)?);
+        let mut offset = 0;
+
         while !matches!(jpeg_segments.last().unwrap().marker, JpegMarker::EOI) {
             let prev = jpeg_segments.last().unwrap();
-            jpeg_segments.push(JpegSegment::from_bytes(&bytes, prev.last_offset)?);
+            offset = offset + prev.len();
+            jpeg_segments.push(JpegSegment::from_bytes(&bytes, offset)?);
         }
 
-        let debug_components =
-            DebugComponents::from_bytes(&bytes[jpeg_segments.last().unwrap().last_offset..])?;
+        for segment in jpeg_segments.iter() {
+            let _ = segment.len();
+        }
+
+        let debug_offset = offset + jpeg_segments.last().unwrap().len();
+        let debug_components = DebugComponents::from_bytes(&bytes[debug_offset..])?;
 
         return Ok(Self {
             jpeg_segments,

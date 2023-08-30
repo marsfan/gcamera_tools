@@ -125,9 +125,6 @@ pub struct JpegSegment {
     /// Since SOI and EOI don't have data bytes, this is an Option
     length: Option<usize>,
 
-    /// Offset in the file to the end of the segment.
-    pub last_offset: usize,
-
     /// The data bytes of the segment.
     /// Since SOI and EOI don't have data bytes, this is an Option
     pub data: Option<Vec<u8>>,
@@ -145,6 +142,12 @@ impl JpegSegment {
     pub fn from_bytes(bytes: &[u8], offset: usize) -> Result<Self, &'static str> {
         let marker = JpegMarker::from_u8(bytes[offset + 1])?;
 
+        let length = match marker {
+            JpegMarker::SOI => None,
+            JpegMarker::EOI => None,
+            _ => Some((bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize)),
+        };
+
         let data_length = match marker {
             JpegMarker::SOI => None,
             JpegMarker::EOI => None,
@@ -157,22 +160,10 @@ impl JpegSegment {
             None => None,
         };
 
-        let length = match marker {
-            JpegMarker::SOI => None,
-            JpegMarker::EOI => None,
-            _ => Some((bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize)),
-        };
-
-        let last_offset = match data_length {
-            Some(len) => offset + len + 2,
-            None => offset + 2,
-        };
-
         return Ok(JpegSegment {
             magic: bytes[offset],
             marker,
             length,
-            last_offset,
             data: data_bytes,
         });
     }
@@ -199,5 +190,30 @@ impl JpegSegment {
             data_bytes,
         ]
         .concat();
+    }
+
+    // TODO: IDK If it is safe to do this. Should probably ask online.
+    // pub fn iter(&self) -> impl ExactSizeIterator<Item = u8> {
+    //     return self.to_bytes().into_iter();
+    // }
+
+    /// Get the total number of bytes in the segment.
+    ///
+    /// # Returns
+    /// The total number of bytes in the segment.
+    pub fn len(&self) -> usize {
+        // Len size is a u16
+        let len_size = match self.length {
+            Some(_) => 2,
+            None => 0,
+        };
+
+        let data_size = match &self.data {
+            Some(data) => data.len(),
+            None => 0,
+        };
+
+        // The 2 at the start is for the marker and magic bytes
+        return 2 + len_size + data_size;
     }
 }
