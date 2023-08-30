@@ -120,8 +120,11 @@ pub struct JpegSegment {
     pub marker: JpegMarker,
 
     /// The length of the segment
-    /// For the SOS segment, this is only the length of the SOS heaaer.
+    /// For the SOS segment, this is only the length of the SOS header.
     /// Since SOI and EOI don't have data bytes, this is an Option
+    /// # Note
+    /// The length includes its own length, so the number of bytes in the
+    /// `data` variable is two less than the value in the length
     length: Option<usize>,
 
     /// The data bytes of the segment.
