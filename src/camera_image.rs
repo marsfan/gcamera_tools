@@ -35,15 +35,15 @@ impl CameraImage {
 
         while !matches!(jpeg_segments.last().unwrap().marker, JpegMarker::EOI) {
             let prev = jpeg_segments.last().unwrap();
-            offset = offset + prev.len();
+            offset = offset + prev.byte_count();
             jpeg_segments.push(JpegSegment::from_bytes(&bytes, offset)?);
         }
 
         for segment in jpeg_segments.iter() {
-            let _ = segment.len();
+            let _ = segment.byte_count();
         }
 
-        let debug_offset = offset + jpeg_segments.last().unwrap().len();
+        let debug_offset = offset + jpeg_segments.last().unwrap().byte_count();
         let debug_components = DebugComponents::from_bytes(&bytes[debug_offset..])?;
 
         return Ok(Self {
