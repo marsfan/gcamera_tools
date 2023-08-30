@@ -121,14 +121,15 @@ pub struct JpegSegment {
     pub marker: JpegMarker,
 
     /// The length of the segment
-    /// For the SOS segment, this is only the length of the SOS heaader.
-    length: usize,
+    /// For the SOS segment, this is only the length of the SOS heaaer.
+    /// Since SOI and EOI don't have data bytes, this is an Option
+    length: Option<usize>,
 
     /// Offset in the file to the end of the segment.
     pub last_offset: usize,
 
     /// The data bytes of the segment.
-    /// Since SOI and EOI don't have data bytes, it is an Option
+    /// Since SOI and EOI don't have data bytes, this is an Option
     pub data: Option<Vec<u8>>,
 }
 
@@ -156,10 +157,16 @@ impl JpegSegment {
             _ => Some(bytes[offset + 4..offset + 2 + data_length].to_vec()),
         };
 
+        let length = match marker {
+            JpegMarker::SOI => None,
+            JpegMarker::EOI => None,
+            _ => Some((bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize)),
+        };
+
         return Ok(JpegSegment {
             magic: bytes[offset],
             marker,
-            length: data_length + 2,
+            length,
             last_offset: offset + data_length + 2,
             data: data_bytes,
         });
@@ -170,11 +177,9 @@ impl JpegSegment {
     /// # Returns
     /// Bytes of the JPEG segment.
     pub fn to_bytes(&self) -> Vec<u8> {
-        let length_bytes: Vec<u8> = match self.marker {
-            JpegMarker::SOI => Vec::new(),
-            JpegMarker::EOI => Vec::new(),
-            JpegMarker::SOS => vec![0x00, 0x0C],
-            _ => ((self.length - 2) as u16).to_be_bytes().to_vec(),
+        let length_bytes = match self.length {
+            Some(length) => (length as u16).to_be_bytes().to_vec(),
+            None => Vec::new(),
         };
 
         let data_bytes = match &self.data {
