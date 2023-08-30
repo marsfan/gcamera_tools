@@ -128,7 +128,8 @@ pub struct JpegSegment {
     pub last_offset: usize,
 
     /// The data bytes of the segment.
-    pub data: Vec<u8>,
+    /// Since SOI and EOI don't have data bytes, it is an Option
+    pub data: Option<Vec<u8>>,
 }
 
 impl JpegSegment {
@@ -150,15 +151,17 @@ impl JpegSegment {
             _ => (bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize),
         };
 
+        let data_bytes = match data_length {
+            0 => None,
+            _ => Some(bytes[offset + 4..offset + 2 + data_length].to_vec()),
+        };
+
         return Ok(JpegSegment {
             magic: bytes[offset],
             marker,
             length: data_length + 2,
             last_offset: offset + data_length + 2,
-            data: match data_length {
-                0 => vec![],
-                _ => bytes[offset + 4..offset + 2 + data_length].to_vec(),
-            },
+            data: data_bytes,
         });
     }
 
@@ -174,11 +177,16 @@ impl JpegSegment {
             _ => ((self.length - 2) as u16).to_be_bytes().to_vec(),
         };
 
+        let data_bytes = match &self.data {
+            Some(data) => data.as_slice(),
+            None => &[],
+        };
+
         return [
             &[self.magic],
             &[self.marker as u8],
             length_bytes.as_slice(),
-            self.data.as_slice(),
+            data_bytes,
         ]
         .concat();
     }
