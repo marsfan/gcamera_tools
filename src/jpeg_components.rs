@@ -403,5 +403,36 @@ mod tests {
                 )
             }
         }
+
+        /// Tests for teh byte_count function.
+        mod test_byte_count {
+            use super::*;
+
+            ///Test when length and data are None
+            #[test]
+            fn test_no_data() {
+                let segment = JpegSegment {
+                    magic: 0xFF,
+                    marker: JpegMarker::APP0,
+                    length: None,
+                    data: None,
+                };
+
+                assert_eq!(segment.byte_count(), 2);
+            }
+
+            /// Test when length and data hold values.
+            #[test]
+            fn test_with_data() {
+                let segment = JpegSegment {
+                    magic: 0xFF,
+                    marker: JpegMarker::APP0,
+                    length: Some(0x04),
+                    data: Some(vec![0x01, 0x02]),
+                };
+
+                assert_eq!(segment.byte_count(), 6);
+            }
+        }
     }
 }
