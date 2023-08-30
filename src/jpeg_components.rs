@@ -270,4 +270,35 @@ mod tests {
             assert_eq!(JpegMarker::from_u8(0xFF), Err("Unknown JPEG segment type."));
         }
     }
+
+    mod find_next_segment_tests {
+        use crate::jpeg_components::find_next_segment;
+
+        /// Test valid discovery of next segment.
+        #[test]
+        fn test_valid_next_segment() {
+            let test_bytes = [0x01, 0x02, 0x03, 0x04, 0x04, 0x06, 0xFF, 0xD9, 0xAB, 0xCD];
+            let found_index = find_next_segment(&test_bytes);
+            assert_eq!(found_index, Ok(6));
+        }
+
+        /// Test no valid segment bytes at all
+        #[test]
+        fn test_no_found_segment() {
+            let test_bytes = [0x01, 0x02, 0x03, 0x04, 0x04, 0x06, 0xAB, 0xCD];
+            assert_eq!(
+                find_next_segment(&test_bytes),
+                Err("Could not find next marker.")
+            );
+        }
+        /// Test where magic is valid, but marker is not
+        #[test]
+        fn test_no_found_segment_valid_magic() {
+            let test_bytes = [0x01, 0x02, 0x03, 0x04, 0x04, 0x06, 0xFF, 0xFF, 0xAB, 0xCD];
+            assert_eq!(
+                find_next_segment(&test_bytes),
+                Err("Could not find next marker.")
+            );
+        }
+    }
 }
