@@ -111,7 +111,7 @@ fn find_next_segment(bytes: &[u8]) -> Result<usize, &'static str> {
 }
 
 /// A single JPEG segment.
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct JpegSegment {
     /// The magic byte for the segment. Should always be 0xFF
     magic: u8,
@@ -302,6 +302,106 @@ mod tests {
                 find_next_segment(&test_bytes),
                 Err("Could not find next marker.")
             );
+        }
+    }
+
+    mod test_jpeg_segment {
+        use super::*;
+
+        mod test_from_bytes {
+            use super::*;
+
+            /// Test creation of a SOI segment
+            /// This allows a test case where both length and data are None
+            #[test]
+            fn test_soi() {
+                let bytes = [0xFF, 0xD8];
+                let result = JpegSegment::from_bytes(&bytes, 0);
+                assert_eq!(
+                    result,
+                    Ok(JpegSegment {
+                        magic: 0xFF,
+                        marker: JpegMarker::SOI,
+                        length: None,
+                        data: None
+                    })
+                )
+            }
+
+            /// Test creation of a EOI segment
+            /// This allows a test case where both length and data are None
+            #[test]
+            fn test_eoi() {
+                let bytes = [0xFF, 0xD9];
+                let result = JpegSegment::from_bytes(&bytes, 0);
+                assert_eq!(
+                    result,
+                    Ok(JpegSegment {
+                        magic: 0xFF,
+                        marker: JpegMarker::EOI,
+                        length: None,
+                        data: None
+                    })
+                )
+            }
+
+            /// Test creation of a normal segment
+            /// i.e one with both length and data bits.
+            #[test]
+            fn test_create_general() {
+                let bytes = [0xFF, 0xFE, 0x00, 0x04, 0x01, 0x02, 0x03, 0x04];
+                let result = JpegSegment::from_bytes(&bytes, 0);
+                assert_eq!(
+                    result,
+                    Ok(JpegSegment {
+                        magic: 0xFF,
+                        marker: JpegMarker::COM,
+                        length: Some(4),
+                        data: Some(vec![0x01, 0x02])
+                    })
+                );
+            }
+
+            /// Test creation of a SOS segment where there is a following segment.
+            #[test]
+            fn test_create_sos_with_more() {
+                let bytes = [
+                    0xFF, 0xDA, 0x00, 0x04, 0x01, 0x02, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0xFF, 0xDA,
+                ];
+
+                let result = JpegSegment::from_bytes(&bytes, 0);
+                assert_eq!(
+                    result,
+                    Ok(JpegSegment {
+                        magic: 0xFF,
+                        marker: JpegMarker::SOS,
+                        length: Some(4),
+                        data: Some(vec![
+                            0x01, 0x02, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                        ])
+                    })
+                )
+            }
+
+            /// Test creation of a SOS segment where there is not a following segment.
+
+            /// Test creation with an offset.
+            /// Using a SOI since that's a really simple test case
+            #[test]
+            fn test_create_offset() {
+                let bytes = [0x01, 0x02, 0x03, 0xFF, 0xD8];
+                let result = JpegSegment::from_bytes(&bytes, 3);
+                assert_eq!(
+                    result,
+                    Ok(JpegSegment {
+                        magic: 0xFF,
+                        marker: JpegMarker::SOI,
+                        length: None,
+                        data: None
+                    })
+                )
+            }
         }
     }
 }
