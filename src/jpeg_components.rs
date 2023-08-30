@@ -146,15 +146,15 @@ impl JpegSegment {
         let marker = JpegMarker::from_u8(bytes[offset + 1])?;
 
         let data_length = match marker {
-            JpegMarker::SOI => 0,
-            JpegMarker::EOI => 0,
-            JpegMarker::SOS => find_next_segment(&bytes[offset + 2..])?,
-            _ => (bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize),
+            JpegMarker::SOI => None,
+            JpegMarker::EOI => None,
+            JpegMarker::SOS => Some(find_next_segment(&bytes[offset + 2..])?),
+            _ => Some((bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize)),
         };
 
         let data_bytes = match data_length {
-            0 => None,
-            _ => Some(bytes[offset + 4..offset + 2 + data_length].to_vec()),
+            Some(len) => Some(bytes[offset + 4..offset + 2 + len].to_vec()),
+            None => None,
         };
 
         let length = match marker {
@@ -163,11 +163,16 @@ impl JpegSegment {
             _ => Some((bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize)),
         };
 
+        let last_offset = match data_length {
+            Some(len) => offset + len + 2,
+            None => offset + 2,
+        };
+
         return Ok(JpegSegment {
             magic: bytes[offset],
             marker,
             length,
-            last_offset: offset + data_length + 2,
+            last_offset,
             data: data_bytes,
         });
     }
