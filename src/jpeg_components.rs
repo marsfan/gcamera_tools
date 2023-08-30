@@ -157,14 +157,18 @@ impl JpegSegment {
             _ => Some((bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize)),
         };
 
-        let data_bytes = data_length.map(|len| return bytes[offset + 4..offset + 2 + len].to_vec());
+        let data = data_length.map(|len| return bytes[offset + 4..offset + 2 + len].to_vec());
 
-        return Ok(JpegSegment {
-            magic: bytes[offset],
-            marker,
-            length,
-            data: data_bytes,
-        });
+        if (data.is_none() && length.is_none()) || (data.is_some() && length.is_some()) {
+            return Ok(JpegSegment {
+                magic: bytes[offset],
+                marker,
+                length,
+                data,
+            });
+        } else {
+            panic!("Data and length must either both be None, or both be some. This should not be possible.");
+        }
     }
 
     /// Convert the segment to bytes.
