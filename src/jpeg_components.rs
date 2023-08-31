@@ -438,5 +438,37 @@ mod tests {
                 assert_eq!(segment.byte_count(), 6);
             }
         }
+
+        mod test_to_bytes {
+            use super::*;
+
+            /// Test case for a segment that is an EOI type, which has
+            /// neither length or data components.
+            #[test]
+            fn test_eoi() {
+                let segment = JpegSegment {
+                    magic: 0xFF,
+                    marker: JpegMarker::EOI,
+                    length: None,
+                    data: None,
+                };
+
+                assert_eq!(segment.to_bytes(), vec![0xFF, 0xD9]);
+            }
+
+            /// Test case for a segment that contains both the length and
+            /// data sections.
+            #[test]
+            fn test_normal() {
+                let segment = JpegSegment {
+                    magic: 0xFF,
+                    marker: JpegMarker::APP0,
+                    length: Some(0x04),
+                    data: Some(vec![0x01, 0x02]),
+                };
+
+                assert_eq!(segment.to_bytes(), vec![0xFF, 0xE0, 0x00, 0x04, 0x01, 0x02]);
+            }
+        }
     }
 }
