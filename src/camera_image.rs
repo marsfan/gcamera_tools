@@ -61,8 +61,7 @@ impl CameraImage {
         return self
             .jpeg_segments
             .iter()
-            .map(|segment| segment.to_bytes())
-            .flatten()
+            .flat_map(|segment| return segment.to_bytes())
             .collect();
     }
 
