@@ -60,6 +60,14 @@ fn find_magic_start(data: &[u8], magic: &[u8]) -> Result<usize, &'static str> {
 /// The index of the end of the awbDebug chunk
 fn find_awb_end(bytes: &[u8]) -> usize {
     let magic = "\x00\x00\x00\x1cftypisom".as_bytes();
+
+    // Special case for when the total number of bytes is less than
+    // the size of the MP4 magic. This means that there is no MP4 magic.
+    if bytes.len() < magic.len() {
+        return bytes.len();
+    }
+
+    // Loop through looking for MP4 magic
     let length = bytes.len();
     let range_end = length - magic.len() + 1;
     for (offset, _) in bytes[..range_end].iter().enumerate() {
@@ -67,6 +75,8 @@ fn find_awb_end(bytes: &[u8]) -> usize {
             return offset;
         }
     }
+
+    // MP4 magic not found. Size is the total length
     return bytes.len();
 }
 
@@ -148,6 +158,7 @@ mod tests {
     mod chunk_tests {
         use super::*;
 
+        /// Test the to_bytes method
         #[test]
         fn test_to_bytes() {
             let chunk = DebugChunk {
@@ -164,6 +175,7 @@ mod tests {
     mod find_magic_start_tests {
         use super::*;
 
+        /// Test finding magic.
         #[test]
         fn test_magic_found() {
             let test_bytes = [0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB];
@@ -174,6 +186,7 @@ mod tests {
             assert_eq!(found_offset, Ok(5));
         }
 
+        /// Test not being able to find the magic
         #[test]
         fn test_magic_not_found() {
             let test_bytes = [0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB];
@@ -188,6 +201,7 @@ mod tests {
     mod find_awb_end_tests {
         use crate::debug_components::find_awb_end;
 
+        /// Test where there is MP4 magic and additional bytes
         #[test]
         fn test_end_from_magic() {
             let test_bytes =
@@ -197,6 +211,8 @@ mod tests {
 
             assert_eq!(function_result, 17);
         }
+
+        /// Test where there is a MP4 magic, but nothing afterwards
         #[test]
         fn test_end_from_magic_no_trailing() {
             let test_bytes = "hello how are you\x00\x00\x00\x1cftypisom".as_bytes();
@@ -206,6 +222,7 @@ mod tests {
             assert_eq!(function_result, 17);
         }
 
+        /// Test where the end of the section is the end of all of the bytes.
         #[test]
         fn test_end_from_vec_end() {
             let test_bytes = "hello how are you.".as_bytes();
@@ -214,11 +231,22 @@ mod tests {
 
             assert_eq!(function_result, 18);
         }
+
+        /// Test case for if the total number of bytes is less than the MP4 magic
+        #[test]
+        fn test_shorter_than_mp4_magic() {
+            let test_bytes = [
+                0x61, 0x77, 0x62, 0x44, 0x65, 0x62, 0x75, 0x67, 0x31, 0x32, 0x33,
+            ];
+            let function_result = find_awb_end(&test_bytes);
+            assert_eq!(function_result, 11);
+        }
     }
 
     mod test_debug_components {
         use crate::debug_components::{DebugChunk, DebugComponents};
 
+        /// Test not being able to find magic bytes.
         #[test]
         fn test_no_magic_found() {
             let test_bytes = "hello how are you".as_bytes();
@@ -227,6 +255,7 @@ mod tests {
             assert_eq!(result, Err("Could not find start of magic."));
         }
 
+        /// Test successfully creation
         #[test]
         fn test_successful_creation() {
             let test_bytes = "aecDebug abc afDebug def awbDebug ghi".as_bytes();
@@ -250,6 +279,7 @@ mod tests {
             assert_eq!(result, Ok(expected_struct));
         }
 
+        /// Test successfully creating when there is MP4 trailing bytes
         #[test]
         fn test_successful_creation_with_mp4() {
             let test_bytes =
@@ -274,6 +304,7 @@ mod tests {
             assert_eq!(result, Ok(expected_struct));
         }
 
+        /// Test converting to bytes.
         #[test]
         fn test_to_bytes() {
             let debug_components = DebugComponents {
