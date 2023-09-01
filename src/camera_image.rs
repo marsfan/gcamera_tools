@@ -7,6 +7,7 @@ use crate::jpeg_components::JpegSegment;
 use std::io::Write;
 
 /// Struct holding all the data for a single image.
+#[derive(Debug, PartialEq, Eq)]
 pub struct CameraImage {
     /// Vector of the segments in the JPEG portion of the image.
     jpeg_segments: Vec<JpegSegment>,
@@ -25,7 +26,7 @@ impl CameraImage {
     /// Result holding the created instance, or an error message
     pub fn from_bytes(bytes: Vec<u8>) -> Result<Self, &'static str> {
         if bytes[0..2] != vec![0xFF, 0xD8] {
-            return Err("Not a valid JPEG File.");
+            return Err("Not a valid JPEG file.");
         }
 
         // FIXME: Figure out how to do this would mutable?
