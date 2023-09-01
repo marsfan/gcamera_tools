@@ -53,6 +53,19 @@ impl CameraImage {
         });
     }
 
+    /// Get the entire JPEG image portion as bytes.
+    ///
+    /// # Returns
+    /// The entire JPEG image portion as a vector of bytes.
+    pub fn jpeg_to_bytes(&self) -> Vec<u8> {
+        return self
+            .jpeg_segments
+            .iter()
+            .map(|segment| segment.to_bytes())
+            .flatten()
+            .collect();
+    }
+
     /// Save the JPEG component of the image.
     ///
     /// # Arguments
@@ -62,9 +75,7 @@ impl CameraImage {
     /// Result of saving the file.
     pub fn save_image(&self, filepath: &str) -> std::io::Result<()> {
         let mut file = std::fs::File::create(filepath)?;
-        for segment in &self.jpeg_segments {
-            file.write_all(&segment.to_bytes())?;
-        }
+        file.write_all(&self.jpeg_to_bytes())?;
         return Ok(());
     }
 
@@ -129,4 +140,32 @@ mod test {
         assert_eq!(function_result, Err("Not a valid JPEG file."))
     }
 
+    /// Test getting the bytes for the JPEG image portion.
+    #[test]
+    fn test_to_bytes() {
+        let image = CameraImage {
+            jpeg_segments: vec![
+                JpegSegment::from_bytes(&[0xFF, 0xD8], 0).unwrap(),
+                JpegSegment::from_bytes(&[0xFF, 0xD9], 0).unwrap(),
+            ],
+            debug_components: DebugComponents {
+                aecdebug: {
+                    DebugChunk {
+                        magic: String::from("aecDebug"),
+                        data: String::from("hi").as_bytes().to_vec(),
+                    }
+                },
+                afdebug: DebugChunk {
+                    magic: String::from("afDebug"),
+                    data: String::from("bye").as_bytes().to_vec(),
+                },
+                awbdebug: DebugChunk {
+                    magic: String::from("awbDebug"),
+                    data: String::from("123").as_bytes().to_vec(),
+                },
+            },
+        };
+
+        assert_eq!(image.jpeg_to_bytes(), vec![0xFF, 0xD8, 0xFF, 0xD9]);
+    }
 }
