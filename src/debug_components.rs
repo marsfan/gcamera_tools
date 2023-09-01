@@ -145,8 +145,7 @@ impl DebugComponents {
     /// # Returns
     /// Result of saving the data
     pub fn save_data(self, filepath: &str) -> std::io::Result<()> {
-        let mut file = std::fs::File::create(filepath)?;
-        file.write_all(&self.to_bytes())?;
+        std::fs::File::create(filepath)?.write_all(&self.to_bytes())?;
         return Ok(());
     }
 }

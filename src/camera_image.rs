@@ -74,8 +74,7 @@ impl CameraImage {
     /// # Returns
     /// Result of saving the file.
     pub fn save_image(&self, filepath: &str) -> std::io::Result<()> {
-        let mut file = std::fs::File::create(filepath)?;
-        file.write_all(&self.jpeg_to_bytes())?;
+        std::fs::File::create(filepath)?.write_all(&self.jpeg_to_bytes())?;
         return Ok(());
     }
 
