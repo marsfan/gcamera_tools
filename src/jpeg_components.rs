@@ -219,6 +219,27 @@ impl JpegSegment {
         // The 2 at the start is for the marker and magic bytes
         return 2 + len_size + data_size;
     }
+
+    /// Get XMP data
+    ///
+    /// If this segment is the XMP data segment, this will return
+    /// A string containing the XMP data. Otherwise it returns None
+    ///
+    /// # Returns
+    /// The XMP Data as a string, or None
+    pub fn as_xmp_str(&self) -> Option<String> {
+        let xmp_marker = "http://ns.adobe.com/xap/1.0/".as_bytes();
+        if matches!(self.marker, JpegMarker::APP1)
+            && self.data.as_ref().unwrap().starts_with(xmp_marker)
+        {
+            return Some(
+                String::from_utf8(self.data.as_ref().unwrap()[xmp_marker.len() + 1..].to_vec())
+                    .unwrap(),
+            );
+        } else {
+            return None;
+        }
+    }
 }
 
 #[cfg(test)]

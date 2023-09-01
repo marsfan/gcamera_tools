@@ -88,6 +88,21 @@ impl CameraImage {
         return self.debug_components.save_data(filepath);
     }
 
+    /// Get the XMP data from the image
+    ///
+    /// # Returns
+    /// The XMP as XML data, or an error message.
+    pub fn get_xmp(&self) -> Result<String, &'static str> {
+        for segment in self.jpeg_segments.iter() {
+            if matches!(segment.marker, JpegMarker::APP1) {
+                return Ok(segment.as_xmp_str().unwrap());
+            }
+        }
+
+        return Err("Could not find XMP data");
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::debug_components::DebugChunk;
