@@ -77,4 +77,55 @@ impl CameraImage {
     pub fn save_debug_data(self, filepath: &str) -> std::io::Result<()> {
         return self.debug_components.save_data(filepath);
     }
+
+#[cfg(test)]
+mod test {
+    use crate::debug_components::DebugChunk;
+
+    use super::*;
+
+    /// Tests for the from_bytes method
+    #[test]
+    fn test_from_bytes() {
+        let bytes = vec![
+            0xFF, 0xD8, 0xFF, 0xD9, 0x61, 0x65, 0x63, 0x44, 0x65, 0x62, 0x75, 0x67, 0x68, 0x69,
+            0x61, 0x66, 0x44, 0x65, 0x62, 0x75, 0x67, 0x62, 0x79, 0x65, 0x61, 0x77, 0x62, 0x44,
+            0x65, 0x62, 0x75, 0x67, 0x31, 0x32, 0x33,
+        ];
+        let image = CameraImage::from_bytes(bytes);
+        assert_eq!(
+            image,
+            Ok(CameraImage {
+                jpeg_segments: vec![
+                    JpegSegment::from_bytes(&[0xFF, 0xD8], 0).unwrap(),
+                    JpegSegment::from_bytes(&[0xFF, 0xD9], 0).unwrap()
+                ],
+                debug_components: DebugComponents {
+                    aecdebug: {
+                        DebugChunk {
+                            magic: String::from("aecDebug"),
+                            data: String::from("hi").as_bytes().to_vec(),
+                        }
+                    },
+                    afdebug: DebugChunk {
+                        magic: String::from("afDebug"),
+                        data: String::from("bye").as_bytes().to_vec()
+                    },
+                    awbdebug: DebugChunk {
+                        magic: String::from("awbDebug"),
+                        data: String::from("123").as_bytes().to_vec()
+                    }
+                }
+            })
+        );
+    }
+
+    /// Test case where the file magic is incorrect
+    #[test]
+    fn test_bad_magic() {
+        let bytes = vec![0xFF, 0xAA];
+        let function_result = CameraImage::from_bytes(bytes);
+        assert_eq!(function_result, Err("Not a valid JPEG file."))
+    }
+
 }
