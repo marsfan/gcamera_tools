@@ -167,20 +167,6 @@ impl XMPData {
     }
 }
 
-pub fn example() {
-    let text = String::from_utf8(fs::read("motion.xml").unwrap()).unwrap();
-    let doc = Document::parse(&text).unwrap();
-
-    let elements = doc
-        .descendants()
-        .filter(|n| return n.tag_name().name() == "Item");
-    for elem in elements {
-        println!(
-            "{:?}",
-            elem.attribute(("http://ns.google.com/photos/1.0/container/item/", "Mime"))
-        );
-    }
-}
 
 #[cfg(test)]
 mod tests {
