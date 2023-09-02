@@ -1,8 +1,8 @@
 //! Logic for parsing the XMP data in an image.
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
-use roxmltree::{Document, ExpandedName, Namespace, Node};
-use std::fs;
+use roxmltree::{Document, ExpandedName, Node};
+use std::{fs, num::ParseIntError};
 
 // Namespace consants.
 // TODO: Could we use some other structure/enum instead?
