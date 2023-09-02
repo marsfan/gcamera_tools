@@ -1,7 +1,7 @@
 //! Logic for parsing the XMP data in an image.
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
-use roxmltree::{Document, ExpandedName, Node};
+use roxmltree::{Document, ExpandedName, Namespace, Node};
 use std::fs;
 
 // Namespace consants.
@@ -36,11 +36,16 @@ fn attribute_to_str(node: Node, namespace: &str, attribute: &str) -> Option<Stri
 ///
 /// # Returns
 ///  Option holding the attribute converted to a u32.
-// FIXME: Properly handle error.
-fn attribute_to_u32(node: Node, namespace: &str, attribute: &str) -> Option<u32> {
+// FIXME: Better error transformation?
+fn attribute_to_u32(
+    node: Node,
+    namespace: &str,
+    attribute: &str,
+) -> Result<Option<u32>, ParseIntError> {
     return node
         .attribute((namespace, attribute))
-        .map(|n| return n.parse().unwrap());
+        .map(|n| return n.parse())
+        .transpose();
 }
 
 /// General information about the XMP data
@@ -65,13 +70,15 @@ impl Description {
     pub fn from_xml(xml_element: Node) -> Self {
         return Self {
             extended_xmp_id: attribute_to_str(xml_element, XMP_NOTE_NS, "HasExtendedXMP"),
-            motion_photo: attribute_to_u32(xml_element, GCAMERA_NS, "MotionPhoto"),
-            motion_photo_version: attribute_to_u32(xml_element, GCAMERA_NS, "MotionPhotoVersion"),
+            motion_photo: attribute_to_u32(xml_element, GCAMERA_NS, "MotionPhoto").unwrap(),
+            motion_photo_version: attribute_to_u32(xml_element, GCAMERA_NS, "MotionPhotoVersion")
+                .unwrap(),
             motion_photo_timestamp_us: attribute_to_u32(
                 xml_element,
                 GCAMERA_NS,
                 "MotionPhotoPresentationTimestampUs",
-            ),
+            )
+            .unwrap(),
         };
     }
 }
@@ -111,8 +118,8 @@ impl Item {
     pub fn from_xml(xml_element: Node) -> Self {
         return Self {
             mimetype: attribute_to_str(xml_element, ITEM_NS, "Mime").unwrap(),
-            length: attribute_to_u32(xml_element, ITEM_NS, "Length"),
-            padding: attribute_to_u32(xml_element, ITEM_NS, "Padding"),
+            length: attribute_to_u32(xml_element, ITEM_NS, "Length").unwrap(),
+            padding: attribute_to_u32(xml_element, ITEM_NS, "Padding").unwrap(),
             semantic: attribute_to_str(xml_element, ITEM_NS, "Semanti").unwrap(),
             label: attribute_to_str(xml_element, ITEM_NS, "Label"),
             uri: attribute_to_str(xml_element, ITEM_NS, "URI"),
@@ -172,8 +179,161 @@ pub fn example() {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
+
+    /// Tests for the attribute_to_str function
+    mod test_attribute_to_str {
+        use super::*;
+
+        /// Test the attribute_to_str function when it has a valid value.
+        #[test]
+        fn test_some() {
+            let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
+            let document = Document::parse(&test_xml).unwrap();
+            let xml_element = document
+                .descendants()
+                .find(|n| return n.tag_name().name() == "tagname")
+                .unwrap();
+
+            assert_eq!(
+                attribute_to_str(xml_element, "http://ns.example.com", "a"),
+                Some(String::from("Hello"))
+            );
+        }
+
+        /// Test the attribute_to_str function when it does not have a valid value.
+        #[test]
+        fn test_none() {
+            let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
+            let document = Document::parse(&test_xml).unwrap();
+            let xml_element = document
+                .descendants()
+                .find(|n| return n.tag_name().name() == "tagname")
+                .unwrap();
+
+            assert_eq!(
+                attribute_to_str(xml_element, "http://ns.example.com", "b"),
+                None
+            );
+        }
+
+        /// Test the attribute_to_str function when namespace is invalid.
+        #[test]
+        fn test_bad_ns() {
+            let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
+            let document = Document::parse(&test_xml).unwrap();
+            let xml_element = document
+                .descendants()
+                .find(|n| return n.tag_name().name() == "tagname")
+                .unwrap();
+
+            assert_eq!(
+                attribute_to_str(xml_element, "http://ns.second.example.com", "b"),
+                None
+            );
+        }
+
+        /// Test the attribute_to_str function when there are no namespaces
+        #[test]
+        fn test_no_ns() {
+            let test_xml = "<tagname a=\"Hello\"/>";
+            let document = Document::parse(&test_xml).unwrap();
+            let xml_element = document
+                .descendants()
+                .find(|n| return n.tag_name().name() == "tagname")
+                .unwrap();
+
+            assert_eq!(
+                attribute_to_str(xml_element, "http://ns.second.example.com", "b"),
+                None
+            );
+        }
+    }
+
+    /// Tests for the attribute_to_u32 method
+    mod test_attribute_to_u32 {
+
+        use super::*;
+
+        /// Test the attribute_to_u32 function when it has a valid value.
+        #[test]
+        fn test_some() {
+            let test_xml = "<tagname t:a=\"1\" xmlns:t=\"http://ns.example.com\" />";
+            let document = Document::parse(&test_xml).unwrap();
+            let xml_element = document
+                .descendants()
+                .find(|n| return n.tag_name().name() == "tagname")
+                .unwrap();
+
+            assert_eq!(
+                attribute_to_u32(xml_element, "http://ns.example.com", "a"),
+                Ok(Some(1))
+            );
+        }
+
+        /// Test the attribute_to_u32 function when it does not have a valid value.
+        #[test]
+        fn test_none() {
+            let test_xml = "<tagname t:a=\"1\" xmlns:t=\"http://ns.example.com\" />";
+            let document = Document::parse(&test_xml).unwrap();
+            let xml_element = document
+                .descendants()
+                .find(|n| return n.tag_name().name() == "tagname")
+                .unwrap();
+
+            assert_eq!(
+                attribute_to_u32(xml_element, "http://ns.example.com", "b"),
+                Ok(None)
+            );
+        }
+
+        /// Test the attribute_to_u32 function when namespace is invalid.
+        #[test]
+        fn test_bad_ns() {
+            let test_xml = "<tagname t:a=\"1\" xmlns:t=\"http://ns.example.com\" />";
+            let document = Document::parse(&test_xml).unwrap();
+            let xml_element = document
+                .descendants()
+                .find(|n| return n.tag_name().name() == "tagname")
+                .unwrap();
+
+            assert_eq!(
+                attribute_to_u32(xml_element, "http://ns.second.example.com", "b"),
+                Ok(None)
+            );
+        }
+
+        /// Test the attribute_to_u32 function when there are no namespaces
+        #[test]
+        fn test_no_ns() {
+            let test_xml = "<tagname a=\"1\"/>";
+            let document = Document::parse(&test_xml).unwrap();
+            let xml_element = document
+                .descendants()
+                .find(|n| return n.tag_name().name() == "tagname")
+                .unwrap();
+
+            assert_eq!(
+                attribute_to_u32(xml_element, "http://ns.example.com", "b"),
+                Ok(None)
+            );
+        }
+
+        /// Test case where the attribute cannot be parsed to a string.
+        #[test]
+        #[should_panic]
+        fn test_not_parseable() {
+            let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
+            let document = Document::parse(&test_xml).unwrap();
+            let xml_element = document
+                .descendants()
+                .find(|n| return n.tag_name().name() == "tagname")
+                .unwrap();
+            attribute_to_u32(xml_element, "http://ns.example.com", "a").unwrap();
+        }
+    }
+
+    /// Tests of the Description struct
     mod test_description {
 
         use super::*;
