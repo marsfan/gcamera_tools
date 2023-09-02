@@ -1,3 +1,8 @@
+/*
+* This Source Code Form is subject to the terms of the Mozilla Public
+* License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, You can obtain one at https: //mozilla.org/MPL/2.0/.
+*/
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
 use gcamera_tools::arguments::Arguments;

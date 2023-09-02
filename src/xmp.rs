@@ -1,3 +1,8 @@
+/*
+* This Source Code Form is subject to the terms of the Mozilla Public
+* License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, You can obtain one at https: //mozilla.org/MPL/2.0/.
+*/
 //! Logic for parsing the XMP data in an image.
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
@@ -166,10 +171,10 @@ pub fn example() {
     let text = String::from_utf8(fs::read("motion.xml").unwrap()).unwrap();
     let doc = Document::parse(&text).unwrap();
 
-    let elems = doc
+    let elements = doc
         .descendants()
         .filter(|n| return n.tag_name().name() == "Item");
-    for elem in elems {
+    for elem in elements {
         println!(
             "{:?}",
             elem.attribute(("http://ns.google.com/photos/1.0/container/item/", "Mime"))
