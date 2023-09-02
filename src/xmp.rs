@@ -163,7 +163,7 @@ impl XMPData {
     }
 
     // TODO: Document
-    pub fn from_string(xmp_string: String) -> Self {
+    pub fn from_str(xmp_string: &str) -> Self {
         return Self::from_xml(Document::parse(&xmp_string).unwrap());
     }
 }
@@ -441,6 +441,76 @@ mod tests {
             .unwrap();
 
             let data = XMPData::from_xml(document);
+
+            assert_eq!(
+                data,
+                XMPData {
+                    description: Description {
+                        extended_xmp_id: Some(String::from("DD558CA2166AEC119A42CDFB02D4F1EF")),
+                        motion_photo: Some(1),
+                        motion_photo_version: Some(1),
+                        motion_photo_timestamp_us: Some(968644),
+                    },
+                    resources: vec![
+                        Item {
+                            mimetype: String::from("image/jpeg"),
+                            semantic: String::from("Primary"),
+                            length: Some(0),
+                            padding: Some(0),
+                            uri: None,
+                            label: None,
+                        },
+                        Item {
+                            mimetype: String::from("video/mp4"),
+                            semantic: String::from("MotionPhoto"),
+                            length: Some(4906025),
+                            padding: Some(0),
+                            uri: None,
+                            label: None,
+                        },
+                    ],
+                },
+            )
+        }
+
+        /// Basic test for the from_str method
+        #[test]
+        fn test_from_str() {
+            let xml_string =
+                "<x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='Adobe XMP Core 5.1.0-jc003'>
+                <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+                    <rdf:Description rdf:about=''
+                    xmlns:xmpNote='http://ns.adobe.com/xmp/note/'
+                    xmlns:GCamera='http://ns.google.com/photos/1.0/camera/'
+                    xmlns:Container='http://ns.google.com/photos/1.0/container/'
+                    xmlns:Item='http://ns.google.com/photos/1.0/container/item/'
+                    xmpNote:HasExtendedXMP='DD558CA2166AEC119A42CDFB02D4F1EF'
+                    GCamera:MotionPhoto='1'
+                    GCamera:MotionPhotoVersion='1'
+                    GCamera:MotionPhotoPresentationTimestampUs='968644'>
+                    <Container:Directory>
+                        <rdf:Seq>
+                        <rdf:li rdf:parseType='Resource'>
+                            <Container:Item
+                            Item:Mime='image/jpeg'
+                            Item:Semantic='Primary'
+                            Item:Length='0'
+                            Item:Padding='0' />
+                        </rdf:li>
+                        <rdf:li rdf:parseType='Resource'>
+                            <Container:Item
+                            Item:Mime='video/mp4'
+                            Item:Semantic='MotionPhoto'
+                            Item:Length='4906025'
+                            Item:Padding='0' />
+                        </rdf:li>
+                        </rdf:Seq>
+                    </Container:Directory>
+                    </rdf:Description>
+                </rdf:RDF>
+                </x:xmpmeta>";
+
+            let data = XMPData::from_str(xml_string);
 
             assert_eq!(
                 data,
