@@ -3,3 +3,4 @@
 *.jpg
 *.bin
 tarpaulin-report.html
+*.xml
