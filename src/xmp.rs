@@ -120,7 +120,7 @@ impl Item {
             mimetype: attribute_to_str(xml_element, ITEM_NS, "Mime").unwrap(),
             length: attribute_to_u32(xml_element, ITEM_NS, "Length").unwrap(),
             padding: attribute_to_u32(xml_element, ITEM_NS, "Padding").unwrap(),
-            semantic: attribute_to_str(xml_element, ITEM_NS, "Semanti").unwrap(),
+            semantic: attribute_to_str(xml_element, ITEM_NS, "Semantic").unwrap(),
             label: attribute_to_str(xml_element, ITEM_NS, "Label"),
             uri: attribute_to_str(xml_element, ITEM_NS, "URI"),
         };
@@ -388,7 +388,7 @@ mod tests {
             let document = Document::parse(&test_xml).unwrap();
             let xml_element = document
                 .descendants()
-                .find(|n| n.tag_name().name() == "Description")
+                .find(|n| n.tag_name().name() == "Item")
                 .unwrap();
             let item = Item::from_xml(xml_element);
 
