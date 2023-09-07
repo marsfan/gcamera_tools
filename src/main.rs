@@ -5,6 +5,7 @@
 */
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
+use clap::Parser;
 use gcamera_tools::arguments::Arguments;
 use gcamera_tools::camera_image::CameraImage;
 use std::fs;
@@ -12,11 +13,8 @@ use std::process::exit;
 
 /// Main function that is run from the command line.
 fn main() {
-    // Get the path to the image
-    let args = Arguments::from_cli().unwrap_or_else(|err| {
-        eprintln!("{err}");
-        exit(1);
-    });
+    // Parse command line arguments
+    let args = Arguments::parse();
 
     // Read the file and verify it is a JPEG
     let contents = fs::read(args.input_path).unwrap_or_else(|err| {

@@ -9,85 +9,65 @@
 //! arguments from the command line.
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
-use std::env;
+use clap::Parser;
 
-/// Structure holding the parsed arguments.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Parser, Debug, Eq, PartialEq)]
+#[command(author, version, about = "Utility for working with photos take with Google Camera", long_about = None)]
 pub struct Arguments {
-    /// Path of the image to process.
-    pub input_path: String,
-}
+    /// Path to the image to process
+    // FIXME: Why is this showing up after positional arguments?
+    #[arg(index = 1)]
+    pub input_path: String, // Path to search
 
-impl Arguments {
-    /// Parse the arguments from an iterator.
-    ///
-    /// # Arguments
-    /// * `args`: Iterator of arguments to parse.
-    ///
-    /// # Returns
-    /// The parsed arguments, or an error messsage if parsing failed.
-    fn parse<T>(mut args: T) -> Result<Self, &'static str>
-    where
-        T: Iterator<Item = String>,
-    {
-        // Skip over the executable path
-        args.next();
+    /// Path to save just the JPEG image to
+    #[arg(short, long)]
+    pub image_output: Option<String>,
 
-        let input_path: String = match args.next() {
-            Some(arg) => arg,
-            None => return Err("Path to image not supplied."),
-        };
+    /// Path to save the debug data to
+    #[arg(short, long)]
+    pub debug_output: Option<String>,
 
-        // Check for remaining arguments
-        if args.next().is_some() {
-            return Err("To many arguments supplied.");
-        }
-
-        return Ok(Self { input_path });
-    }
-    /// Parse the arguments from the command line.
-    ///
-    /// # Returns
-    /// A result that containing either the parsed arguments, or an error
-    /// message.
-    pub fn from_cli() -> Result<Self, &'static str> {
-        return Self::parse(env::args());
-    }
+    /// Path to save the motion video to
+    #[arg(short, long)]
+    pub motion_output: Option<String>,
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Arguments;
+    use super::*;
+
+    // TODO: Document tests
+    // TODO: Tests for each optional argument
 
     #[test]
-    fn test_valid_args() {
-        let input_args = ["/bin/gcamera_tools", "motion_photo.jpg"]
-            .iter()
-            .map(|s| s.to_string());
-        let parsed_args = Arguments::parse(input_args);
+    fn test_valid_args_no_optionals() {
+        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg"];
+        let parsed_args = Arguments::parse_from(input_args);
 
-        let expected_result = Ok(Arguments {
+        let expected_result = Arguments {
             input_path: String::from("motion_photo.jpg"),
-        });
-
+            image_output: None,
+            debug_output: None,
+            motion_output: None,
+        };
         assert_eq!(parsed_args, expected_result);
     }
 
+    // FIXME: Validate the error output somehow
     #[test]
-    fn test_no_enough_args() {
-        let input_args = ["/bin/gcamera_tools"].iter().map(|s| s.to_string());
-        let parsed_args = Arguments::parse(input_args);
-
-        assert_eq!(parsed_args, Err("Path to image not supplied."));
+    #[should_panic]
+    fn test_not_enough_args() {
+        let input_args = vec!["/bin/gcamera_tools"];
+        let parsed_args = Arguments::try_parse_from(input_args);
+        parsed_args.unwrap();
     }
 
+    // FIXME: Validate the error output somehow
     #[test]
+    #[should_panic]
     fn test_too_many_args() {
-        let input_args = ["/bin/gcamera_tools", "motion_photo.jpg", "second_photo.jpg"]
-            .iter()
-            .map(|s| s.to_string());
-        let parsed_args = Arguments::parse(input_args);
-
-        assert_eq!(parsed_args, Err("To many arguments supplied."));
+        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "second_photo.jpg"];
+        let parsed_args = Arguments::try_parse_from(input_args);
+        parsed_args.unwrap();
     }
 }
