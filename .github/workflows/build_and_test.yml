@@ -6,10 +6,15 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build_and_test:
 
+  build_and_test:
     name: Build and Test Debug
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
     steps:
     - uses: actions/checkout@v4
     - name: Build
@@ -20,7 +25,12 @@ jobs:
   build_and_test_release:
 
     name: Build and Test Release
-    runs-on: ubuntu-latest    
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
     steps:
     - uses: actions/checkout@v4
     - name: Build
