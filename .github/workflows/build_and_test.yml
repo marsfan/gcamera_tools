@@ -11,7 +11,7 @@ jobs:
     name: Build and Test Debug
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: cargo build --verbose
     - name: Run tests
@@ -22,7 +22,7 @@ jobs:
     name: Build and Test Release
     runs-on: ubuntu-latest    
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: cargo build --verbose --release
     - name: Run tests
