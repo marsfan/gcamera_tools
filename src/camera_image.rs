@@ -34,7 +34,7 @@ impl CameraImage {
             return Err("Not a valid JPEG file.");
         }
 
-        // FIXME: Figure out how to do this would mutable?
+        // FIXME: Figure out how to do this without mutable?
         let mut jpeg_segments: Vec<JpegSegment> = Vec::new();
         jpeg_segments.push(JpegSegment::from_bytes(&bytes, 0)?);
         let mut offset = 0;

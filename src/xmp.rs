@@ -71,7 +71,12 @@ pub struct Description {
 
 impl Description {
     /// Create an instance from the XML Element
-    /// TODO: Finish Documentation
+    ///
+    /// # Arguments
+    /// * `xml_element`: The XML Node to create the description from.
+    ///
+    /// # Returns
+    ///  Created description instance.
     pub fn from_xml(xml_element: Node) -> Self {
         return Self {
             extended_xmp_id: attribute_to_str(xml_element, XMP_NOTE_NS, "HasExtendedXMP"),
@@ -115,8 +120,8 @@ pub struct Item {
 impl Item {
     /// Create an instance from an XML node
     ///
-    ///
-    /// TODO: Args
+    /// # Arguments
+    /// * `xml_element`: The XML Node to create the instance from.
     ///
     /// # Returns
     /// Instance created from an XML Node
@@ -135,12 +140,21 @@ impl Item {
 // TODO: Document
 #[derive(Debug, Eq, PartialEq)]
 pub struct XMPData {
+    /// The desscription of the XMP data
     pub description: Description,
+
+    /// Vector of the resources defined in the file, according to the XMP data.
     pub resources: Vec<Item>,
 }
 
-// TODO: Document
 impl XMPData {
+    /// Create an instance from an XML Document.
+    ///
+    /// # Arguments
+    /// * `document`: The XML Document to create the instance from.
+    ///
+    /// # Returns
+    /// Instance created from the given XML Document
     pub fn from_xml(document: Document) -> Self {
         let description_node = document
             .descendants()
@@ -162,7 +176,13 @@ impl XMPData {
         };
     }
 
-    // TODO: Document
+    /// Create an instance from the given string
+    ///
+    /// # Arguments
+    ///  * `xmp_str`: The string to create the instance from
+    ///
+    /// # Returns
+    /// Instance created from the given string
     pub fn from_str(xmp_string: &str) -> Self {
         return Self::from_xml(Document::parse(&xmp_string).unwrap());
     }

@@ -200,11 +200,6 @@ impl JpegSegment {
         .concat();
     }
 
-    // TODO: IDK If it is safe to do this. Should probably ask online.
-    // pub fn iter(&self) -> impl ExactSizeIterator<Item = u8> {
-    //     return self.to_bytes().into_iter();
-    // }
-
     /// Get the total number of bytes in the segment, if it was serialized to bytes
     ///
     /// # Returns
