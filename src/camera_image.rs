@@ -9,6 +9,7 @@
 use crate::debug_components::DebugComponents;
 use crate::jpeg_components::JpegMarker;
 use crate::jpeg_components::JpegSegment;
+use crate::xmp::XMPData;
 use std::convert::TryFrom;
 use std::io::Write;
 
@@ -61,14 +62,15 @@ impl CameraImage {
     ///
     /// # Returns
     /// The XMP as XML data, or an error message.
-    pub fn get_xmp(&self) -> Result<String, &'static str> {
+    pub fn get_xmp(&self) -> Result<XMPData, String> {
         for segment in self.jpeg_segments.iter() {
-            if matches!(segment.marker, JpegMarker::APP1) {
-                return Ok(segment.as_xmp_str().unwrap());
+            let xmp_string = segment.as_xmp_str();
+            if let Some(xmp_string) = xmp_string {
+                return XMPData::try_from(xmp_string);
             }
         }
 
-        return Err("Could not find XMP data");
+        return Err(String::from("Could not find XMP data"));
     }
 }
 
