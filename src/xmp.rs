@@ -116,23 +116,19 @@ pub struct Item {
     uri: Option<String>,
 }
 
-impl Item {
-    /// Create an instance from an XML node
-    ///
-    /// # Arguments
-    /// * `xml_element`: The XML Node to create the instance from.
-    ///
-    /// # Returns
-    /// Instance created from an XML Node
-    pub fn from_xml(xml_element: Node) -> Self {
-        return Self {
-            mimetype: attribute_to_str(xml_element, ITEM_NS, "Mime").unwrap(),
-            length: attribute_to_u32(xml_element, ITEM_NS, "Length").unwrap(),
-            padding: attribute_to_u32(xml_element, ITEM_NS, "Padding").unwrap(),
-            semantic: attribute_to_str(xml_element, ITEM_NS, "Semantic").unwrap(),
-            label: attribute_to_str(xml_element, ITEM_NS, "Label"),
-            uri: attribute_to_str(xml_element, ITEM_NS, "URI"),
-        };
+/// Implementation to create item from a XML Node.
+impl TryFrom<Node<'_, '_>> for Item {
+    type Error = &'static str;
+
+    fn try_from(value: Node<'_, '_>) -> Result<Self, Self::Error> {
+        return Ok(Self {
+            mimetype: attribute_to_str(value, ITEM_NS, "Mime").unwrap(),
+            length: attribute_to_u32(value, ITEM_NS, "Length")?,
+            padding: attribute_to_u32(value, ITEM_NS, "Padding")?,
+            semantic: attribute_to_str(value, ITEM_NS, "Semantic").unwrap(),
+            label: attribute_to_str(value, ITEM_NS, "Label"),
+            uri: attribute_to_str(value, ITEM_NS, "URI"),
+        });
     }
 }
 
@@ -165,10 +161,8 @@ impl TryFrom<Document<'_>> for XMPData {
         if let Some(node) = description_node {
             let resource_nodes = document
                 .descendants()
-                .filter(|n| {
-                    return n.tag_name() == ExpandedName::from((CONTAINER_NS, "Item"));
-                })
-                .map(|n| return Item::from_xml(n));
+                .filter(|n| n.tag_name() == ExpandedName::from((CONTAINER_NS, "Item")))
+                .map(|n| return Item::try_from(n).unwrap()); // FIXME: Get rid of unwrap
 
             return Ok(Self {
                 description: Description::try_from(node)?,
@@ -418,18 +412,18 @@ mod tests {
                 .descendants()
                 .find(|n| n.tag_name().name() == "Item")
                 .unwrap();
-            let item = Item::from_xml(xml_element);
+            let item = Item::try_from(xml_element);
 
             assert_eq!(
                 item,
-                Item {
+                Ok(Item {
                     mimetype: String::from("video/mp4"),
                     length: Some(4906025),
                     padding: Some(0),
                     semantic: String::from("MotionPhoto"),
                     label: None,
                     uri: None
-                }
+                })
             )
         }
     }
