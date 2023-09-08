@@ -161,7 +161,7 @@ impl TryFrom<Document<'_>> for XMPData {
         if let Some(node) = description_node {
             let resource_nodes = document
                 .descendants()
-                .filter(|n| n.tag_name() == ExpandedName::from((CONTAINER_NS, "Item")))
+                .filter(|n| return n.tag_name() == ExpandedName::from((CONTAINER_NS, "Item")))
                 .map(|n| return Item::try_from(n).unwrap()); // FIXME: Get rid of unwrap
 
             return Ok(Self {
