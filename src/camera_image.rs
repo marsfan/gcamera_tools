@@ -105,7 +105,7 @@ impl TryFrom<Vec<u8>> for CameraImage {
         }
 
         offset += jpeg_segments.last().unwrap().byte_count();
-        let debug_components = DebugComponents::from_bytes(&bytes[offset..])?;
+        let debug_components = DebugComponents::try_from(&bytes[offset..])?;
 
         return Ok(Self {
             jpeg_segments,

@@ -99,36 +99,6 @@ pub struct DebugComponents {
 }
 
 impl DebugComponents {
-    /// Create an instance from the bytes.
-    ///
-    /// # Arguments
-    /// * `bytes`: The bytes to create the instance from.
-    ///
-    /// # Returns
-    /// Result containing either the instance, or an error message
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, &'static str> {
-        // TODO: Proper Error Handling
-        let aec_start = find_magic_start(bytes, b"aecDebug")?;
-        let af_start = find_magic_start(&bytes[aec_start..], b"afDebug")? + aec_start;
-        let awb_start = find_magic_start(&bytes[af_start..], b"awbDebug")? + af_start;
-        let awb_end = find_awb_end(&bytes[awb_start..]) + awb_start;
-
-        return Ok(DebugComponents {
-            aecdebug: DebugChunk {
-                magic: String::from_utf8(bytes[aec_start..aec_start + 8].to_vec()).unwrap(),
-                data: bytes[aec_start + 8..af_start].to_vec(),
-            },
-            afdebug: DebugChunk {
-                magic: String::from_utf8(bytes[af_start..af_start + 7].to_vec()).unwrap(),
-                data: bytes[af_start + 7..awb_start].to_vec(),
-            },
-            awbdebug: DebugChunk {
-                magic: String::from_utf8(bytes[awb_start..awb_start + 8].to_vec()).unwrap(),
-                data: bytes[awb_start + 8..awb_end].to_vec(),
-            },
-        });
-    }
-
     /// Convert the debug data back into bytes.
     ///
     /// # Returns
@@ -152,6 +122,41 @@ impl DebugComponents {
     pub fn save_data(self, filepath: String) -> std::io::Result<()> {
         std::fs::File::create(filepath)?.write_all(&self.to_bytes())?;
         return Ok(());
+    }
+}
+
+/// Implementation to create debug components from
+impl TryFrom<&[u8]> for DebugComponents {
+    type Error = &'static str;
+
+    /// Create an instance from the bytes.
+    ///
+    /// # Arguments
+    /// * `bytes`: The bytes to create the instance from.
+    ///
+    /// # Returns
+    /// Result containing either the instance, or an error message
+    fn try_from(bytes: &[u8]) -> Result<Self, &'static str> {
+        // TODO: Proper Error Handling
+        let aec_start = find_magic_start(&bytes, b"aecDebug")?;
+        let af_start = find_magic_start(&bytes[aec_start..], b"afDebug")? + aec_start;
+        let awb_start = find_magic_start(&bytes[af_start..], b"awbDebug")? + af_start;
+        let awb_end = find_awb_end(&bytes[awb_start..]) + awb_start;
+
+        return Ok(DebugComponents {
+            aecdebug: DebugChunk {
+                magic: String::from_utf8(bytes[aec_start..aec_start + 8].to_vec()).unwrap(),
+                data: bytes[aec_start + 8..af_start].to_vec(),
+            },
+            afdebug: DebugChunk {
+                magic: String::from_utf8(bytes[af_start..af_start + 7].to_vec()).unwrap(),
+                data: bytes[af_start + 7..awb_start].to_vec(),
+            },
+            awbdebug: DebugChunk {
+                magic: String::from_utf8(bytes[awb_start..awb_start + 8].to_vec()).unwrap(),
+                data: bytes[awb_start + 8..awb_end].to_vec(),
+            },
+        });
     }
 }
 
@@ -254,7 +259,7 @@ mod tests {
         #[test]
         fn test_no_magic_found() {
             let test_bytes = "hello how are you".as_bytes();
-            let result = DebugComponents::from_bytes(test_bytes);
+            let result = DebugComponents::try_from(test_bytes);
 
             assert_eq!(result, Err("Could not find start of magic."));
         }
@@ -263,7 +268,7 @@ mod tests {
         #[test]
         fn test_successful_creation() {
             let test_bytes = "aecDebug abc afDebug def awbDebug ghi".as_bytes();
-            let result = DebugComponents::from_bytes(test_bytes);
+            let result = DebugComponents::try_from(test_bytes);
 
             let expected_struct = DebugComponents {
                 aecdebug: DebugChunk {
@@ -288,7 +293,7 @@ mod tests {
         fn test_successful_creation_with_mp4() {
             let test_bytes =
                 "aecDebug abc afDebug def awbDebug ghi\x00\x00\x00\x1cftypisom".as_bytes();
-            let result = DebugComponents::from_bytes(test_bytes);
+            let result = DebugComponents::try_from(test_bytes);
 
             let expected_struct = DebugComponents {
                 aecdebug: DebugChunk {
