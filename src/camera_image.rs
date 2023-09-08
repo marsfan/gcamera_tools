@@ -77,7 +77,7 @@ impl CameraImage {
     ///
     /// # Returns
     /// Result of saving the file.
-    pub fn save_image(&self, filepath: &str) -> std::io::Result<()> {
+    pub fn save_image(&self, filepath: String) -> std::io::Result<()> {
         std::fs::File::create(filepath)?.write_all(&self.jpeg_to_bytes())?;
         return Ok(());
     }
@@ -89,7 +89,7 @@ impl CameraImage {
     ///
     /// # Returns
     /// Result from saving the file.
-    pub fn save_debug_data(self, filepath: &str) -> std::io::Result<()> {
+    pub fn save_debug_data(self, filepath: String) -> std::io::Result<()> {
         return self.debug_components.save_data(filepath);
     }
 

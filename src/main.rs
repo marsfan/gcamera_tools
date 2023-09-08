@@ -28,7 +28,21 @@ fn main() {
         exit(1);
     });
 
-    // Save the separate parts of the image.
-    image.save_image("just_photo.jpg").unwrap();
-    image.save_debug_data("just_debug.bin").unwrap();
+    // Save the JPEG image if the user provides a save path.
+    match args.image_output {
+        Some(output_path) => image.save_image(output_path).unwrap(),
+        None => {}
+    }
+
+    // Save the debug data if the user provides a save path.
+    match args.debug_output {
+        Some(output_path) => image.save_debug_data(output_path).unwrap(),
+        None => {}
+    }
+
+    // Save the motion photo if the user provides a save path
+    match args.motion_output {
+        Some(output_path) => panic!("Motion extracting is not supported yet"),
+        None => {}
+    }
 }

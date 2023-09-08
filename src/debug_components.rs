@@ -149,7 +149,7 @@ impl DebugComponents {
     ///
     /// # Returns
     /// Result of saving the data
-    pub fn save_data(self, filepath: &str) -> std::io::Result<()> {
+    pub fn save_data(self, filepath: String) -> std::io::Result<()> {
         std::fs::File::create(filepath)?.write_all(&self.to_bytes())?;
         return Ok(());
     }
