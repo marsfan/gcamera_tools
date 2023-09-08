@@ -18,13 +18,14 @@ pub struct DebugChunk {
     pub data: Vec<u8>,
 }
 
-impl DebugChunk {
+/// Implementation to create a vector of u8 from the debug chunk
+impl From<DebugChunk> for Vec<u8> {
     /// Serialize the chunk back into binary bytes.
     ///
     /// # Returns
     /// The chunk as a vector of bytes.
-    pub fn to_bytes(self) -> Vec<u8> {
-        return [self.magic.into_bytes(), self.data].concat();
+    fn from(val: DebugChunk) -> Self {
+        return [val.magic.into_bytes(), val.data].concat();
     }
 }
 
@@ -105,9 +106,9 @@ impl DebugComponents {
     /// The data as a vector of bytes.
     pub fn to_bytes(self) -> Vec<u8> {
         return [
-            self.aecdebug.to_bytes(),
-            self.afdebug.to_bytes(),
-            self.awbdebug.to_bytes(),
+            Vec::from(self.aecdebug),
+            Vec::from(self.afdebug),
+            Vec::from(self.awbdebug),
         ]
         .concat();
     }
@@ -138,7 +139,7 @@ impl TryFrom<&[u8]> for DebugComponents {
     /// Result containing either the instance, or an error message
     fn try_from(bytes: &[u8]) -> Result<Self, &'static str> {
         // TODO: Proper Error Handling
-        let aec_start = find_magic_start(&bytes, b"aecDebug")?;
+        let aec_start = find_magic_start(bytes, b"aecDebug")?;
         let af_start = find_magic_start(&bytes[aec_start..], b"afDebug")? + aec_start;
         let awb_start = find_magic_start(&bytes[af_start..], b"awbDebug")? + af_start;
         let awb_end = find_awb_end(&bytes[awb_start..]) + awb_start;
@@ -177,7 +178,7 @@ mod tests {
 
             let expected = vec![0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB];
 
-            assert_eq!(chunk.to_bytes(), expected);
+            assert_eq!(Vec::from(chunk), expected);
         }
     }
 
