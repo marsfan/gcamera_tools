@@ -147,7 +147,10 @@ pub struct XMPData {
     pub resources: Vec<Item>,
 }
 
-impl XMPData {
+/// Implementation to create XMP Data from XML Document
+impl TryFrom<Document<'_>> for XMPData {
+    type Error = &'static str;
+
     /// Create an instance from an XML Document.
     ///
     /// # Arguments
@@ -155,29 +158,30 @@ impl XMPData {
     ///
     /// # Returns
     /// Instance created from the given XML Document
-    pub fn from_xml(document: Document) -> Self {
-        let description_node = document
-            .descendants()
-            .find(|n| {
-                return n.tag_name() == ExpandedName::from((RDF_NS, "Description"));
-            })
-            .unwrap();
+    fn try_from(document: Document) -> Result<Self, Self::Error> {
+        let description_node = document.descendants().find(|n| {
+            return n.tag_name() == ExpandedName::from((RDF_NS, "Description"));
+        });
 
-        let resource_nodes = document
-            .descendants()
-            .filter(|n| {
-                return n.tag_name() == ExpandedName::from((CONTAINER_NS, "Item"));
-            })
-            .map(|n| return Item::from_xml(n));
+        if let Some(node) = description_node {
+            let resource_nodes = document
+                .descendants()
+                .filter(|n| {
+                    return n.tag_name() == ExpandedName::from((CONTAINER_NS, "Item"));
+                })
+                .map(|n| return Item::from_xml(n));
 
-        return Self {
-            description: Description::from_xml(description_node),
-            resources: resource_nodes.collect(),
-        };
+            return Ok(Self {
+                description: Description::from_xml(node),
+                resources: resource_nodes.collect(),
+            });
+        } else {
+            return Err("Could not find description node in XML Data");
+        }
     }
 }
 
-/// Implementation to create XMP Data from as string
+/// Implementation to create XMP Data from string
 impl TryFrom<String> for XMPData {
     type Error = String;
 
@@ -192,7 +196,7 @@ impl TryFrom<String> for XMPData {
         let xml_document = Document::parse(&xmp_string);
 
         match xml_document {
-            Ok(document) => return Ok(Self::from_xml(document)),
+            Ok(document) => return Ok(Self::try_from(document)?),
             Err(typ) => {
                 return Err(format!(
                     "Failed to parse XML Document. XML Error type is {typ}"
@@ -474,11 +478,11 @@ mod tests {
             )
             .unwrap();
 
-            let data = XMPData::from_xml(document);
+            let data = XMPData::try_from(document);
 
             assert_eq!(
                 data,
-                XMPData {
+                Ok(XMPData {
                     description: Description {
                         extended_xmp_id: Some(String::from("DD558CA2166AEC119A42CDFB02D4F1EF")),
                         motion_photo: Some(1),
@@ -503,7 +507,7 @@ mod tests {
                             label: None,
                         },
                     ],
-                },
+                },)
             )
         }
 
