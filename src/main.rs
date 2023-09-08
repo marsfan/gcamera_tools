@@ -42,7 +42,7 @@ fn main() {
 
     // Save the motion photo if the user provides a save path
     match args.motion_output {
-        Some(output_path) => panic!("Motion extracting is not supported yet"),
+        Some(_) => panic!("Motion extracting is not supported yet"),
         None => {}
     }
 }
