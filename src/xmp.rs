@@ -7,8 +7,6 @@
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
 use roxmltree::{Document, ExpandedName, Node};
-use std::num::ParseIntError;
-
 // Namespace consants.
 // TODO: Could we use some other structure/enum instead?
 // const X_NS: &str = "adobe:ns:meta/";
@@ -41,16 +39,16 @@ fn attribute_to_str(node: Node, namespace: &str, attribute: &str) -> Option<Stri
 ///
 /// # Returns
 ///  Option holding the attribute converted to a u32.
-// FIXME: Better error transformation?
 fn attribute_to_u32(
     node: Node,
     namespace: &str,
     attribute: &str,
-) -> Result<Option<u32>, ParseIntError> {
+) -> Result<Option<u32>, &'static str> {
     return node
         .attribute((namespace, attribute))
         .map(|n| return n.parse())
-        .transpose();
+        .transpose()
+        .map_err(|_| return "Failed to parse attribute to a u32");
 }
 
 /// General information about the XMP data
@@ -69,8 +67,10 @@ pub struct Description {
     motion_photo_timestamp_us: Option<u32>,
 }
 
-/// Implementation to  Create description from XML Node
-impl From<Node<'_, '_>> for Description {
+/// Implementation to create description from XML Node
+impl TryFrom<Node<'_, '_>> for Description {
+    type Error = &'static str;
+
     /// Create an instance from the XML Element
     ///
     /// # Arguments
@@ -78,19 +78,17 @@ impl From<Node<'_, '_>> for Description {
     ///
     /// # Returns
     ///  Created description instance.
-    fn from(xml_element: Node) -> Self {
-        return Self {
+    fn try_from(xml_element: Node) -> Result<Self, Self::Error> {
+        return Ok(Self {
             extended_xmp_id: attribute_to_str(xml_element, XMP_NOTE_NS, "HasExtendedXMP"),
-            motion_photo: attribute_to_u32(xml_element, GCAMERA_NS, "MotionPhoto").unwrap(),
-            motion_photo_version: attribute_to_u32(xml_element, GCAMERA_NS, "MotionPhotoVersion")
-                .unwrap(),
+            motion_photo: attribute_to_u32(xml_element, GCAMERA_NS, "MotionPhoto")?,
+            motion_photo_version: attribute_to_u32(xml_element, GCAMERA_NS, "MotionPhotoVersion")?,
             motion_photo_timestamp_us: attribute_to_u32(
                 xml_element,
                 GCAMERA_NS,
                 "MotionPhotoPresentationTimestampUs",
-            )
-            .unwrap(),
-        };
+            )?,
+        });
     }
 }
 
@@ -173,7 +171,7 @@ impl TryFrom<Document<'_>> for XMPData {
                 .map(|n| return Item::from_xml(n));
 
             return Ok(Self {
-                description: Description::from(node),
+                description: Description::try_from(node)?,
                 resources: resource_nodes.collect(),
             });
         } else {
@@ -388,16 +386,16 @@ mod tests {
                 .descendants()
                 .find(|n| n.tag_name().name() == "Description")
                 .unwrap();
-            let description = Description::from(xml_element);
+            let description = Description::try_from(xml_element);
 
             assert_eq!(
                 description,
-                Description {
+                Ok(Description {
                     extended_xmp_id: Some(String::from("DD558CA2166AEC119A42CDFB02D4F1EF")),
                     motion_photo: Some(1),
                     motion_photo_version: Some(1),
                     motion_photo_timestamp_us: Some(968644),
-                },
+                }),
             )
         }
     }
