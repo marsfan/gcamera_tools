@@ -84,7 +84,7 @@ impl TryFrom<Vec<u8>> for CameraImage {
     ///
     /// # Returns
     /// Result holding the created instance, or an error message
-    fn try_from(bytes: Vec<u8>) -> Result<Self, &'static str> {
+    fn try_from(bytes: Vec<u8>) -> Result<Self, Self::Error> {
         if bytes[0..2] != vec![0xFF, 0xD8] {
             return Err("Not a valid JPEG file.");
         }

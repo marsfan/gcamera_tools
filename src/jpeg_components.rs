@@ -47,7 +47,10 @@ pub enum JpegMarker {
     COM = 0xFE,
 }
 
-impl JpegMarker {
+/// Conversion of a u8 into a JpegMarker
+impl TryFrom<u8> for JpegMarker {
+    type Error = &'static str;
+
     /// Create an instance based on the byte value.
     ///
     /// # Arguments
@@ -55,7 +58,7 @@ impl JpegMarker {
     ///
     /// # Resturns
     /// Result of creating the instance, or an error message
-    fn from_u8(value: u8) -> Result<Self, &'static str> {
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
         return match value {
             0x01 => Ok(Self::TEM),
             0xC0 => Ok(Self::SOF0),
@@ -106,7 +109,7 @@ fn find_next_segment(bytes: &[u8]) -> Result<usize, &'static str> {
     let bytes_chunk = bytes.to_vec();
     for (index, byte) in bytes_chunk.iter().enumerate() {
         if byte == &0xFF {
-            let marker = JpegMarker::from_u8(bytes_chunk[index + 1]);
+            let marker = JpegMarker::try_from(bytes_chunk[index + 1]);
             if marker.is_ok() {
                 return Ok(index);
             }
@@ -138,6 +141,8 @@ pub struct JpegSegment {
 }
 
 impl JpegSegment {
+    // TODO: Get rid of offset so we can instead use TryFrom instead of
+    // a custom function?
     /// Create a new segment from bytes.
     ///
     /// # Arguments
@@ -147,7 +152,7 @@ impl JpegSegment {
     /// # Returns
     /// Result containing either the created segment, or an error message.
     pub fn from_bytes(bytes: &[u8], offset: usize) -> Result<Self, &'static str> {
-        let marker = JpegMarker::from_u8(bytes[offset + 1])?;
+        let marker = JpegMarker::try_from(bytes[offset + 1])?;
 
         let length = match marker {
             JpegMarker::SOI => None,
@@ -287,7 +292,7 @@ mod tests {
                 (0xFE, JpegMarker::COM),
             ];
             for (byte, marker) in test_cases {
-                assert_eq!(JpegMarker::from_u8(byte), Ok(marker));
+                assert_eq!(JpegMarker::try_from(byte), Ok(marker));
                 assert_eq!(marker as u8, byte);
             }
         }
@@ -295,7 +300,10 @@ mod tests {
         /// Test getting an error for invalid byte input
         #[test]
         fn test_invalid_from_u8() {
-            assert_eq!(JpegMarker::from_u8(0xFF), Err("Unknown JPEG segment type."));
+            assert_eq!(
+                JpegMarker::try_from(0xFF),
+                Err("Unknown JPEG segment type.")
+            );
         }
     }
 
