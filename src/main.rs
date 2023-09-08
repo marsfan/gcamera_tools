@@ -29,20 +29,16 @@ fn main() {
     });
 
     // Save the JPEG image if the user provides a save path.
-    match args.image_output {
-        Some(output_path) => image.save_image(output_path).unwrap(),
-        None => {}
+    if let Some(output_path) = args.image_output {
+        image.save_image(output_path).unwrap()
     }
 
     // Save the debug data if the user provides a save path.
-    match args.debug_output {
-        Some(output_path) => image.save_debug_data(output_path).unwrap(),
-        None => {}
+    if let Some(output_path) = args.debug_output {
+        image.save_debug_data(output_path).unwrap()
     }
-
     // Save the motion photo if the user provides a save path
-    match args.motion_output {
-        Some(_) => panic!("Motion extracting is not supported yet"),
-        None => {}
+    if args.motion_output.is_some() {
+        panic!("Motion extracting is not supported yet")
     }
 }

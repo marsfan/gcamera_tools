@@ -184,7 +184,7 @@ impl XMPData {
     /// # Returns
     /// Instance created from the given string
     pub fn from_str(xmp_string: &str) -> Self {
-        return Self::from_xml(Document::parse(&xmp_string).unwrap());
+        return Self::from_xml(Document::parse(xmp_string).unwrap());
     }
 }
 
