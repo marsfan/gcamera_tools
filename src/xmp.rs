@@ -69,7 +69,8 @@ pub struct Description {
     motion_photo_timestamp_us: Option<u32>,
 }
 
-impl Description {
+/// Implementation to  Create description from XML Node
+impl From<Node<'_, '_>> for Description {
     /// Create an instance from the XML Element
     ///
     /// # Arguments
@@ -77,7 +78,7 @@ impl Description {
     ///
     /// # Returns
     ///  Created description instance.
-    pub fn from_xml(xml_element: Node) -> Self {
+    fn from(xml_element: Node) -> Self {
         return Self {
             extended_xmp_id: attribute_to_str(xml_element, XMP_NOTE_NS, "HasExtendedXMP"),
             motion_photo: attribute_to_u32(xml_element, GCAMERA_NS, "MotionPhoto").unwrap(),
@@ -172,7 +173,7 @@ impl TryFrom<Document<'_>> for XMPData {
                 .map(|n| return Item::from_xml(n));
 
             return Ok(Self {
-                description: Description::from_xml(node),
+                description: Description::from(node),
                 resources: resource_nodes.collect(),
             });
         } else {
@@ -387,7 +388,7 @@ mod tests {
                 .descendants()
                 .find(|n| n.tag_name().name() == "Description")
                 .unwrap();
-            let description = Description::from_xml(xml_element);
+            let description = Description::from(xml_element);
 
             assert_eq!(
                 description,
