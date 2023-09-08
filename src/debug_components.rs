@@ -220,7 +220,7 @@ mod tests {
             let test_bytes =
                 "hello how are you\x00\x00\x00\x1cftypisom this is more data.".as_bytes();
 
-            let function_result = find_awb_end(&test_bytes);
+            let function_result = find_awb_end(test_bytes);
 
             assert_eq!(function_result, 17);
         }
@@ -230,7 +230,7 @@ mod tests {
         fn test_end_from_magic_no_trailing() {
             let test_bytes = "hello how are you\x00\x00\x00\x1cftypisom".as_bytes();
 
-            let function_result = find_awb_end(&test_bytes);
+            let function_result = find_awb_end(test_bytes);
 
             assert_eq!(function_result, 17);
         }
@@ -240,7 +240,7 @@ mod tests {
         fn test_end_from_vec_end() {
             let test_bytes = "hello how are you.".as_bytes();
 
-            let function_result = find_awb_end(&test_bytes);
+            let function_result = find_awb_end(test_bytes);
 
             assert_eq!(function_result, 18);
         }

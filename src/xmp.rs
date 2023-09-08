@@ -211,7 +211,7 @@ mod tests {
         #[test]
         fn test_some() {
             let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
-            let document = Document::parse(&test_xml).unwrap();
+            let document = Document::parse(test_xml).unwrap();
             let xml_element = document
                 .descendants()
                 .find(|n| return n.tag_name().name() == "tagname")
@@ -227,7 +227,7 @@ mod tests {
         #[test]
         fn test_none() {
             let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
-            let document = Document::parse(&test_xml).unwrap();
+            let document = Document::parse(test_xml).unwrap();
             let xml_element = document
                 .descendants()
                 .find(|n| return n.tag_name().name() == "tagname")
@@ -243,7 +243,7 @@ mod tests {
         #[test]
         fn test_bad_ns() {
             let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
-            let document = Document::parse(&test_xml).unwrap();
+            let document = Document::parse(test_xml).unwrap();
             let xml_element = document
                 .descendants()
                 .find(|n| return n.tag_name().name() == "tagname")
@@ -259,7 +259,7 @@ mod tests {
         #[test]
         fn test_no_ns() {
             let test_xml = "<tagname a=\"Hello\"/>";
-            let document = Document::parse(&test_xml).unwrap();
+            let document = Document::parse(test_xml).unwrap();
             let xml_element = document
                 .descendants()
                 .find(|n| return n.tag_name().name() == "tagname")
@@ -281,7 +281,7 @@ mod tests {
         #[test]
         fn test_some() {
             let test_xml = "<tagname t:a=\"1\" xmlns:t=\"http://ns.example.com\" />";
-            let document = Document::parse(&test_xml).unwrap();
+            let document = Document::parse(test_xml).unwrap();
             let xml_element = document
                 .descendants()
                 .find(|n| return n.tag_name().name() == "tagname")
@@ -297,7 +297,7 @@ mod tests {
         #[test]
         fn test_none() {
             let test_xml = "<tagname t:a=\"1\" xmlns:t=\"http://ns.example.com\" />";
-            let document = Document::parse(&test_xml).unwrap();
+            let document = Document::parse(test_xml).unwrap();
             let xml_element = document
                 .descendants()
                 .find(|n| return n.tag_name().name() == "tagname")
@@ -313,7 +313,7 @@ mod tests {
         #[test]
         fn test_bad_ns() {
             let test_xml = "<tagname t:a=\"1\" xmlns:t=\"http://ns.example.com\" />";
-            let document = Document::parse(&test_xml).unwrap();
+            let document = Document::parse(test_xml).unwrap();
             let xml_element = document
                 .descendants()
                 .find(|n| return n.tag_name().name() == "tagname")
@@ -329,7 +329,7 @@ mod tests {
         #[test]
         fn test_no_ns() {
             let test_xml = "<tagname a=\"1\"/>";
-            let document = Document::parse(&test_xml).unwrap();
+            let document = Document::parse(test_xml).unwrap();
             let xml_element = document
                 .descendants()
                 .find(|n| return n.tag_name().name() == "tagname")
@@ -346,7 +346,7 @@ mod tests {
         #[should_panic]
         fn test_not_parseable() {
             let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
-            let document = Document::parse(&test_xml).unwrap();
+            let document = Document::parse(test_xml).unwrap();
             let xml_element = document
                 .descendants()
                 .find(|n| return n.tag_name().name() == "tagname")
@@ -375,10 +375,10 @@ mod tests {
                     GCamera:MotionPhotoVersion=\"1\"
                     GCamera:MotionPhotoPresentationTimestampUs=\"968644\"/>";
 
-            let document = Document::parse(&test_xml).unwrap();
+            let document = Document::parse(test_xml).unwrap();
             let xml_element = document
                 .descendants()
-                .find(|n| n.tag_name().name() == "Description")
+                .find(|n| return n.tag_name().name() == "Description")
                 .unwrap();
             let description = Description::try_from(xml_element);
 
@@ -407,10 +407,10 @@ mod tests {
               xmlns:Container=\"http://ns.google.com/photos/1.0/container/\"
               xmlns:Item=\"http://ns.google.com/photos/1.0/container/item/\"/>";
 
-            let document = Document::parse(&test_xml).unwrap();
+            let document = Document::parse(test_xml).unwrap();
             let xml_element = document
                 .descendants()
-                .find(|n| n.tag_name().name() == "Item")
+                .find(|n| return n.tag_name().name() == "Item")
                 .unwrap();
             let item = Item::try_from(xml_element);
 
