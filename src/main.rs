@@ -23,7 +23,7 @@ fn main() {
     });
 
     // Get the JPEG segments from the image.
-    let image = CameraImage::from_bytes(contents).unwrap_or_else(|err| {
+    let image = CameraImage::try_from(contents).unwrap_or_else(|err| {
         eprintln!("Problem parsing image: {err}");
         exit(1);
     });

@@ -9,6 +9,7 @@
 use crate::debug_components::DebugComponents;
 use crate::jpeg_components::JpegMarker;
 use crate::jpeg_components::JpegSegment;
+use std::convert::TryFrom;
 use std::io::Write;
 
 /// Struct holding all the data for a single image.
@@ -21,43 +22,6 @@ pub struct CameraImage {
 }
 
 impl CameraImage {
-    /// Create a new instance from a vector of bytes.
-    ///
-    /// # Arguments
-    ///
-    /// * `bytes`: The bytes to create the image from.
-    ///
-    /// # Returns
-    /// Result holding the created instance, or an error message
-    pub fn from_bytes(bytes: Vec<u8>) -> Result<Self, &'static str> {
-        if bytes[0..2] != vec![0xFF, 0xD8] {
-            return Err("Not a valid JPEG file.");
-        }
-
-        // FIXME: Figure out how to do this without mutable?
-        let mut jpeg_segments: Vec<JpegSegment> = Vec::new();
-        jpeg_segments.push(JpegSegment::from_bytes(&bytes, 0)?);
-        let mut offset = 0;
-
-        while !matches!(jpeg_segments.last().unwrap().marker, JpegMarker::EOI) {
-            let prev = jpeg_segments.last().unwrap();
-            offset += prev.byte_count();
-            jpeg_segments.push(JpegSegment::from_bytes(&bytes, offset)?);
-        }
-
-        for segment in jpeg_segments.iter() {
-            let _ = segment.byte_count();
-        }
-
-        offset += jpeg_segments.last().unwrap().byte_count();
-        let debug_components = DebugComponents::from_bytes(&bytes[offset..])?;
-
-        return Ok(Self {
-            jpeg_segments,
-            debug_components,
-        });
-    }
-
     /// Get the entire JPEG image portion as bytes.
     ///
     /// # Returns
@@ -108,6 +72,51 @@ impl CameraImage {
     }
 }
 
+// Implementation of TryFrom for CameraImage
+impl TryFrom<Vec<u8>> for CameraImage {
+    type Error = &'static str;
+
+    /// Create a new instance from a vector of bytes.
+    ///
+    /// # Arguments
+    ///
+    /// * `bytes`: The bytes to create the image from.
+    ///
+    /// # Returns
+    /// Result holding the created instance, or an error message
+    fn try_from(bytes: Vec<u8>) -> Result<Self, &'static str> {
+        if bytes[0..2] != vec![0xFF, 0xD8] {
+            return Err("Not a valid JPEG file.");
+        }
+
+        // FIXME: Figure out how to do this without mutable?
+        let mut jpeg_segments: Vec<JpegSegment> = Vec::new();
+        jpeg_segments.push(JpegSegment::from_bytes(&bytes, 0)?);
+        let mut offset = 0;
+
+        while !matches!(jpeg_segments.last().unwrap().marker, JpegMarker::EOI) {
+            let prev = jpeg_segments.last().unwrap();
+            offset += prev.byte_count();
+            jpeg_segments.push(JpegSegment::from_bytes(&bytes, offset)?);
+        }
+
+        for segment in jpeg_segments.iter() {
+            let _ = segment.byte_count();
+        }
+
+        offset += jpeg_segments.last().unwrap().byte_count();
+        let debug_components = DebugComponents::from_bytes(&bytes[offset..])?;
+
+        return Ok(Self {
+            jpeg_segments,
+            debug_components,
+        });
+    }
+    // fn from(bytes: Vec<u8>) -> Result<Self, &'static str> {
+    //     return Err("ABC");
+    // }
+}
+
 #[cfg(test)]
 mod test {
     use crate::debug_components::DebugChunk;
@@ -122,7 +131,7 @@ mod test {
             0x61, 0x66, 0x44, 0x65, 0x62, 0x75, 0x67, 0x62, 0x79, 0x65, 0x61, 0x77, 0x62, 0x44,
             0x65, 0x62, 0x75, 0x67, 0x31, 0x32, 0x33,
         ];
-        let image = CameraImage::from_bytes(bytes);
+        let image = CameraImage::try_from(bytes);
         assert_eq!(
             image,
             Ok(CameraImage {
@@ -154,7 +163,7 @@ mod test {
     #[test]
     fn test_bad_magic() {
         let bytes = vec![0xFF, 0xAA];
-        let function_result = CameraImage::from_bytes(bytes);
+        let function_result = CameraImage::try_from(bytes);
         assert_eq!(function_result, Err("Not a valid JPEG file."))
     }
 
