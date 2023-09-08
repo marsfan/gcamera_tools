@@ -100,19 +100,6 @@ pub struct DebugComponents {
 }
 
 impl DebugComponents {
-    /// Convert the debug data back into bytes.
-    ///
-    /// # Returns
-    /// The data as a vector of bytes.
-    pub fn to_bytes(self) -> Vec<u8> {
-        return [
-            Vec::from(self.aecdebug),
-            Vec::from(self.afdebug),
-            Vec::from(self.awbdebug),
-        ]
-        .concat();
-    }
-
     /// Save the data to a file.
     ///
     /// # Arguments
@@ -121,8 +108,24 @@ impl DebugComponents {
     /// # Returns
     /// Result of saving the data
     pub fn save_data(self, filepath: String) -> std::io::Result<()> {
-        std::fs::File::create(filepath)?.write_all(&self.to_bytes())?;
+        std::fs::File::create(filepath)?.write_all(&Vec::from(self))?;
         return Ok(());
+    }
+}
+
+/// Implementation to convert DebugChunk to a vector of u8
+impl From<DebugComponents> for Vec<u8> {
+    /// Convert the debug data back into bytes.
+    ///
+    /// # Returns
+    /// The data as a vector of bytes.
+    fn from(val: DebugComponents) -> Self {
+        return [
+            Vec::from(val.aecdebug),
+            Vec::from(val.afdebug),
+            Vec::from(val.awbdebug),
+        ]
+        .concat();
     }
 }
 
@@ -332,7 +335,7 @@ mod tests {
                 },
             };
 
-            let generated_bytes = debug_components.to_bytes();
+            let generated_bytes = Vec::from(debug_components);
 
             let expected_bytes = "aecDebug abc afDebug def awbDebug ghi".as_bytes();
 
