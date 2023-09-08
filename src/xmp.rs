@@ -8,7 +8,6 @@
 #![allow(clippy::needless_return)]
 use roxmltree::{Document, ExpandedName, Node};
 use std::num::ParseIntError;
-use std::str::FromStr;
 
 // Namespace consants.
 // TODO: Could we use some other structure/enum instead?
@@ -178,10 +177,9 @@ impl XMPData {
     }
 }
 
-/// Implementation of FromStr for XMP Data.
-/// Used so that the str::parse method can be used for XMPData
-impl FromStr for XMPData {
-    type Err = String;
+/// Implementation to create XMP Data from as string
+impl TryFrom<String> for XMPData {
+    type Error = String;
 
     /// Create an instance from the given string
     ///
@@ -190,8 +188,8 @@ impl FromStr for XMPData {
     ///
     /// # Returns
     /// Instance created from the given string
-    fn from_str(xmp_string: &str) -> Result<Self, Self::Err> {
-        let xml_document = Document::parse(xmp_string);
+    fn try_from(xmp_string: String) -> Result<Self, Self::Error> {
+        let xml_document = Document::parse(&xmp_string);
 
         match xml_document {
             Ok(document) => return Ok(Self::from_xml(document)),
@@ -544,9 +542,10 @@ mod tests {
                     </Container:Directory>
                     </rdf:Description>
                 </rdf:RDF>
-                </x:xmpmeta>";
+                </x:xmpmeta>"
+                    .to_string();
 
-            let data = str::parse::<XMPData>(xml_string);
+            let data = XMPData::try_from(xml_string);
 
             assert_eq!(
                 data,
