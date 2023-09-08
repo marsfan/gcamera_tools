@@ -8,6 +8,7 @@
 #![allow(clippy::needless_return)]
 use roxmltree::{Document, ExpandedName, Node};
 use std::num::ParseIntError;
+use std::str::FromStr;
 
 // Namespace consants.
 // TODO: Could we use some other structure/enum instead?
@@ -175,6 +176,12 @@ impl XMPData {
             resources: resource_nodes.collect(),
         };
     }
+}
+
+/// Implementation of FromStr for XMP Data.
+/// Used so that the str::parse method can be used for XMPData
+impl FromStr for XMPData {
+    type Err = String;
 
     /// Create an instance from the given string
     ///
@@ -183,8 +190,17 @@ impl XMPData {
     ///
     /// # Returns
     /// Instance created from the given string
-    pub fn from_str(xmp_string: &str) -> Self {
-        return Self::from_xml(Document::parse(xmp_string).unwrap());
+    fn from_str(xmp_string: &str) -> Result<Self, Self::Err> {
+        let xml_document = Document::parse(xmp_string);
+
+        match xml_document {
+            Ok(document) => return Ok(Self::from_xml(document)),
+            Err(typ) => {
+                return Err(format!(
+                    "Failed to parse XML Document. XML Error type is {typ}"
+                ));
+            }
+        }
     }
 }
 
@@ -530,11 +546,11 @@ mod tests {
                 </rdf:RDF>
                 </x:xmpmeta>";
 
-            let data = XMPData::from_str(xml_string);
+            let data = str::parse::<XMPData>(xml_string);
 
             assert_eq!(
                 data,
-                XMPData {
+                Ok(XMPData {
                     description: Description {
                         extended_xmp_id: Some(String::from("DD558CA2166AEC119A42CDFB02D4F1EF")),
                         motion_photo: Some(1),
@@ -559,7 +575,7 @@ mod tests {
                             label: None,
                         },
                     ],
-                },
+                }),
             )
         }
     }
