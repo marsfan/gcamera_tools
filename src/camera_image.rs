@@ -82,7 +82,7 @@ impl CameraImage {
     /// Get the XMP data from the image
     ///
     /// # Returns
-    /// The XMP as XML data, or an error message.
+    /// The XMP as XMPData, or an error message.
     pub fn get_xmp(&self) -> Result<XMPData, GCameraError> {
         for segment in self.jpeg_segments.iter() {
             let xmp_string = segment.as_xmp_str();
