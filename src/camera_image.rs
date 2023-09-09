@@ -109,9 +109,7 @@ impl TryFrom<Vec<u8>> for CameraImage {
     /// Result holding the created instance, or an error message
     fn try_from(bytes: Vec<u8>) -> Result<Self, Self::Error> {
         if bytes[0..2] != vec![0xFF, 0xD8] {
-            return Err(GCameraError::Other {
-                msg: String::from("Not a valid JPEG file."),
-            });
+            return Err(GCameraError::InvalidJpegMagic);
         }
 
         // FIXME: Figure out how to do this without mutable?
@@ -187,12 +185,7 @@ mod test {
     fn test_bad_magic() {
         let bytes = vec![0xFF, 0xAA];
         let function_result = CameraImage::try_from(bytes);
-        assert_eq!(
-            function_result,
-            Err(GCameraError::Other {
-                msg: String::from("Not a valid JPEG file.")
-            })
-        );
+        assert_eq!(function_result, Err(GCameraError::InvalidJpegMagic));
     }
 
     /// Test getting the bytes for the JPEG image portion.

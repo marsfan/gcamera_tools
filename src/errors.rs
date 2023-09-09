@@ -22,6 +22,10 @@ pub enum GCameraError {
     // TODO: Encapsulate the std::io::Error that was the source?
     DebugDataWriteError,
 
+    /// Indicates that the provided file does not have the correct magic bytes
+    /// to be a JPEG file.
+    InvalidJpegMagic,
+
     /// Indicates that parsing the XML Document failed
     XMLParsingError {
         /// The XML Parser error
