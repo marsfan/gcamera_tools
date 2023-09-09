@@ -9,6 +9,8 @@
 
 use std::io::Write;
 
+use crate::errors::GCameraError;
+
 /// A single chunk of debug data.
 #[derive(Debug, PartialEq, Eq)]
 pub struct DebugChunk {
@@ -39,7 +41,8 @@ impl From<DebugChunk> for Vec<u8> {
 ///
 /// Result holding either the index of the start of the magic, or
 /// an error string.
-fn find_magic_start(data: &[u8], magic: &[u8]) -> Result<usize, &'static str> {
+// FIXME: Magic should expect a string instead. Will reduce the unwrapping needed.
+fn find_magic_start(data: &[u8], magic: &[u8]) -> Result<usize, GCameraError> {
     // End point must be total length minus magic length, or we we attempt to
     // read outside the array.
     let loop_end_point = data.len() - magic.len();
@@ -50,7 +53,9 @@ fn find_magic_start(data: &[u8], magic: &[u8]) -> Result<usize, &'static str> {
             return Ok(position);
         }
     }
-    return Err("Could not find start of magic.");
+    return Err(GCameraError::MagicNotFound {
+        magic: String::from_utf8(Vec::from(magic)).unwrap(),
+    });
 }
 
 // TODO: Better logic since there could be other data than just MP4
@@ -107,9 +112,11 @@ impl DebugComponents {
     ///
     /// # Returns
     /// Result of saving the data
-    pub fn save_data(self, filepath: String) -> std::io::Result<()> {
-        std::fs::File::create(filepath)?.write_all(&Vec::from(self))?;
-        return Ok(());
+    pub fn save_data(self, filepath: String) -> Result<(), GCameraError> {
+        return std::fs::File::create(filepath)
+            .map_err(|_| return GCameraError::DebugDataWriteError)?
+            .write_all(&Vec::from(self))
+            .map_err(|_| return GCameraError::DebugDataWriteError);
     }
 }
 
@@ -131,7 +138,7 @@ impl From<DebugComponents> for Vec<u8> {
 
 /// Implementation to create debug components from
 impl TryFrom<&[u8]> for DebugComponents {
-    type Error = &'static str;
+    type Error = GCameraError;
 
     /// Create an instance from the bytes.
     ///
@@ -140,7 +147,7 @@ impl TryFrom<&[u8]> for DebugComponents {
     ///
     /// # Returns
     /// Result containing either the instance, or an error message
-    fn try_from(bytes: &[u8]) -> Result<Self, &'static str> {
+    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
         // TODO: Proper Error Handling
         let aec_start = find_magic_start(bytes, b"aecDebug")?;
         let af_start = find_magic_start(&bytes[aec_start..], b"afDebug")? + aec_start;
@@ -203,11 +210,16 @@ mod tests {
         #[test]
         fn test_magic_not_found() {
             let test_bytes = [0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB];
-            let magic = [0x01, 0x03];
+            let magic = [0x68, 0x69];
 
             let function_result = find_magic_start(&test_bytes, &magic);
 
-            assert_eq!(function_result, Err("Could not find start of magic."))
+            assert_eq!(
+                function_result,
+                Err(GCameraError::MagicNotFound {
+                    magic: String::from("hi")
+                })
+            )
         }
     }
 
@@ -257,7 +269,7 @@ mod tests {
     }
 
     mod test_debug_components {
-        use crate::debug_components::{DebugChunk, DebugComponents};
+        use super::*;
 
         /// Test not being able to find magic bytes.
         #[test]
@@ -265,7 +277,12 @@ mod tests {
             let test_bytes = "hello how are you".as_bytes();
             let result = DebugComponents::try_from(test_bytes);
 
-            assert_eq!(result, Err("Could not find start of magic."));
+            assert_eq!(
+                result,
+                Err(GCameraError::MagicNotFound {
+                    magic: String::from("aecDebug")
+                })
+            );
         }
 
         /// Test successfully creation

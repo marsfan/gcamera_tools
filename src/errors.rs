@@ -25,6 +25,12 @@ pub enum GCameraError {
     /// Indicates that XMP Data could not be found in any segments.
     NoXMPData,
 
+    /// Indicates that the given magic start point could not be found.
+    MagicNotFound {
+        /// The magic that was being searched for.
+        magic: String,
+    },
+
     /// Catch-all for any other possible error type
     Other {
         /// The error message
