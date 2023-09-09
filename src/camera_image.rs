@@ -7,10 +7,12 @@
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
 use crate::debug_components::DebugComponents;
+use crate::errors::GCameraError;
 use crate::jpeg_components::JpegMarker;
 use crate::jpeg_components::JpegSegment;
 use crate::xmp::XMPData;
 use std::convert::TryFrom;
+use std::fs;
 use std::io::Write;
 
 /// Struct holding all the data for a single image.
@@ -23,6 +25,21 @@ pub struct CameraImage {
 }
 
 impl CameraImage {
+    /// Load a camera image from a file on the disk.
+    ///
+    /// # Arguments
+    /// * `filepath`: The path to the file to load.
+    ///
+    /// # Returns
+    /// Instance of the structure, or an error code.
+    pub fn from_file(filepath: String) -> Result<Self, GCameraError> {
+        let contents = fs::read(filepath);
+        return match contents {
+            Ok(c) => Self::try_from(c),
+            Err(_) => Err(GCameraError::ImageReadError),
+        };
+    }
+
     /// Get the entire JPEG image portion as bytes.
     ///
     /// # Returns
@@ -75,7 +92,7 @@ impl CameraImage {
 
 // Implementation of TryFrom for CameraImage
 impl TryFrom<Vec<u8>> for CameraImage {
-    type Error = &'static str;
+    type Error = GCameraError;
 
     /// Create a new instance from a vector of bytes.
     ///
@@ -87,7 +104,9 @@ impl TryFrom<Vec<u8>> for CameraImage {
     /// Result holding the created instance, or an error message
     fn try_from(bytes: Vec<u8>) -> Result<Self, Self::Error> {
         if bytes[0..2] != vec![0xFF, 0xD8] {
-            return Err("Not a valid JPEG file.");
+            return Err(GCameraError::Other {
+                msg: String::from("Not a valid JPEG file."),
+            });
         }
 
         // FIXME: Figure out how to do this without mutable?
@@ -98,7 +117,8 @@ impl TryFrom<Vec<u8>> for CameraImage {
         while !matches!(jpeg_segments.last().unwrap().marker, JpegMarker::EOI) {
             let prev = jpeg_segments.last().unwrap();
             offset += prev.byte_count();
-            jpeg_segments.push(JpegSegment::from_bytes(&bytes, offset)?);
+            jpeg_segments.push(JpegSegment::from_bytes(&bytes, offset).unwrap());
+            // FIXME: Remove unwrap
         }
 
         for segment in jpeg_segments.iter() {
@@ -165,7 +185,12 @@ mod test {
     fn test_bad_magic() {
         let bytes = vec![0xFF, 0xAA];
         let function_result = CameraImage::try_from(bytes);
-        assert_eq!(function_result, Err("Not a valid JPEG file."))
+        assert_eq!(
+            function_result,
+            Err(GCameraError::Other {
+                msg: String::from("Not a valid JPEG file.")
+            })
+        );
     }
 
     /// Test getting the bytes for the JPEG image portion.
