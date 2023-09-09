@@ -83,15 +83,15 @@ impl CameraImage {
     ///
     /// # Returns
     /// The XMP as XML data, or an error message.
-    pub fn get_xmp(&self) -> Result<XMPData, String> {
+    pub fn get_xmp(&self) -> Result<XMPData, GCameraError> {
         for segment in self.jpeg_segments.iter() {
             let xmp_string = segment.as_xmp_str();
             if let Some(xmp_string) = xmp_string {
-                return XMPData::try_from(xmp_string);
+                return Ok(XMPData::try_from(xmp_string)?);
             }
         }
 
-        return Err(String::from("Could not find XMP data"));
+        return Err(GCameraError::NoXMPData);
     }
 }
 
