@@ -35,26 +35,26 @@ impl From<DebugChunk> for Vec<u8> {
 ///
 /// # Arguments
 /// * `data`: The data to search through for the magic.
-/// # `magic`: The magic byes to search for.
+/// # `magic`: The magic string to search for.
 ///
 /// # Returns
 ///
 /// Result holding either the index of the start of the magic, or
 /// an error string.
-// FIXME: Magic should expect a string instead. Will reduce the unwrapping needed.
-fn find_magic_start(data: &[u8], magic: &[u8]) -> Result<usize, GCameraError> {
+fn find_magic_start(data: &[u8], magic: &str) -> Result<usize, GCameraError> {
     // End point must be total length minus magic length, or we we attempt to
     // read outside the array.
-    let loop_end_point = data.len() - magic.len();
+    let magic_bytes = magic.as_bytes();
+    let loop_end_point = data.len() - magic_bytes.len();
     for (position, _) in data[..loop_end_point].iter().enumerate() {
-        let last_byte = position + magic.len();
+        let last_byte = position + magic_bytes.len();
         let chunk = data[position..last_byte].to_vec();
-        if chunk == magic {
+        if chunk == magic_bytes {
             return Ok(position);
         }
     }
     return Err(GCameraError::MagicNotFound {
-        magic: String::from_utf8(Vec::from(magic)).unwrap(),
+        magic: String::from(magic),
     });
 }
 
@@ -149,9 +149,9 @@ impl TryFrom<&[u8]> for DebugComponents {
     /// Result containing either the instance, or an error message
     fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
         // TODO: Proper Error Handling
-        let aec_start = find_magic_start(bytes, b"aecDebug")?;
-        let af_start = find_magic_start(&bytes[aec_start..], b"afDebug")? + aec_start;
-        let awb_start = find_magic_start(&bytes[af_start..], b"awbDebug")? + af_start;
+        let aec_start = find_magic_start(bytes, "aecDebug")?;
+        let af_start = find_magic_start(&bytes[aec_start..], "afDebug")? + aec_start;
+        let awb_start = find_magic_start(&bytes[af_start..], "awbDebug")? + af_start;
         let awb_end = find_awb_end(&bytes[awb_start..]) + awb_start;
 
         return Ok(DebugComponents {
@@ -198,10 +198,10 @@ mod tests {
         /// Test finding magic.
         #[test]
         fn test_magic_found() {
-            let test_bytes = [0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB];
-            let magic = [0x01, 0x02];
+            let test_bytes = [0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x68, 0x69, 0x03, 0xFF, 0xAB];
+            let magic = "hi";
 
-            let found_offset = find_magic_start(&test_bytes, &magic);
+            let found_offset = find_magic_start(&test_bytes, magic);
 
             assert_eq!(found_offset, Ok(5));
         }
@@ -210,7 +210,7 @@ mod tests {
         #[test]
         fn test_magic_not_found() {
             let test_bytes = [0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB];
-            let magic = [0x68, 0x69];
+            let magic = "hi";
 
             let function_result = find_magic_start(&test_bytes, &magic);
 
