@@ -22,13 +22,37 @@ pub enum GCameraError {
     // TODO: Encapsulate the std::io::Error that was the source?
     DebugDataWriteError,
 
+    /// Indicates that parsing the XML Document failed
+    XMLParsingError {
+        /// The XML Parser error
+        xml_error: roxmltree::Error,
+    },
+
+    /// Indicates that an XML attribute could not be parsed to a U32
+    XMLAttributeToU32Error {
+        /// The value of the attribute
+        attribute: Option<String>,
+    },
+
     /// Indicates that XMP Data could not be found in any segments.
     NoXMPData,
+
+    /// Indicates that the Description Node could not be found in the XML
+    DescriptionNodeNotFound,
 
     /// Indicates that the given magic start point could not be found.
     MagicNotFound {
         /// The magic that was being searched for.
         magic: String,
+    },
+
+    /// Indicates that the next JPEG marker could not be found.
+    JpegMarkerNotFound,
+
+    /// Indicates that the type of JPEG Marker is not known.
+    UnknownJpegMarker {
+        /// The bytes of the unknown marker.
+        marker_byte: u8,
     },
 
     /// Catch-all for any other possible error type

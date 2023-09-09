@@ -8,6 +8,8 @@
 // TODO: Can this be made to only apply to the enum?
 #![allow(clippy::needless_return)]
 
+use crate::errors::GCameraError;
+
 /// Enum of the different JPEG segment markers.
 #[repr(u8)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -49,7 +51,7 @@ pub enum JpegMarker {
 
 /// Conversion of a u8 into a JpegMarker
 impl TryFrom<u8> for JpegMarker {
-    type Error = &'static str;
+    type Error = GCameraError;
 
     /// Create an instance based on the byte value.
     ///
@@ -93,7 +95,7 @@ impl TryFrom<u8> for JpegMarker {
             0xEE => Ok(Self::APP14),
             0xEF => Ok(Self::APP15),
             0xFE => Ok(Self::COM),
-            _ => Err("Unknown JPEG segment type."),
+            _ => Err(GCameraError::UnknownJpegMarker { marker_byte: value }),
         };
     }
 }
@@ -105,7 +107,7 @@ impl TryFrom<u8> for JpegMarker {
 ///
 /// # Returns
 /// Offset that the next marker is at, or an error message
-fn find_next_segment(bytes: &[u8]) -> Result<usize, &'static str> {
+fn find_next_segment(bytes: &[u8]) -> Result<usize, GCameraError> {
     let bytes_chunk = bytes.to_vec();
     for (index, byte) in bytes_chunk.iter().enumerate() {
         if byte == &0xFF {
@@ -115,7 +117,7 @@ fn find_next_segment(bytes: &[u8]) -> Result<usize, &'static str> {
             }
         }
     }
-    return Err("Could not find next marker.");
+    return Err(GCameraError::JpegMarkerNotFound);
 }
 
 /// A single JPEG segment.
@@ -151,7 +153,7 @@ impl JpegSegment {
     ///
     /// # Returns
     /// Result containing either the created segment, or an error message.
-    pub fn from_bytes(bytes: &[u8], offset: usize) -> Result<Self, &'static str> {
+    pub fn from_bytes(bytes: &[u8], offset: usize) -> Result<Self, GCameraError> {
         let marker = JpegMarker::try_from(bytes[offset + 1])?;
 
         let length = match marker {
@@ -302,13 +304,13 @@ mod tests {
         fn test_invalid_from_u8() {
             assert_eq!(
                 JpegMarker::try_from(0xFF),
-                Err("Unknown JPEG segment type.")
+                Err(GCameraError::UnknownJpegMarker { marker_byte: 0xFF })
             );
         }
     }
 
     mod find_next_segment_tests {
-        use crate::jpeg_components::find_next_segment;
+        use super::*;
 
         /// Test valid discovery of next segment.
         #[test]
@@ -324,7 +326,7 @@ mod tests {
             let test_bytes = [0x01, 0x02, 0x03, 0x04, 0x04, 0x06, 0xAB, 0xCD];
             assert_eq!(
                 find_next_segment(&test_bytes),
-                Err("Could not find next marker.")
+                Err(GCameraError::JpegMarkerNotFound)
             );
         }
         /// Test where magic is valid, but marker is not
@@ -333,7 +335,7 @@ mod tests {
             let test_bytes = [0x01, 0x02, 0x03, 0x04, 0x04, 0x06, 0xFF, 0xFF, 0xAB, 0xCD];
             assert_eq!(
                 find_next_segment(&test_bytes),
-                Err("Could not find next marker.")
+                Err(GCameraError::JpegMarkerNotFound)
             );
         }
     }

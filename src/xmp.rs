@@ -7,6 +7,8 @@
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
 use roxmltree::{Document, ExpandedName, Node};
+
+use crate::errors::GCameraError;
 // Namespace consants.
 // TODO: Could we use some other structure/enum instead?
 // const X_NS: &str = "adobe:ns:meta/";
@@ -43,12 +45,16 @@ fn attribute_to_u32(
     node: Node,
     namespace: &str,
     attribute: &str,
-) -> Result<Option<u32>, &'static str> {
-    return node
-        .attribute((namespace, attribute))
+) -> Result<Option<u32>, GCameraError> {
+    let attribute = node.attribute((namespace, attribute));
+    return attribute
         .map(|n| return n.parse())
         .transpose()
-        .map_err(|_| return "Failed to parse attribute to a u32");
+        .map_err(|_| {
+            return GCameraError::XMLAttributeToU32Error {
+                attribute: attribute.map(|n| return String::from(n)),
+            };
+        });
 }
 
 /// General information about the XMP data
@@ -69,7 +75,7 @@ pub struct Description {
 
 /// Implementation to create description from XML Node
 impl TryFrom<Node<'_, '_>> for Description {
-    type Error = &'static str;
+    type Error = GCameraError;
 
     /// Create an instance from the XML Element
     ///
@@ -118,7 +124,7 @@ pub struct Item {
 
 /// Implementation to create item from a XML Node.
 impl TryFrom<Node<'_, '_>> for Item {
-    type Error = &'static str;
+    type Error = GCameraError;
 
     fn try_from(value: Node<'_, '_>) -> Result<Self, Self::Error> {
         return Ok(Self {
@@ -144,7 +150,7 @@ pub struct XMPData {
 
 /// Implementation to create XMP Data from XML Document
 impl TryFrom<Document<'_>> for XMPData {
-    type Error = &'static str;
+    type Error = GCameraError;
 
     /// Create an instance from an XML Document.
     ///
@@ -169,14 +175,14 @@ impl TryFrom<Document<'_>> for XMPData {
                 resources: resource_nodes.collect(),
             });
         } else {
-            return Err("Could not find description node in XML Data");
+            return Err(GCameraError::DescriptionNodeNotFound);
         }
     }
 }
 
 /// Implementation to create XMP Data from string
 impl TryFrom<String> for XMPData {
-    type Error = String;
+    type Error = GCameraError;
 
     /// Create an instance from the given string
     ///
@@ -189,11 +195,9 @@ impl TryFrom<String> for XMPData {
         let xml_document = Document::parse(&xmp_string);
 
         match xml_document {
-            Ok(document) => return Ok(Self::try_from(document)?),
+            Ok(document) => return Self::try_from(document),
             Err(typ) => {
-                return Err(format!(
-                    "Failed to parse XML Document. XML Error type is {typ}"
-                ));
+                return Err(GCameraError::XMLParsingError { xml_error: typ });
             }
         }
     }

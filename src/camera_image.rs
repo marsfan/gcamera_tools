@@ -87,7 +87,7 @@ impl CameraImage {
         for segment in self.jpeg_segments.iter() {
             let xmp_string = segment.as_xmp_str();
             if let Some(xmp_string) = xmp_string {
-                return Ok(XMPData::try_from(xmp_string)?);
+                return XMPData::try_from(xmp_string);
             }
         }
 
@@ -138,9 +138,6 @@ impl TryFrom<Vec<u8>> for CameraImage {
             debug_components,
         });
     }
-    // fn from(bytes: Vec<u8>) -> Result<Self, &'static str> {
-    //     return Err("ABC");
-    // }
 }
 
 #[cfg(test)]
