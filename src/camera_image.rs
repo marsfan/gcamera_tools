@@ -33,9 +33,8 @@ impl CameraImage {
     /// # Returns
     /// Instance of the structure, or an error code.
     pub fn from_file(filepath: String) -> Result<Self, GCameraError> {
-        let contents = fs::read(filepath);
-        return match contents {
-            Ok(c) => Self::try_from(c),
+        return match fs::read(filepath) {
+            Ok(contents) => Self::try_from(contents),
             Err(_) => Err(GCameraError::ImageReadError),
         };
     }
