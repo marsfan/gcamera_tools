@@ -11,7 +11,16 @@
 #[derive(PartialEq, Eq, Debug)]
 pub enum GCameraError {
     /// Indicates something went wrong with reading the image.
+    // TODO: Encapsulate the std::io::Error that was the source?
     ImageReadError,
+
+    /// Indicates something went wrong saving the image.
+    // TODO: Encapsulate the std::io::Error that was the source?
+    ImageWriteError,
+
+    ///Indicates something went wrong saving the debug data
+    // TODO: Encapsulate the std::io::Error that was the source?
+    DebugDataWriteError,
 
     /// Catch-all for any other possible error type
     Other {

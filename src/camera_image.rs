@@ -59,8 +59,11 @@ impl CameraImage {
     ///
     /// # Returns
     /// Result of saving the file.
-    pub fn save_image(&self, filepath: String) -> std::io::Result<()> {
-        return std::fs::File::create(filepath)?.write_all(&self.jpeg_to_bytes());
+    pub fn save_image(&self, filepath: String) -> Result<(), GCameraError> {
+        return std::fs::File::create(filepath)
+            .map_err(|_| return GCameraError::ImageWriteError)?
+            .write_all(&self.jpeg_to_bytes())
+            .map_err(|_| return GCameraError::ImageWriteError);
     }
 
     /// Save the debug data from the image.
@@ -70,8 +73,11 @@ impl CameraImage {
     ///
     /// # Returns
     /// Result from saving the file.
-    pub fn save_debug_data(self, filepath: String) -> std::io::Result<()> {
-        return self.debug_components.save_data(filepath);
+    pub fn save_debug_data(self, filepath: String) -> Result<(), GCameraError> {
+        return self
+            .debug_components
+            .save_data(filepath)
+            .map_err(|_| return GCameraError::DebugDataWriteError);
     }
 
     /// Get the XMP data from the image
