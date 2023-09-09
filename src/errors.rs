@@ -61,33 +61,3 @@ pub enum GCameraError {
         msg: String,
     },
 }
-
-/// Implementation to automatically convert Err<&'static str> into GCameraError::Other
-impl From<&str> for GCameraError {
-    /// Convert string slice to GCameraError::Other
-    ///
-    /// # Arguments
-    /// * `val`: The value to convert
-    ///
-    /// # Returns
-    /// GCameraError::Other with the input string as the message field
-    fn from(val: &str) -> Self {
-        return Self::Other {
-            msg: String::from(val),
-        };
-    }
-}
-
-/// Implementation to automatically convert Err<String> into GCameraError::Other
-impl From<String> for GCameraError {
-    /// Convert string  to GCameraError::Other
-    ///
-    /// # Arguments
-    /// * `val`: The value to convert
-    ///
-    /// # Returns
-    /// GCameraError::Other with the input string as the message field
-    fn from(val: String) -> Self {
-        return Self::Other { msg: val };
-    }
-}
