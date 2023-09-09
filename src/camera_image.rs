@@ -43,8 +43,7 @@ impl CameraImage {
     /// # Returns
     /// Result of saving the file.
     pub fn save_image(&self, filepath: String) -> std::io::Result<()> {
-        std::fs::File::create(filepath)?.write_all(&self.jpeg_to_bytes())?;
-        return Ok(());
+        return std::fs::File::create(filepath)?.write_all(&self.jpeg_to_bytes());
     }
 
     /// Save the debug data from the image.
