@@ -212,7 +212,7 @@ mod tests {
             let test_bytes = [0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB];
             let magic = "hi";
 
-            let function_result = find_magic_start(&test_bytes, &magic);
+            let function_result = find_magic_start(&test_bytes, magic);
 
             assert_eq!(
                 function_result,
