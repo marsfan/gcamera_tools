@@ -123,9 +123,6 @@ fn find_next_segment(bytes: &[u8]) -> Result<usize, GCameraError> {
 /// A single JPEG segment.
 #[derive(Debug, Eq, PartialEq)]
 pub struct JpegSegment {
-    /// The magic byte for the segment. Should always be 0xFF
-    magic: u8,
-
     /// The marker indicating the segment type.
     pub marker: JpegMarker,
 
@@ -171,7 +168,6 @@ impl JpegSegment {
 
         if (data.is_none() && length.is_none()) || (data.is_some() && length.is_some()) {
             return Ok(JpegSegment {
-                magic: bytes[0],
                 marker,
                 length,
                 data,
@@ -241,7 +237,7 @@ impl From<&JpegSegment> for Vec<u8> {
         };
 
         return [
-            &[value.magic],
+            &[0xFF],
             &[value.marker as u8],
             length_bytes.as_slice(),
             data_bytes,
@@ -356,7 +352,6 @@ mod tests {
                 assert_eq!(
                     result,
                     Ok(JpegSegment {
-                        magic: 0xFF,
                         marker: JpegMarker::SOI,
                         length: None,
                         data: None
@@ -373,7 +368,6 @@ mod tests {
                 assert_eq!(
                     result,
                     Ok(JpegSegment {
-                        magic: 0xFF,
                         marker: JpegMarker::EOI,
                         length: None,
                         data: None
@@ -390,7 +384,6 @@ mod tests {
                 assert_eq!(
                     result,
                     Ok(JpegSegment {
-                        magic: 0xFF,
                         marker: JpegMarker::COM,
                         length: Some(4),
                         data: Some(vec![0x01, 0x02])
@@ -410,7 +403,6 @@ mod tests {
                 assert_eq!(
                     result,
                     Ok(JpegSegment {
-                        magic: 0xFF,
                         marker: JpegMarker::SOS,
                         length: Some(4),
                         data: Some(vec![
@@ -429,7 +421,6 @@ mod tests {
             #[test]
             fn test_no_data() {
                 let segment = JpegSegment {
-                    magic: 0xFF,
                     marker: JpegMarker::APP0,
                     length: None,
                     data: None,
@@ -442,7 +433,6 @@ mod tests {
             #[test]
             fn test_with_data() {
                 let segment = JpegSegment {
-                    magic: 0xFF,
                     marker: JpegMarker::APP0,
                     length: Some(0x04),
                     data: Some(vec![0x01, 0x02]),
@@ -460,7 +450,6 @@ mod tests {
             #[test]
             fn test_eoi() {
                 let segment = JpegSegment {
-                    magic: 0xFF,
                     marker: JpegMarker::EOI,
                     length: None,
                     data: None,
@@ -474,7 +463,6 @@ mod tests {
             #[test]
             fn test_normal() {
                 let segment = JpegSegment {
-                    magic: 0xFF,
                     marker: JpegMarker::APP0,
                     length: Some(0x04),
                     data: Some(vec![0x01, 0x02]),
