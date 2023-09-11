@@ -8,8 +8,7 @@
 #![allow(clippy::needless_return)]
 use crate::debug_components::DebugComponents;
 use crate::errors::GCameraError;
-use crate::jpeg_components::JpegMarker;
-use crate::jpeg_components::JpegSegment;
+use crate::jpeg_image::JpegImage;
 use crate::xmp::XMPData;
 use std::convert::TryFrom;
 use std::fs;
@@ -19,7 +18,8 @@ use std::io::Write;
 #[derive(Debug, PartialEq, Eq)]
 pub struct CameraImage {
     /// Vector of the segments in the JPEG portion of the image.
-    jpeg_segments: Vec<JpegSegment>,
+    image: JpegImage,
+    // jpeg_segments: Vec<JpegSegment>,
     /// The camera debug information stored in the image.
     debug_components: DebugComponents,
 }
@@ -44,8 +44,10 @@ impl CameraImage {
     /// # Returns
     /// The entire JPEG image portion as a vector of bytes.
     pub fn jpeg_to_bytes(&self) -> Vec<u8> {
+        // FIXME: Move to JpegImage struct
         return self
-            .jpeg_segments
+            .image
+            .segments
             .iter()
             .flat_map(|segment| return Vec::from(segment))
             .collect();
@@ -84,7 +86,8 @@ impl CameraImage {
     /// # Returns
     /// The XMP as XMPData, or an error message.
     pub fn get_xmp(&self) -> Result<XMPData, GCameraError> {
-        for segment in self.jpeg_segments.iter() {
+        // FIXME: Move this logic to the JpegImage struct
+        for segment in self.image.segments.iter() {
             let xmp_string = segment.as_xmp_str();
             if let Some(xmp_string) = xmp_string {
                 return XMPData::try_from(xmp_string);
@@ -102,7 +105,6 @@ impl TryFrom<Vec<u8>> for CameraImage {
     /// Create a new instance from a vector of bytes.
     ///
     /// # Arguments
-    ///
     /// * `bytes`: The bytes to create the image from.
     ///
     /// # Returns
@@ -112,27 +114,19 @@ impl TryFrom<Vec<u8>> for CameraImage {
             return Err(GCameraError::InvalidJpegMagic);
         }
 
-        // FIXME: Figure out how to do this without mutable?
-        let mut jpeg_segments: Vec<JpegSegment> = Vec::new();
-        jpeg_segments.push(JpegSegment::from_bytes(&bytes)?);
+        let image = JpegImage::try_from(&bytes)?;
+
         let mut offset = 0;
 
-        while !matches!(jpeg_segments.last().unwrap().marker, JpegMarker::EOI) {
-            let prev = jpeg_segments.last().unwrap();
-            offset += prev.byte_count();
-            jpeg_segments.push(JpegSegment::from_bytes(&bytes[offset..]).unwrap());
-            // FIXME: Remove unwrap
+        // FIXME: Move logic into JpegImage struct
+        for segment in image.segments.iter() {
+            offset += segment.byte_count();
         }
 
-        for segment in jpeg_segments.iter() {
-            let _ = segment.byte_count();
-        }
-
-        offset += jpeg_segments.last().unwrap().byte_count();
         let debug_components = DebugComponents::try_from(&bytes[offset..])?;
 
         return Ok(Self {
-            jpeg_segments,
+            image,
             debug_components,
         });
     }
@@ -140,7 +134,7 @@ impl TryFrom<Vec<u8>> for CameraImage {
 
 #[cfg(test)]
 mod test {
-    use crate::debug_components::DebugChunk;
+    use crate::{debug_components::DebugChunk, jpeg_components::JpegSegment};
 
     use super::*;
 
@@ -153,13 +147,16 @@ mod test {
             0x65, 0x62, 0x75, 0x67, 0x31, 0x32, 0x33,
         ];
         let image = CameraImage::try_from(bytes);
+
         assert_eq!(
             image,
             Ok(CameraImage {
-                jpeg_segments: vec![
-                    JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
-                    JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap()
-                ],
+                image: JpegImage {
+                    segments: vec![
+                        JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
+                        JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap()
+                    ]
+                },
                 debug_components: DebugComponents {
                     aecdebug: {
                         DebugChunk {
@@ -192,10 +189,12 @@ mod test {
     #[test]
     fn test_to_bytes() {
         let image = CameraImage {
-            jpeg_segments: vec![
-                JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
-                JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap(),
-            ],
+            image: JpegImage {
+                segments: vec![
+                    JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
+                    JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap(),
+                ],
+            },
             debug_components: DebugComponents {
                 aecdebug: {
                     DebugChunk {

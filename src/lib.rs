@@ -17,4 +17,5 @@ pub mod camera_image;
 pub mod debug_components;
 pub mod errors;
 pub mod jpeg_components;
+pub mod jpeg_image;
 pub mod xmp;
