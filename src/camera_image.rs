@@ -114,13 +114,13 @@ impl TryFrom<Vec<u8>> for CameraImage {
 
         // FIXME: Figure out how to do this without mutable?
         let mut jpeg_segments: Vec<JpegSegment> = Vec::new();
-        jpeg_segments.push(JpegSegment::from_bytes(&bytes, 0)?);
+        jpeg_segments.push(JpegSegment::from_bytes(&bytes)?);
         let mut offset = 0;
 
         while !matches!(jpeg_segments.last().unwrap().marker, JpegMarker::EOI) {
             let prev = jpeg_segments.last().unwrap();
             offset += prev.byte_count();
-            jpeg_segments.push(JpegSegment::from_bytes(&bytes, offset).unwrap());
+            jpeg_segments.push(JpegSegment::from_bytes(&bytes[offset..]).unwrap());
             // FIXME: Remove unwrap
         }
 
@@ -157,8 +157,8 @@ mod test {
             image,
             Ok(CameraImage {
                 jpeg_segments: vec![
-                    JpegSegment::from_bytes(&[0xFF, 0xD8], 0).unwrap(),
-                    JpegSegment::from_bytes(&[0xFF, 0xD9], 0).unwrap()
+                    JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
+                    JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap()
                 ],
                 debug_components: DebugComponents {
                     aecdebug: {
@@ -193,8 +193,8 @@ mod test {
     fn test_to_bytes() {
         let image = CameraImage {
             jpeg_segments: vec![
-                JpegSegment::from_bytes(&[0xFF, 0xD8], 0).unwrap(),
-                JpegSegment::from_bytes(&[0xFF, 0xD9], 0).unwrap(),
+                JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
+                JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap(),
             ],
             debug_components: DebugComponents {
                 aecdebug: {

@@ -149,31 +149,30 @@ impl JpegSegment {
     ///
     /// # Arguments
     /// * `bytes`: The bytes to create the segment from.
-    /// * `offset`: Offset into bytes to start creating the segment at.
     ///
     /// # Returns
     /// Result containing either the created segment, or an error message.
-    pub fn from_bytes(bytes: &[u8], offset: usize) -> Result<Self, GCameraError> {
-        let marker = JpegMarker::try_from(bytes[offset + 1])?;
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, GCameraError> {
+        let marker = JpegMarker::try_from(bytes[1])?;
 
         let length = match marker {
             JpegMarker::SOI => None,
             JpegMarker::EOI => None,
-            _ => Some((bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize)),
+            _ => Some((bytes[2] as usize) << 8 | (bytes[3] as usize)),
         };
 
         let data_length = match marker {
             JpegMarker::SOI => None,
             JpegMarker::EOI => None,
-            JpegMarker::SOS => Some(find_next_segment(&bytes[offset + 2..])?),
-            _ => Some((bytes[offset + 2] as usize) << 8 | (bytes[offset + 3] as usize)),
+            JpegMarker::SOS => Some(find_next_segment(&bytes[2..])?),
+            _ => Some((bytes[2] as usize) << 8 | (bytes[3] as usize)),
         };
 
-        let data = data_length.map(|len| return bytes[offset + 4..offset + 2 + len].to_vec());
+        let data = data_length.map(|len| return bytes[4..(2 + len)].to_vec());
 
         if (data.is_none() && length.is_none()) || (data.is_some() && length.is_some()) {
             return Ok(JpegSegment {
-                magic: bytes[offset],
+                magic: bytes[0],
                 marker,
                 length,
                 data,
@@ -351,7 +350,7 @@ mod tests {
             #[test]
             fn test_soi() {
                 let bytes = [0xFF, 0xD8];
-                let result = JpegSegment::from_bytes(&bytes, 0);
+                let result = JpegSegment::from_bytes(&bytes);
                 assert_eq!(
                     result,
                     Ok(JpegSegment {
@@ -368,7 +367,7 @@ mod tests {
             #[test]
             fn test_eoi() {
                 let bytes = [0xFF, 0xD9];
-                let result = JpegSegment::from_bytes(&bytes, 0);
+                let result = JpegSegment::from_bytes(&bytes);
                 assert_eq!(
                     result,
                     Ok(JpegSegment {
@@ -385,7 +384,7 @@ mod tests {
             #[test]
             fn test_create_general() {
                 let bytes = [0xFF, 0xFE, 0x00, 0x04, 0x01, 0x02, 0x03, 0x04];
-                let result = JpegSegment::from_bytes(&bytes, 0);
+                let result = JpegSegment::from_bytes(&bytes);
                 assert_eq!(
                     result,
                     Ok(JpegSegment {
@@ -405,7 +404,7 @@ mod tests {
                     0x00, 0x00, 0xFF, 0xDA,
                 ];
 
-                let result = JpegSegment::from_bytes(&bytes, 0);
+                let result = JpegSegment::from_bytes(&bytes);
                 assert_eq!(
                     result,
                     Ok(JpegSegment {
@@ -415,25 +414,6 @@ mod tests {
                         data: Some(vec![
                             0x01, 0x02, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                         ])
-                    })
-                )
-            }
-
-            /// Test creation of a SOS segment where there is not a following segment.
-
-            /// Test creation with an offset.
-            /// Using a SOI since that's a really simple test case
-            #[test]
-            fn test_create_offset() {
-                let bytes = [0x01, 0x02, 0x03, 0xFF, 0xD8];
-                let result = JpegSegment::from_bytes(&bytes, 3);
-                assert_eq!(
-                    result,
-                    Ok(JpegSegment {
-                        magic: 0xFF,
-                        marker: JpegMarker::SOI,
-                        length: None,
-                        data: None
                     })
                 )
             }
