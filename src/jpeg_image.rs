@@ -15,6 +15,20 @@ pub struct JpegImage {
     pub segments: Vec<JpegSegment>,
 }
 
+impl JpegImage {
+    /// Get the size of the image in bytes
+    ///
+    /// # Returns
+    /// The size of the image in bytes
+    pub fn image_size(&self) -> usize {
+        return self
+            .segments
+            .iter()
+            .map(|segment| return segment.byte_count())
+            .sum();
+    }
+}
+
 impl TryFrom<&Vec<u8>> for JpegImage {
     type Error = GCameraError;
 

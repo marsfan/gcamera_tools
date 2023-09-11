@@ -116,14 +116,7 @@ impl TryFrom<Vec<u8>> for CameraImage {
 
         let image = JpegImage::try_from(&bytes)?;
 
-        let mut offset = 0;
-
-        // FIXME: Move logic into JpegImage struct
-        for segment in image.segments.iter() {
-            offset += segment.byte_count();
-        }
-
-        let debug_components = DebugComponents::try_from(&bytes[offset..])?;
+        let debug_components = DebugComponents::try_from(&bytes[image.image_size()..])?;
 
         return Ok(Self {
             image,
