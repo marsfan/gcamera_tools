@@ -16,7 +16,7 @@ fn main() {
     let args = Arguments::parse();
 
     let image = CameraImage::from_file(args.input_path).unwrap_or_else(|err| {
-        eprintln!("Problem Parsing Image: {:?}", err); // FIXME: Implement std::Display  for GCameraError so we don't use Debug
+        eprintln!("Problem Parsing Image: {err}");
         exit(1);
     });
 
