@@ -3,6 +3,7 @@
         "afdebug",
         "awbdebug",
         "gcamera",
+        "repr",
         "roxmltree",
         "xmpmeta",
         "xmptk"
