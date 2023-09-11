@@ -47,7 +47,7 @@ impl CameraImage {
         return self
             .jpeg_segments
             .iter()
-            .flat_map(|segment| return segment.to_bytes())
+            .flat_map(|segment| return Vec::from(segment))
             .collect();
     }
 

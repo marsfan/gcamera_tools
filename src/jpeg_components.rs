@@ -182,30 +182,6 @@ impl JpegSegment {
         }
     }
 
-    /// Convert the segment to bytes.
-    ///
-    /// # Returns
-    /// Bytes of the JPEG segment.
-    pub fn to_bytes(&self) -> Vec<u8> {
-        let length_bytes = match self.length {
-            Some(length) => (length as u16).to_be_bytes().to_vec(),
-            None => Vec::new(),
-        };
-
-        let data_bytes = match &self.data {
-            Some(data) => data.as_slice(),
-            None => &[],
-        };
-
-        return [
-            &[self.magic],
-            &[self.marker as u8],
-            length_bytes.as_slice(),
-            data_bytes,
-        ]
-        .concat();
-    }
-
     /// Get the total number of bytes in the segment, if it was serialized to bytes
     ///
     /// # Returns
@@ -245,6 +221,33 @@ impl JpegSegment {
         } else {
             return None;
         }
+    }
+}
+
+/// Implementation to create a vec from a jpeg segment
+impl From<&JpegSegment> for Vec<u8> {
+    /// Convert the segment to bytes.
+    ///
+    /// # Returns
+    /// Bytes of the JPEG segment.
+    fn from(value: &JpegSegment) -> Self {
+        let length_bytes = match value.length {
+            Some(length) => (length as u16).to_be_bytes().to_vec(),
+            None => Vec::new(),
+        };
+
+        let data_bytes = match &value.data {
+            Some(data) => data.as_slice(),
+            None => &[],
+        };
+
+        return [
+            &[value.magic],
+            &[value.marker as u8],
+            length_bytes.as_slice(),
+            data_bytes,
+        ]
+        .concat();
     }
 }
 
@@ -464,7 +467,7 @@ mod tests {
                     data: None,
                 };
 
-                assert_eq!(segment.to_bytes(), vec![0xFF, 0xD9]);
+                assert_eq!(Vec::from(&segment), vec![0xFF, 0xD9]);
             }
 
             /// Test case for a segment that contains both the length and
@@ -478,7 +481,10 @@ mod tests {
                     data: Some(vec![0x01, 0x02]),
                 };
 
-                assert_eq!(segment.to_bytes(), vec![0xFF, 0xE0, 0x00, 0x04, 0x01, 0x02]);
+                assert_eq!(
+                    Vec::from(&segment),
+                    vec![0xFF, 0xE0, 0x00, 0x04, 0x01, 0x02]
+                );
             }
         }
     }
