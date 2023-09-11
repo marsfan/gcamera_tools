@@ -158,10 +158,8 @@ impl JpegSegment {
         };
 
         let data_length = match marker {
-            JpegMarker::SOI => None,
-            JpegMarker::EOI => None,
             JpegMarker::SOS => Some(find_next_segment(&bytes[2..])?),
-            _ => Some((bytes[2] as usize) << 8 | (bytes[3] as usize)),
+            _ => length,
         };
 
         let data = data_length.map(|len| return bytes[4..(2 + len)].to_vec());
