@@ -143,8 +143,7 @@ pub struct JpegSegment {
 }
 
 impl JpegSegment {
-    // TODO: Get rid of offset so we can instead use TryFrom instead of
-    // a custom function?
+    // TODO: Instead use TryFrom?
     /// Create a new segment from bytes.
     ///
     /// # Arguments
