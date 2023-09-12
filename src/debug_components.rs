@@ -20,14 +20,13 @@ pub struct DebugChunk {
     pub data: Vec<u8>,
 }
 
-/// Implementation to create a vector of u8 from the debug chunk
-impl From<DebugChunk> for Vec<u8> {
+impl DebugChunk {
     /// Serialize the chunk back into binary bytes.
     ///
     /// # Returns
     /// The chunk as a vector of bytes.
-    fn from(val: DebugChunk) -> Self {
-        return [val.magic.into_bytes(), val.data].concat();
+    pub fn as_bytes(&self) -> Vec<u8> {
+        return [self.magic.as_bytes(), &self.data].concat();
     }
 }
 
@@ -115,22 +114,22 @@ impl DebugComponents {
     pub fn save_data(self, filepath: String) -> Result<(), GCameraError> {
         return std::fs::File::create(filepath)
             .map_err(|_| return GCameraError::DebugDataWriteError)?
-            .write_all(&Vec::from(self))
+            .write_all(&Vec::from(&self))
             .map_err(|_| return GCameraError::DebugDataWriteError);
     }
 }
 
 /// Implementation to convert DebugChunk to a vector of u8
-impl From<DebugComponents> for Vec<u8> {
+impl From<&DebugComponents> for Vec<u8> {
     /// Convert the debug data back into bytes.
     ///
     /// # Returns
     /// The data as a vector of bytes.
-    fn from(val: DebugComponents) -> Self {
+    fn from(val: &DebugComponents) -> Self {
         return [
-            Vec::from(val.aecdebug),
-            Vec::from(val.afdebug),
-            Vec::from(val.awbdebug),
+            val.aecdebug.as_bytes(),
+            val.afdebug.as_bytes(),
+            val.awbdebug.as_bytes(),
         ]
         .concat();
     }
@@ -188,7 +187,7 @@ mod tests {
 
             let expected = vec![0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB];
 
-            assert_eq!(Vec::from(chunk), expected);
+            assert_eq!(chunk.as_bytes(), expected);
         }
     }
 
@@ -352,7 +351,7 @@ mod tests {
                 },
             };
 
-            let generated_bytes = Vec::from(debug_components);
+            let generated_bytes = Vec::from(&debug_components);
 
             let expected_bytes = "aecDebug abc afDebug def awbDebug ghi".as_bytes();
 
