@@ -102,24 +102,24 @@ impl TryFrom<Node<'_, '_>> for Description {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Item {
     /// The mimetype of the resource
-    mimetype: String, // TODO: Enum?
+    pub mimetype: String, // TODO: Enum?
 
     /// The length of the resource
     /// Optional for primary resource.
     length: Option<u32>,
 
     /// Length in bytes between end of resource and start of next resource
-    padding: Option<u32>,
+    pub padding: Option<u32>,
 
     ///The semantic type of the resource.
-    semantic: String, // TODO: Enum?
+    pub semantic: String, // TODO: Enum?
 
     /// Optional Parameter to disambiguate items of the same semantic type
-    label: Option<String>,
+    pub label: Option<String>,
 
     /// Optional URI string containing relative URI of the item.
     /// Only present if the base media format is ISO/IEC 14496-12
-    uri: Option<String>,
+    pub uri: Option<String>,
 }
 
 /// Implementation to create item from a XML Node.

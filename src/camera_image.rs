@@ -65,6 +65,38 @@ impl CameraImage {
             .save_data(filepath)
             .map_err(|_| return GCameraError::DebugDataWriteError);
     }
+
+    /// Print out some information about the file.
+    /// This is useful for basic debugging.
+    pub fn print_debug_info(&self) {
+        println!(
+            "The main JPEG image has {} segments, for a total of {} bytes.",
+            self.image.segments.len(),
+            self.image.image_size(),
+        );
+
+        println!(
+            "The debug section is a total of {} bytes in size.",
+            self.debug_components.size()
+        );
+
+        // let xmp = self.image.get_xmp()self.image.get_xmp();
+        if let Ok(xmp) = self.image.get_xmp() {
+            println!(
+                "There is a total of {} resources in the file:",
+                xmp.resources.len()
+            );
+
+            for (index, resource) in xmp.resources.iter().enumerate() {
+                println!(
+                    "\tResource {index} has a semantic of '{}'",
+                    resource.semantic
+                )
+            }
+        } else {
+            println!("XMP data not found")
+        }
+    }
 }
 
 // Implementation of TryFrom for CameraImage

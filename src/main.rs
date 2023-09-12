@@ -33,4 +33,8 @@ fn main() {
     if args.motion_output.is_some() {
         panic!("Motion extracting is not supported yet")
     }
+
+    if args.info {
+        image.print_debug_info();
+    }
 }

@@ -30,6 +30,10 @@ pub struct Arguments {
     /// Path to save the motion video to
     #[arg(short, long)]
     pub motion_output: Option<String>,
+
+    /// Print out some information about the file
+    #[arg(short = 'I', long)]
+    pub info: bool,
 }
 
 #[cfg(test)]
@@ -47,6 +51,7 @@ mod tests {
             image_output: None,
             debug_output: None,
             motion_output: None,
+            info: false,
         };
         assert_eq!(parsed_args, expected_result);
     }
@@ -66,6 +71,7 @@ mod tests {
             image_output: Some(String::from("just_photo.jpg")),
             debug_output: None,
             motion_output: None,
+            info: false,
         };
         assert_eq!(parsed_args, expected_results);
     }
@@ -85,6 +91,7 @@ mod tests {
             image_output: None,
             debug_output: Some(String::from("debug_data.bin")),
             motion_output: None,
+            info: false,
         };
         assert_eq!(parsed_args, expected_results);
     }
@@ -104,6 +111,21 @@ mod tests {
             image_output: None,
             debug_output: None,
             motion_output: Some(String::from("motion.mp4")),
+            info: false,
+        };
+        assert_eq!(parsed_args, expected_results);
+    }
+    /// Test with info set
+    #[test]
+    fn test_info_enabled() {
+        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "-I"];
+        let parsed_args = Arguments::parse_from(input_args);
+        let expected_results = Arguments {
+            input_path: String::from("motion_photo.jpg"),
+            image_output: None,
+            debug_output: None,
+            motion_output: None,
+            info: true,
         };
         assert_eq!(parsed_args, expected_results);
     }

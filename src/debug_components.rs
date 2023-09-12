@@ -28,6 +28,14 @@ impl DebugChunk {
     pub fn as_bytes(&self) -> Vec<u8> {
         return [self.magic.as_bytes(), &self.data].concat();
     }
+
+    /// Get the size of the chunk.
+    ///
+    /// # Returns:
+    /// The size of the chunk, in bytes
+    pub fn size(&self) -> usize {
+        return self.magic.as_bytes().len() + self.data.len();
+    }
 }
 
 /// Find the start index of the given magic using a linear search.
@@ -129,6 +137,14 @@ impl DebugComponents {
             self.awbdebug.as_bytes(),
         ]
         .concat();
+    }
+
+    /// Get the size of all of the debug components.
+    ///
+    /// # Returns
+    /// The total size of all of the debug components.
+    pub fn size(&self) -> usize {
+        return self.aecdebug.size() + self.afdebug.size() + self.awbdebug.size();
     }
 }
 
