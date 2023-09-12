@@ -9,6 +9,7 @@
 
 use crate::errors::GCameraError;
 use crate::jpeg_components::{JpegMarker, JpegSegment};
+use crate::xmp::XMPData;
 
 #[derive(PartialEq, Eq, Debug)]
 pub struct JpegImage {
@@ -26,6 +27,34 @@ impl JpegImage {
             .iter()
             .map(|segment| return segment.byte_count())
             .sum();
+    }
+
+    /// Convert the image to bytes.
+    ///
+    /// # Returns
+    /// The JPEG image as a vector of bytes
+    pub fn as_bytes(&self) -> Vec<u8> {
+        return self
+            .segments
+            .iter()
+            .flat_map(|segment| return Vec::from(segment))
+            .collect();
+    }
+
+    /// Get the XMP data from the image
+    ///
+    /// # Returns
+    /// The XMP as XMPData, or an error message.
+    pub fn get_xmp(&self) -> Result<XMPData, GCameraError> {
+        // FIXME: Move this logic to the JpegImage struct
+        for segment in self.segments.iter() {
+            let xmp_string = segment.as_xmp_str();
+            if let Some(xmp_string) = xmp_string {
+                return XMPData::try_from(xmp_string);
+            }
+        }
+
+        return Err(GCameraError::NoXMPData);
     }
 }
 
@@ -57,5 +86,22 @@ impl TryFrom<&Vec<u8>> for JpegImage {
         }
 
         return Ok(JpegImage { segments });
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    /// Test converting the segment to vector of bytes
+    #[test]
+    fn test_to_bytes() {
+        let image = JpegImage {
+            segments: vec![
+                JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
+                JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap(),
+            ],
+        };
+
+        assert_eq!(image.as_bytes(), vec![0xFF, 0xD8, 0xFF, 0xD9])
     }
 }

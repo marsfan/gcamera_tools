@@ -9,7 +9,6 @@
 use crate::debug_components::DebugComponents;
 use crate::errors::GCameraError;
 use crate::jpeg_image::JpegImage;
-use crate::xmp::XMPData;
 use std::convert::TryFrom;
 use std::fs;
 use std::io::Write;
@@ -39,20 +38,6 @@ impl CameraImage {
         };
     }
 
-    /// Get the entire JPEG image portion as bytes.
-    ///
-    /// # Returns
-    /// The entire JPEG image portion as a vector of bytes.
-    pub fn jpeg_to_bytes(&self) -> Vec<u8> {
-        // FIXME: Move to JpegImage struct
-        return self
-            .image
-            .segments
-            .iter()
-            .flat_map(|segment| return Vec::from(segment))
-            .collect();
-    }
-
     /// Save the JPEG component of the image.
     ///
     /// # Arguments
@@ -63,7 +48,7 @@ impl CameraImage {
     pub fn save_image(&self, filepath: String) -> Result<(), GCameraError> {
         return std::fs::File::create(filepath)
             .map_err(|_| return GCameraError::ImageWriteError)?
-            .write_all(&self.jpeg_to_bytes())
+            .write_all(&self.image.as_bytes())
             .map_err(|_| return GCameraError::ImageWriteError);
     }
 
@@ -79,22 +64,6 @@ impl CameraImage {
             .debug_components
             .save_data(filepath)
             .map_err(|_| return GCameraError::DebugDataWriteError);
-    }
-
-    /// Get the XMP data from the image
-    ///
-    /// # Returns
-    /// The XMP as XMPData, or an error message.
-    pub fn get_xmp(&self) -> Result<XMPData, GCameraError> {
-        // FIXME: Move this logic to the JpegImage struct
-        for segment in self.image.segments.iter() {
-            let xmp_string = segment.as_xmp_str();
-            if let Some(xmp_string) = xmp_string {
-                return XMPData::try_from(xmp_string);
-            }
-        }
-
-        return Err(GCameraError::NoXMPData);
     }
 }
 
@@ -176,36 +145,5 @@ mod test {
         let bytes = vec![0xFF, 0xAA];
         let function_result = CameraImage::try_from(bytes);
         assert_eq!(function_result, Err(GCameraError::InvalidJpegMagic));
-    }
-
-    /// Test getting the bytes for the JPEG image portion.
-    #[test]
-    fn test_to_bytes() {
-        let image = CameraImage {
-            image: JpegImage {
-                segments: vec![
-                    JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
-                    JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap(),
-                ],
-            },
-            debug_components: DebugComponents {
-                aecdebug: {
-                    DebugChunk {
-                        magic: String::from("aecDebug"),
-                        data: String::from("hi").as_bytes().to_vec(),
-                    }
-                },
-                afdebug: DebugChunk {
-                    magic: String::from("afDebug"),
-                    data: String::from("bye").as_bytes().to_vec(),
-                },
-                awbdebug: DebugChunk {
-                    magic: String::from("awbDebug"),
-                    data: String::from("123").as_bytes().to_vec(),
-                },
-            },
-        };
-
-        assert_eq!(image.jpeg_to_bytes(), vec![0xFF, 0xD8, 0xFF, 0xD9]);
     }
 }
