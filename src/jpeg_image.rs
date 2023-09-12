@@ -103,4 +103,24 @@ mod test {
 
         assert_eq!(image.as_bytes(), vec![0xFF, 0xD8, 0xFF, 0xD9])
     }
+
+    /// Test case for when there JPEG magic is invalid
+    #[test]
+    fn test_invalid_jpeg_magic() {
+        let test_bytes = vec![0xFF, 0xDD, 0xAA, 0xBB];
+        let image = JpegImage::try_from(&test_bytes);
+
+        assert_eq!(image, Err(GCameraError::InvalidJpegMagic));
+    }
+
+    /// Test for when there is no XMP Data segment.
+    #[test]
+    fn test_no_xmp() {
+        let image = JpegImage {
+            segments: vec![JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap()],
+        };
+
+        let xmp_data = image.get_xmp();
+        assert_eq!(xmp_data, Err(GCameraError::NoXMPData));
+    }
 }

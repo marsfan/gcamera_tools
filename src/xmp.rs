@@ -508,6 +508,22 @@ mod tests {
             )
         }
 
+        /// Test for when there is no description node
+        #[test]
+        fn test_no_description() {
+            let document = Document::parse(
+                "<x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='Adobe XMP Core 5.1.0-jc003'>
+                <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+                </rdf:RDF>
+                </x:xmpmeta>",
+            )
+            .unwrap();
+
+            let data = XMPData::try_from(document);
+
+            assert_eq!(data, Err(GCameraError::DescriptionNodeNotFound));
+        }
+
         /// Basic test for the from_str method
         #[test]
         fn test_from_str() {
