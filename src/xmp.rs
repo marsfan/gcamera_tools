@@ -125,7 +125,7 @@ pub struct Item {
 /// Implementation to create item from a XML Node.
 impl TryFrom<Node<'_, '_>> for Item {
     type Error = GCameraError;
-
+    // FIXME: Handle when strings are None properly
     fn try_from(value: Node<'_, '_>) -> Result<Self, Self::Error> {
         return Ok(Self {
             mimetype: attribute_to_str(value, ITEM_NS, "Mime").unwrap(),

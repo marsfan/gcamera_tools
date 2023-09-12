@@ -80,8 +80,7 @@ impl TryFrom<&Vec<u8>> for JpegImage {
         while !matches!(segments.last().unwrap().marker, JpegMarker::EOI) {
             let prev = segments.last().unwrap();
             offset += prev.byte_count();
-            segments.push(JpegSegment::from_bytes(&bytes[offset..]).unwrap());
-            // FIXME: Remove unwrap
+            segments.push(JpegSegment::from_bytes(&bytes[offset..])?);
         }
 
         return Ok(JpegImage { segments });

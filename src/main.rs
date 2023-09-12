@@ -22,12 +22,18 @@ fn main() {
 
     // Save the JPEG image if the user provides a save path.
     if let Some(output_path) = args.image_output {
-        image.save_image(output_path).unwrap()
+        image.save_image(output_path).unwrap_or_else(|err| {
+            eprintln!("Problem Saving JPEG Image: {err}");
+            exit(1)
+        })
     }
 
     // Save the debug data if the user provides a save path.
     if let Some(output_path) = args.debug_output {
-        image.save_debug_data(output_path).unwrap()
+        image.save_debug_data(output_path).unwrap_or_else(|err| {
+            eprintln!("Problem Saving Debug Data: {err}");
+            exit(1)
+        })
     }
     // Save the motion photo if the user provides a save path
     if args.motion_output.is_some() {
