@@ -80,7 +80,6 @@ impl CameraImage {
             self.debug_components.size()
         );
 
-        // let xmp = self.image.get_xmp()self.image.get_xmp();
         if let Ok(xmp) = self.image.get_xmp() {
             println!(
                 "There is a total of {} resources in the file according to the XMP data.",
