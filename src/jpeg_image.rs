@@ -46,7 +46,6 @@ impl JpegImage {
     /// # Returns
     /// The XMP as XMPData, or an error message.
     pub fn get_xmp(&self) -> Result<XMPData, GCameraError> {
-        // FIXME: Move this logic to the JpegImage struct
         for segment in self.segments.iter() {
             let xmp_string = segment.as_xmp_str();
             if let Some(xmp_string) = xmp_string {
