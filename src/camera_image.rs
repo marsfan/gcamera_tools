@@ -59,7 +59,7 @@ impl CameraImage {
     ///
     /// # Returns
     /// Result from saving the file.
-    pub fn save_debug_data(self, filepath: String) -> Result<(), GCameraError> {
+    pub fn save_debug_data(&self, filepath: String) -> Result<(), GCameraError> {
         return self
             .debug_components
             .save_data(filepath)

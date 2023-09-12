@@ -111,7 +111,7 @@ impl DebugComponents {
     ///
     /// # Returns
     /// Result of saving the data
-    pub fn save_data(self, filepath: String) -> Result<(), GCameraError> {
+    pub fn save_data(&self, filepath: String) -> Result<(), GCameraError> {
         return std::fs::File::create(filepath)
             .map_err(|_| return GCameraError::DebugDataWriteError)?
             .write_all(&self.as_bytes())
