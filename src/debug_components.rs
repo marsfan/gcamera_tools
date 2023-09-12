@@ -114,22 +114,19 @@ impl DebugComponents {
     pub fn save_data(self, filepath: String) -> Result<(), GCameraError> {
         return std::fs::File::create(filepath)
             .map_err(|_| return GCameraError::DebugDataWriteError)?
-            .write_all(&Vec::from(&self))
+            .write_all(&self.as_bytes())
             .map_err(|_| return GCameraError::DebugDataWriteError);
     }
-}
 
-/// Implementation to convert DebugChunk to a vector of u8
-impl From<&DebugComponents> for Vec<u8> {
     /// Convert the debug data back into bytes.
     ///
     /// # Returns
     /// The data as a vector of bytes.
-    fn from(val: &DebugComponents) -> Self {
+    pub fn as_bytes(&self) -> Vec<u8> {
         return [
-            val.aecdebug.as_bytes(),
-            val.afdebug.as_bytes(),
-            val.awbdebug.as_bytes(),
+            self.aecdebug.as_bytes(),
+            self.afdebug.as_bytes(),
+            self.awbdebug.as_bytes(),
         ]
         .concat();
     }
@@ -351,7 +348,7 @@ mod tests {
                 },
             };
 
-            let generated_bytes = Vec::from(&debug_components);
+            let generated_bytes = debug_components.as_bytes();
 
             let expected_bytes = "aecDebug abc afDebug def awbDebug ghi".as_bytes();
 
