@@ -32,7 +32,9 @@ fn attribute_to_str(node: Node, namespace: &str, attribute: &str) -> Option<Stri
         .attribute((namespace, attribute))
         .map(|n| return String::from(n));
 }
-/// Convert an XML attribute in a node to a u32.
+/// Parse an attribute.
+///
+/// This parsing it using the str.parse method.
 ///
 /// # Arguments
 /// * `node`: The node to read the attribute from
@@ -40,12 +42,12 @@ fn attribute_to_str(node: Node, namespace: &str, attribute: &str) -> Option<Stri
 /// * `attribute`: The name of the attribute
 ///
 /// # Returns
-///  Option holding the attribute converted to a u32.
-fn attribute_to_u32(
+///  Option holding the parsed attribute, or an error.
+fn parse_attribute<T: std::str::FromStr>(
     node: Node,
     namespace: &str,
     attribute: &str,
-) -> Result<Option<u32>, GCameraError> {
+) -> Result<Option<T>, GCameraError> {
     let attribute = node.attribute((namespace, attribute));
     return attribute
         .map(|n| return n.parse())
@@ -87,9 +89,9 @@ impl TryFrom<Node<'_, '_>> for Description {
     fn try_from(xml_element: Node) -> Result<Self, Self::Error> {
         return Ok(Self {
             extended_xmp_id: attribute_to_str(xml_element, XMP_NOTE_NS, "HasExtendedXMP"),
-            motion_photo: attribute_to_u32(xml_element, GCAMERA_NS, "MotionPhoto")?,
-            motion_photo_version: attribute_to_u32(xml_element, GCAMERA_NS, "MotionPhotoVersion")?,
-            motion_photo_timestamp_us: attribute_to_u32(
+            motion_photo: parse_attribute(xml_element, GCAMERA_NS, "MotionPhoto")?,
+            motion_photo_version: parse_attribute(xml_element, GCAMERA_NS, "MotionPhotoVersion")?,
+            motion_photo_timestamp_us: parse_attribute(
                 xml_element,
                 GCAMERA_NS,
                 "MotionPhotoPresentationTimestampUs",
@@ -129,8 +131,8 @@ impl TryFrom<Node<'_, '_>> for Item {
     fn try_from(value: Node<'_, '_>) -> Result<Self, Self::Error> {
         return Ok(Self {
             mimetype: attribute_to_str(value, ITEM_NS, "Mime").unwrap(),
-            length: attribute_to_u32(value, ITEM_NS, "Length")?,
-            padding: attribute_to_u32(value, ITEM_NS, "Padding")?,
+            length: parse_attribute(value, ITEM_NS, "Length")?,
+            padding: parse_attribute(value, ITEM_NS, "Padding")?,
             semantic: attribute_to_str(value, ITEM_NS, "Semantic").unwrap(),
             label: attribute_to_str(value, ITEM_NS, "Label"),
             uri: attribute_to_str(value, ITEM_NS, "URI"),
@@ -292,7 +294,7 @@ mod tests {
                 .unwrap();
 
             assert_eq!(
-                attribute_to_u32(xml_element, "http://ns.example.com", "a"),
+                parse_attribute(xml_element, "http://ns.example.com", "a"),
                 Ok(Some(1))
             );
         }
@@ -308,7 +310,7 @@ mod tests {
                 .unwrap();
 
             assert_eq!(
-                attribute_to_u32(xml_element, "http://ns.example.com", "b"),
+                parse_attribute::<u32>(xml_element, "http://ns.example.com", "b"),
                 Ok(None)
             );
         }
@@ -324,7 +326,7 @@ mod tests {
                 .unwrap();
 
             assert_eq!(
-                attribute_to_u32(xml_element, "http://ns.second.example.com", "b"),
+                parse_attribute::<u32>(xml_element, "http://ns.second.example.com", "b"),
                 Ok(None)
             );
         }
@@ -340,7 +342,7 @@ mod tests {
                 .unwrap();
 
             assert_eq!(
-                attribute_to_u32(xml_element, "http://ns.example.com", "b"),
+                parse_attribute::<u32>(xml_element, "http://ns.example.com", "b"),
                 Ok(None)
             );
         }
@@ -355,7 +357,7 @@ mod tests {
                 .descendants()
                 .find(|n| return n.tag_name().name() == "tagname")
                 .unwrap();
-            attribute_to_u32(xml_element, "http://ns.example.com", "a").unwrap();
+            parse_attribute::<u32>(xml_element, "http://ns.example.com", "a").unwrap();
         }
     }
 
