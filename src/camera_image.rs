@@ -9,6 +9,7 @@
 use crate::debug_components::DebugComponents;
 use crate::errors::GCameraError;
 use crate::jpeg_image::JpegImage;
+use crate::xmp::SemanticType;
 use std::convert::TryFrom;
 use std::fs;
 use std::io::Write;
@@ -113,12 +114,14 @@ impl CameraImage {
         let xmp_data = self.image.get_xmp().unwrap();
         let mut length_accumulation = self.total_size;
         for (index, resource) in xmp_data.resources.iter().enumerate().rev() {
-            length_accumulation -= resource.length.unwrap();
-            println!("Resource {} starts at {}", index, length_accumulation);
+            if resource.semantic != SemanticType::Primary {
+                length_accumulation -= resource.length.unwrap();
+                println!("Resource {} starts at {}", index, length_accumulation);
 
-            // Also have to account for the padding between each resource
-            // that's the point of this
-            length_accumulation -= resource.padding.unwrap();
+                // Also have to account for the padding between each resource
+                // that's the point of this
+                length_accumulation -= resource.padding.unwrap();
+            }
         }
     }
 }
