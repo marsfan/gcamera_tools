@@ -108,10 +108,10 @@ pub struct Item {
 
     /// The length of the resource
     /// Optional for primary resource.
-    length: Option<u32>,
+    pub length: Option<usize>,
 
     /// Length in bytes between end of resource and start of next resource
-    pub padding: Option<u32>,
+    pub padding: Option<usize>,
 
     ///The semantic type of the resource.
     pub semantic: String, // TODO: Enum?
