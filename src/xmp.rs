@@ -59,6 +59,42 @@ fn parse_attribute<T: std::str::FromStr>(
         });
 }
 
+/// Enumeration of possible semantic types for for resources in the XMP data.
+#[derive(Debug, PartialEq, Eq)]
+pub enum SemanticType {
+    /// The main JPEG image
+    Primary,
+
+    /// Motion Photo Additional Resource
+    MotionPhoto,
+
+    /// A gain map, used for UltraHDR image formats
+    GainMap,
+}
+
+/// Implementation to try to create a semantic enum from a string slice.
+impl TryFrom<String> for SemanticType {
+    type Error = GCameraError;
+
+    /// Create a semantic enum from a string slice.
+    ///
+    /// # Arguments
+    /// value: The value to attempt to create an enum from
+    ///
+    /// # Returns
+    /// Result holding either the created enum, or an error.
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        return match value.as_str() {
+            "Primary" => Ok(Self::Primary),
+            "MotionPhoto" => Ok(Self::MotionPhoto),
+            "GainMap" => Ok(Self::GainMap),
+            _ => Err(GCameraError::UnknownResourceSemantic {
+                semantic: (String::from(value)),
+            }),
+        };
+    }
+}
+
 /// General information about the XMP data
 #[derive(Debug, PartialEq, Eq)]
 pub struct Description {
@@ -114,7 +150,7 @@ pub struct Item {
     pub padding: Option<usize>,
 
     ///The semantic type of the resource.
-    pub semantic: String, // TODO: Enum?
+    pub semantic: SemanticType,
 
     /// Optional Parameter to disambiguate items of the same semantic type
     pub label: Option<String>,
@@ -133,7 +169,9 @@ impl TryFrom<Node<'_, '_>> for Item {
             mimetype: attribute_to_str(value, ITEM_NS, "Mime").unwrap(),
             length: parse_attribute(value, ITEM_NS, "Length")?,
             padding: parse_attribute(value, ITEM_NS, "Padding")?,
-            semantic: attribute_to_str(value, ITEM_NS, "Semantic").unwrap(),
+            semantic: SemanticType::try_from(
+                attribute_to_str(value, ITEM_NS, "Semantic").unwrap(),
+            )?,
             label: attribute_to_str(value, ITEM_NS, "Label"),
             uri: attribute_to_str(value, ITEM_NS, "URI"),
         });
@@ -426,7 +464,7 @@ mod tests {
                     mimetype: String::from("video/mp4"),
                     length: Some(4906025),
                     padding: Some(0),
-                    semantic: String::from("MotionPhoto"),
+                    semantic: SemanticType::MotionPhoto,
                     label: None,
                     uri: None
                 })
@@ -491,7 +529,7 @@ mod tests {
                     resources: vec![
                         Item {
                             mimetype: String::from("image/jpeg"),
-                            semantic: String::from("Primary"),
+                            semantic: SemanticType::Primary,
                             length: Some(0),
                             padding: Some(0),
                             uri: None,
@@ -499,7 +537,7 @@ mod tests {
                         },
                         Item {
                             mimetype: String::from("video/mp4"),
-                            semantic: String::from("MotionPhoto"),
+                            semantic: SemanticType::MotionPhoto,
                             length: Some(4906025),
                             padding: Some(0),
                             uri: None,
@@ -578,7 +616,7 @@ mod tests {
                     resources: vec![
                         Item {
                             mimetype: String::from("image/jpeg"),
-                            semantic: String::from("Primary"),
+                            semantic: SemanticType::Primary,
                             length: Some(0),
                             padding: Some(0),
                             uri: None,
@@ -586,7 +624,7 @@ mod tests {
                         },
                         Item {
                             mimetype: String::from("video/mp4"),
-                            semantic: String::from("MotionPhoto"),
+                            semantic: SemanticType::MotionPhoto,
                             length: Some(4906025),
                             padding: Some(0),
                             uri: None,

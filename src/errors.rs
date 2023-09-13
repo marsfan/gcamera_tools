@@ -46,6 +46,12 @@ pub enum GCameraError {
     /// Indicates that the Description Node could not be found in the XML
     DescriptionNodeNotFound,
 
+    /// Indicates that the given semantic string is not a known type.
+    UnknownResourceSemantic {
+        /// The string that could not be converted to a semantic enum.
+        semantic: String,
+    },
+
     /// Indicates that the given magic start point could not be found.
     MagicNotFound {
         /// The magic that was being searched for.
@@ -90,6 +96,9 @@ impl fmt::Display for GCameraError {
             GCameraError::NoXMPData => write!(f, "No XMP Data found in the image."),
             GCameraError::DescriptionNodeNotFound => {
                 write!(f, "Description not found in XMP data.")
+            }
+            GCameraError::UnknownResourceSemantic { semantic } => {
+                write!(f, "Resource has an unknown semantic type of '{semantic}'.")
             }
             GCameraError::MagicNotFound { magic } => {
                 write!(f, "Could not find magic '{magic}' in image.")

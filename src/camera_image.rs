@@ -88,7 +88,7 @@ impl CameraImage {
 
             for (index, resource) in xmp.resources.iter().enumerate() {
                 println!(
-                    "\tResource {index} has a semantic of '{}'",
+                    "\tResource {index} has a semantic of '{:?}'",
                     resource.semantic
                 )
             }
