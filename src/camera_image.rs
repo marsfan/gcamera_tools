@@ -116,6 +116,25 @@ impl TryFrom<Vec<u8>> for CameraImage {
 
         let image = JpegImage::try_from(&bytes)?;
 
+        // FIXME: Work out how to integrate this into a new struct, so that it is not just being printed out
+        // FIXME: Don't process the primary resource, which is the main JPEG image
+
+        // Computing the start point of each resource.
+        // Since we know the length of each resource, we can work backwards
+        // through the resources, subtracting the size of each from an
+        // variable that starts out at the total size of the image we are
+        // parsing.
+        let xmp_data = image.get_xmp()?;
+        let mut length_accumulation = bytes.len();
+        for (index, resource) in xmp_data.resources.iter().enumerate().rev() {
+            length_accumulation -= resource.length.unwrap();
+            println!("resource {} starts at {}", index, length_accumulation);
+
+            // Also have to account for the padding between each resource
+            // that's the point of this
+            length_accumulation -= resource.padding.unwrap();
+        }
+
         let debug_components = DebugComponents::try_from(&bytes[image.image_size()..])?;
 
         return Ok(Self {
