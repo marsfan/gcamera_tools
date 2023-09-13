@@ -42,5 +42,6 @@ fn main() {
 
     if args.info {
         image.print_debug_info();
+        image.print_resource_info();
     }
 }
