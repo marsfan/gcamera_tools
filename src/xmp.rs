@@ -88,9 +88,7 @@ impl TryFrom<String> for SemanticType {
             "Primary" => Ok(Self::Primary),
             "MotionPhoto" => Ok(Self::MotionPhoto),
             "GainMap" => Ok(Self::GainMap),
-            _ => Err(GCameraError::UnknownResourceSemantic {
-                semantic: (String::from(value)),
-            }),
+            _ => Err(GCameraError::UnknownResourceSemantic { semantic: (value) }),
         };
     }
 }
