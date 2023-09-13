@@ -202,6 +202,16 @@ mod tests {
 
             assert_eq!(chunk.as_bytes(), expected);
         }
+
+        /// test the size() method on a debug chunk
+        #[test]
+        fn test_size() {
+            let chunk = DebugChunk {
+                magic: String::from("hello"),
+                data: vec![0x01, 0x02, 0x03, 0xFF, 0xAB],
+            };
+            assert_eq!(chunk.size(), 10);
+        }
     }
 
     mod find_magic_start_tests {
@@ -369,6 +379,27 @@ mod tests {
             let expected_bytes = "aecDebug abc afDebug def awbDebug ghi".as_bytes();
 
             assert_eq!(generated_bytes, expected_bytes);
+        }
+
+        /// Test getting the overall size of all of the debug components
+        #[test]
+        fn test_size() {
+            let debug_components = DebugComponents {
+                aecdebug: DebugChunk {
+                    magic: String::from("aecDebug"),
+                    data: vec![0x20, 0x61, 0x62, 0x63, 0x20],
+                },
+                afdebug: DebugChunk {
+                    magic: String::from("afDebug"),
+                    data: vec![0x20, 0x64, 0x65, 0x66, 0x20],
+                },
+                awbdebug: DebugChunk {
+                    magic: String::from("awbDebug"),
+                    data: vec![0x20, 0x67, 0x68, 0x69],
+                },
+            };
+
+            assert_eq!(debug_components.size(), 37);
         }
     }
 }
