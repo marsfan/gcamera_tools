@@ -20,7 +20,7 @@ use std::path::PathBuf;
 pub struct CameraImage {
     /// Vector of the segments in the JPEG portion of the image.
     image: JpegImage,
-    // jpeg_segments: Vec<JpegSegment>,
+
     /// The camera debug information stored in the image.
     debug_components: DebugComponents,
 
