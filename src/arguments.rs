@@ -9,6 +9,8 @@
 //! arguments from the command line.
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
+use std::path::PathBuf;
+
 use clap::Parser;
 
 #[derive(Parser, Debug, Eq, PartialEq)]
@@ -17,7 +19,7 @@ pub struct Arguments {
     /// Path to the image to process
     // FIXME: Why is this showing up after positional arguments?
     #[arg(index = 1)]
-    pub input_path: String, // Path to search
+    pub input_path: PathBuf, // Path to search
 
     /// Path to save just the JPEG image to
     #[arg(short, long)]
@@ -47,7 +49,7 @@ mod tests {
         let parsed_args = Arguments::parse_from(input_args);
 
         let expected_result = Arguments {
-            input_path: String::from("motion_photo.jpg"),
+            input_path: PathBuf::from("motion_photo.jpg"),
             image_output: None,
             debug_output: None,
             motion_output: None,
@@ -67,7 +69,7 @@ mod tests {
         ];
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
-            input_path: String::from("motion_photo.jpg"),
+            input_path: PathBuf::from("motion_photo.jpg"),
             image_output: Some(String::from("just_photo.jpg")),
             debug_output: None,
             motion_output: None,
@@ -87,7 +89,7 @@ mod tests {
         ];
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
-            input_path: String::from("motion_photo.jpg"),
+            input_path: PathBuf::from("motion_photo.jpg"),
             image_output: None,
             debug_output: Some(String::from("debug_data.bin")),
             motion_output: None,
@@ -107,7 +109,7 @@ mod tests {
         ];
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
-            input_path: String::from("motion_photo.jpg"),
+            input_path: PathBuf::from("motion_photo.jpg"),
             image_output: None,
             debug_output: None,
             motion_output: Some(String::from("motion.mp4")),
@@ -121,7 +123,7 @@ mod tests {
         let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "-I"];
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
-            input_path: String::from("motion_photo.jpg"),
+            input_path: PathBuf::from("motion_photo.jpg"),
             image_output: None,
             debug_output: None,
             motion_output: None,

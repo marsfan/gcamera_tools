@@ -13,6 +13,7 @@ use crate::xmp::SemanticType;
 use std::convert::TryFrom;
 use std::fs;
 use std::io::Write;
+use std::path::PathBuf;
 
 /// Struct holding all the data for a single image.
 #[derive(Debug, PartialEq, Eq)]
@@ -35,7 +36,7 @@ impl CameraImage {
     ///
     /// # Returns
     /// Instance of the structure, or an error code.
-    pub fn from_file(filepath: String) -> Result<Self, GCameraError> {
+    pub fn from_file(filepath: PathBuf) -> Result<Self, GCameraError> {
         return match fs::read(filepath) {
             Ok(contents) => Self::try_from(contents),
             Err(_) => Err(GCameraError::ImageReadError),
