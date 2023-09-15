@@ -129,7 +129,7 @@ pub struct JpegSegment {
     /// # Note
     /// The length includes its own length, so the number of bytes in the
     /// `data` variable is two less than the value in the length
-    length: Option<usize>,
+    length: Option<u16>,
 
     /// The data bytes of the segment.
     /// Since SOI and EOI don't have data bytes, this is an Option
@@ -161,12 +161,12 @@ impl JpegSegment {
         let length = match marker {
             JpegMarker::SOI => None,
             JpegMarker::EOI => None,
-            _ => Some((bytes[2] as usize) << 8 | (bytes[3] as usize)),
+            _ => Some((bytes[2] as u16) << 8 | (bytes[3] as u16)),
         };
 
         let data_length = match marker {
             JpegMarker::SOS => Some(find_next_segment(&bytes[2..])?),
-            _ => length,
+            _ => length.map(|val| return val as usize),
         };
 
         let data = data_length.map(|len| return bytes[4..(2 + len)].to_vec());
