@@ -56,7 +56,7 @@
     clippy::panic_in_result_fn,
     clippy::map_err_ignore,
     clippy::exhaustive_enums, // TODO: What is this?
-    clippy::exhaustive_structs, // TOOD: What is this?
+    clippy::exhaustive_structs, // TODO: What is this?
     clippy::panic,
 )]
 // Stuff from clippy::restruction we do want.
