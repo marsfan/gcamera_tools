@@ -138,4 +138,11 @@ mod tests {
         let parsed_args = Arguments::try_parse_from(input_args);
         parsed_args.unwrap();
     }
+
+    /// Use clap's built in unit test ability.
+    #[test]
+    fn verify_arguments() {
+        use clap::CommandFactory;
+        Arguments::command().debug_assert()
+    }
 }
