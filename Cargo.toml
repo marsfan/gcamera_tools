@@ -1,7 +1,12 @@
 [package]
 name = "gcamera_tools"
+description = "Tool for working with images taken with the Google Camera app"
 version = "0.1.0"
 edition = "2021"
+categories = ["command-line-utilities", "multimedia::images", "multimedia", "parsing"]
+keywords = ["images", "processing", "google_camera"]
+repository = "https://github.com/marsfan/gcamera_tools"
+license = "MPL-2.0"
 
 [dependencies]
 clap = { version = "4.4.3", features = ["derive"] }
