@@ -43,16 +43,15 @@
     clippy::std_instead_of_core,
     clippy::big_endian_bytes,
     clippy::pattern_type_mismatch,
-    clippy::default_numeric_fallback
+    clippy::default_numeric_fallback,
+    clippy::indexing_slicing
 )]
 // Stuff from clippy::restriction we might want to enable
 #![allow(
     clippy::unwrap_used,
     clippy::arithmetic_side_effects,
     clippy::unwrap_in_result,
-    clippy::wildcard_enum_match_arm,
     clippy::panic_in_result_fn,
-    clippy::indexing_slicing,
     clippy::map_err_ignore,
     clippy::missing_docs_in_private_items,
     clippy::exhaustive_enums, // TODO: What is this?

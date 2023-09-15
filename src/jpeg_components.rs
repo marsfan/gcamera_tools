@@ -205,12 +205,15 @@ impl JpegSegment {
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, GCameraError> {
         let marker = JpegMarker::try_from(bytes[1])?;
 
+        #[allow(clippy::wildcard_enum_match_arm)]
         let length = match marker {
             JpegMarker::SOI => None,
             JpegMarker::EOI => None,
             _ => Some((u16::from(bytes[2]) << 8) | u16::from(bytes[3])),
         };
 
+        // Allow wildcard matching here since we only care about if we have SOS
+        #[allow(clippy::wildcard_enum_match_arm)]
         let data_length = match marker {
             JpegMarker::SOS => Some(find_next_segment(&bytes[2..])?),
             _ => length.map(|val| return usize::from(val)),
