@@ -41,17 +41,17 @@
     clippy::std_instead_of_alloc,
     clippy::print_stdout,
     clippy::std_instead_of_core,
-    clippy::big_endian_bytes
+    clippy::big_endian_bytes,
+    clippy::pattern_type_mismatch,
+    clippy::default_numeric_fallback
 )]
 // Stuff from clippy::restriction we might want to enable
 #![allow(
     clippy::unwrap_used,
     clippy::arithmetic_side_effects,
     clippy::unwrap_in_result,
-    clippy::default_numeric_fallback,
     clippy::wildcard_enum_match_arm,
     clippy::panic_in_result_fn,
-    clippy::pattern_type_mismatch,
     clippy::indexing_slicing,
     clippy::map_err_ignore,
     clippy::missing_docs_in_private_items,
