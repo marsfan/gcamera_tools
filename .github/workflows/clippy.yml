@@ -1,7 +1,7 @@
 name: Rust Clippy
 
 on: [push]
-    
+
 env:
     CARGO_TERM_COLOR: always
 
@@ -12,7 +12,7 @@ jobs:
         steps:
         - uses: actions/checkout@v4
         - name: Clippy
-          run: cargo clippy
+          run: cargo clippy --all --tests -- -D warnings
 
     run_clippy_release:
         name: Release Build Clippy
@@ -20,4 +20,4 @@ jobs:
         steps:
         - uses: actions/checkout@v4
         - name: Clippy
-          run: cargo clippy --release
+          run: cargo clippy --all --tests --release -- -D warnings
