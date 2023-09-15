@@ -366,7 +366,7 @@ mod tests {
                         length: None,
                         data: None
                     })
-                )
+                );
             }
 
             /// Test creation of a EOI segment
@@ -382,7 +382,7 @@ mod tests {
                         length: None,
                         data: None
                     })
-                )
+                );
             }
 
             /// Test creation of a normal segment
@@ -419,11 +419,11 @@ mod tests {
                             0x01, 0x02, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                         ])
                     })
-                )
+                );
             }
         }
 
-        /// Tests for teh byte_count function.
+        /// Tests for the `byte_count` function.
         mod test_byte_count {
             use super::*;
 

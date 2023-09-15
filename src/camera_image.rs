@@ -172,7 +172,7 @@ mod test {
 
     use super::*;
 
-    /// Tests for the from_bytes method
+    /// Tests for the `from_bytes` method
     #[test]
     fn test_from_bytes() {
         let bytes = vec![

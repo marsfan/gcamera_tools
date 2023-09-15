@@ -29,7 +29,8 @@
     clippy::redundant_else,
     clippy::must_use_candidate,
     clippy::struct_excessive_bools,
-    clippy::match_same_arms
+    clippy::match_same_arms,
+    clippy::unreadable_literal
 )]
 // Stuff from clippy::restriction we don't worry about
 #![allow(

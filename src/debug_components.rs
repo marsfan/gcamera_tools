@@ -191,7 +191,7 @@ mod tests {
     mod chunk_tests {
         use super::*;
 
-        /// Test the to_bytes method
+        /// Test the `as_bytes` method
         #[test]
         fn test_to_bytes() {
             let chunk = DebugChunk {
@@ -242,7 +242,7 @@ mod tests {
                 Err(GCameraError::MagicNotFound {
                     magic: String::from("hi")
                 })
-            )
+            );
         }
     }
 

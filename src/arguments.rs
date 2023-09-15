@@ -70,7 +70,7 @@ mod tests {
         assert_eq!(parsed_args, expected_result);
     }
 
-    /// Test with image_output set.
+    /// Test with `image_output` set.
     #[test]
     fn test_image_output() {
         let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "--save-image"];
@@ -88,7 +88,7 @@ mod tests {
         assert_eq!(parsed_args, expected_results);
     }
 
-    /// Test with save_debug set
+    /// Test with `save_debug` set
     #[test]
     fn test_save_debug() {
         let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "--save-debug"];
@@ -165,6 +165,6 @@ mod tests {
     #[test]
     fn verify_arguments() {
         use clap::CommandFactory;
-        Arguments::command().debug_assert()
+        Arguments::command().debug_assert();
     }
 }

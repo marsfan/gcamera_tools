@@ -243,11 +243,11 @@ impl TryFrom<String> for XMPData {
 mod tests {
     use super::*;
 
-    /// Tests for the attribute_to_str function
+    /// Tests for the `attribute_to_str` function
     mod test_attribute_to_str {
         use super::*;
 
-        /// Test the attribute_to_str function when it has a valid value.
+        /// Test the `attribute_to_str` function when it has a valid value.
         #[test]
         fn test_some() {
             let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
@@ -263,7 +263,7 @@ mod tests {
             );
         }
 
-        /// Test the attribute_to_str function when it does not have a valid value.
+        /// Test the `attribute_to_str` function when it does not have a valid value.
         #[test]
         fn test_none() {
             let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
@@ -279,7 +279,7 @@ mod tests {
             );
         }
 
-        /// Test the attribute_to_str function when namespace is invalid.
+        /// Test the `attribute_to_str` function when namespace is invalid.
         #[test]
         fn test_bad_ns() {
             let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
@@ -295,7 +295,7 @@ mod tests {
             );
         }
 
-        /// Test the attribute_to_str function when there are no namespaces
+        /// Test the `attribute_to_str` function when there are no namespaces
         #[test]
         fn test_no_ns() {
             let test_xml = "<tagname a=\"Hello\"/>";
@@ -312,12 +312,12 @@ mod tests {
         }
     }
 
-    /// Tests for the attribute_to_u32 method
-    mod test_attribute_to_u32 {
+    /// Tests for the `parse_attribute` method
+    mod test_parse_attribute {
 
         use super::*;
 
-        /// Test the attribute_to_u32 function when it has a valid value.
+        /// Test the `parse_attribute` function when it has a valid value.
         #[test]
         fn test_some() {
             let test_xml = "<tagname t:a=\"1\" xmlns:t=\"http://ns.example.com\" />";
@@ -333,7 +333,7 @@ mod tests {
             );
         }
 
-        /// Test the attribute_to_u32 function when it does not have a valid value.
+        /// Test the `parse_attribute` function when it does not have a valid value.
         #[test]
         fn test_none() {
             let test_xml = "<tagname t:a=\"1\" xmlns:t=\"http://ns.example.com\" />";
@@ -349,7 +349,7 @@ mod tests {
             );
         }
 
-        /// Test the attribute_to_u32 function when namespace is invalid.
+        /// Test the `parse_attribute` function when namespace is invalid.
         #[test]
         fn test_bad_ns() {
             let test_xml = "<tagname t:a=\"1\" xmlns:t=\"http://ns.example.com\" />";
@@ -365,7 +365,7 @@ mod tests {
             );
         }
 
-        /// Test the attribute_to_u32 function when there are no namespaces
+        /// Test the `parse_attribute` function when there are no namespaces
         #[test]
         fn test_no_ns() {
             let test_xml = "<tagname a=\"1\"/>";
@@ -430,7 +430,7 @@ mod tests {
                     motion_photo_version: Some(1),
                     motion_photo_timestamp_us: Some(968644),
                 }),
-            )
+            );
         }
     }
 
@@ -464,15 +464,15 @@ mod tests {
                     label: None,
                     uri: None
                 })
-            )
+            );
         }
     }
 
-    /// Tests for the XMPData struct
+    /// Tests for the `XMPData` struct
     mod test_xmp_data {
         use super::*;
 
-        /// Test the from_xml function
+        /// Test the `try_from` method from parsing from XML Document
         #[test]
         fn test_from_xml() {
             let document = Document::parse(
@@ -541,7 +541,7 @@ mod tests {
                         },
                     ],
                 },)
-            )
+            );
         }
 
         /// Test for when there is no description node
@@ -560,10 +560,10 @@ mod tests {
             assert_eq!(data, Err(GCameraError::DescriptionNodeNotFound));
         }
 
-        /// Basic test for the from_str method
+        /// Basic test for the `from_str` method
         #[test]
         fn test_from_str() {
-            let xml_string =
+            let xml_string = String::from(
                 "<x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='Adobe XMP Core 5.1.0-jc003'>
                 <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
                     <rdf:Description rdf:about=''
@@ -595,8 +595,8 @@ mod tests {
                     </Container:Directory>
                     </rdf:Description>
                 </rdf:RDF>
-                </x:xmpmeta>"
-                    .to_string();
+                </x:xmpmeta>",
+            );
 
             let data = XMPData::try_from(xml_string);
 
@@ -628,7 +628,7 @@ mod tests {
                         },
                     ],
                 }),
-            )
+            );
         }
     }
 }

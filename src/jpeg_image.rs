@@ -101,7 +101,7 @@ mod test {
             ],
         };
 
-        assert_eq!(image.as_bytes(), vec![0xFF, 0xD8, 0xFF, 0xD9])
+        assert_eq!(image.as_bytes(), vec![0xFF, 0xD8, 0xFF, 0xD9]);
     }
 
     /// Test case for when there JPEG magic is invalid
