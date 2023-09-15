@@ -9,11 +9,19 @@ use roxmltree::{Document, ExpandedName, Node};
 use crate::errors::GCameraError;
 // Namespace consants.
 // TODO: Could we use some other structure/enum instead?
-// const X_NS: &str = "adobe:ns:meta/";
+
+/// RDF Namespace
 const RDF_NS: &str = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+/// XMP Note Namespace
 const XMP_NOTE_NS: &str = "http://ns.adobe.com/xmp/note/";
+
+/// Google generic camera info.
 const GCAMERA_NS: &str = "http://ns.google.com/photos/1.0/camera/";
+
+/// Google resource container info
 const CONTAINER_NS: &str = "http://ns.google.com/photos/1.0/container/";
+
+/// Google Resource item info
 const ITEM_NS: &str = "http://ns.google.com/photos/1.0/container/item/";
 
 /// Convert an XML attribute in a node to a string.
