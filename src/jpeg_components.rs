@@ -166,7 +166,7 @@ impl JpegSegment {
 
         let data_length = match marker {
             JpegMarker::SOS => Some(find_next_segment(&bytes[2..])?),
-            _ => length.map(|val| return val as usize),
+            _ => length.map(|val| return usize::from(val)),
         };
 
         let data = data_length.map(|len| return bytes[4..(2 + len)].to_vec());

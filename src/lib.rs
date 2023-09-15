@@ -47,7 +47,6 @@
     clippy::unwrap_used,
     clippy::arithmetic_side_effects,
     clippy::unwrap_in_result,
-    clippy::as_conversions,
     clippy::default_numeric_fallback,
     clippy::wildcard_enum_match_arm,
     clippy::panic_in_result_fn,
