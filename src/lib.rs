@@ -45,19 +45,19 @@
     clippy::pattern_type_mismatch,
     clippy::default_numeric_fallback,
     clippy::partial_pub_fields,
-    clippy::indexing_slicing
+    clippy::indexing_slicing,
+    clippy::blanket_clippy_restriction_lints,
+    clippy::arithmetic_side_effects,
+    clippy::unwrap_used
 )]
 // Stuff from clippy::restriction we might want to enable
 #![allow(
-    clippy::unwrap_used,
-    clippy::arithmetic_side_effects,
     clippy::unwrap_in_result,
     clippy::panic_in_result_fn,
     clippy::map_err_ignore,
     clippy::exhaustive_enums, // TODO: What is this?
     clippy::exhaustive_structs, // TOOD: What is this?
     clippy::panic,
-    clippy::blanket_clippy_restriction_lints,
 )]
 // Stuff from clippy::restruction we do want.
 #![allow(clippy::min_ident_chars)]
