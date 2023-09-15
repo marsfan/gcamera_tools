@@ -46,13 +46,13 @@ fn parse_attribute<T: std::str::FromStr>(
     namespace: &str,
     attribute: &str,
 ) -> Result<Option<T>, GCameraError> {
-    let attribute = node.attribute((namespace, attribute));
-    return attribute
+    let attrib_val = node.attribute((namespace, attribute));
+    return attrib_val
         .map(|n| return n.parse())
         .transpose()
         .map_err(|_| {
             return GCameraError::XMLAttributeToU32Error {
-                attribute: attribute.map(|n| return String::from(n)),
+                attribute: attrib_val.map(|n| return String::from(n)),
             };
         });
 }
