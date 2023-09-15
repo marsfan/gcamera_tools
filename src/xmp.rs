@@ -4,8 +4,6 @@
 * file, You can obtain one at https: //mozilla.org/MPL/2.0/.
 */
 //! Logic for parsing the XMP data in an image.
-#![deny(clippy::implicit_return)]
-#![allow(clippy::needless_return)]
 use roxmltree::{Document, ExpandedName, Node};
 
 use crate::errors::GCameraError;

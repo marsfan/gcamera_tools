@@ -12,6 +12,8 @@
 //! removing it altogether. This is provided both through a library, and
 //! as a command line tool.
 
+#![deny(clippy::implicit_return)]
+#![allow(clippy::needless_return)]
 pub mod arguments;
 pub mod camera_image;
 pub mod debug_components;

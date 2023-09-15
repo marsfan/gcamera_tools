@@ -7,8 +7,6 @@
 //!
 //! This module provides the logic used by the command-line tool to read
 //! arguments from the command line.
-#![deny(clippy::implicit_return)]
-#![allow(clippy::needless_return)]
 use std::path::PathBuf;
 
 use clap::Parser;

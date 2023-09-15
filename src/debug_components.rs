@@ -4,8 +4,6 @@
 * file, You can obtain one at https: //mozilla.org/MPL/2.0/.
 */
 //! Logic for working with camera debug information in an image.
-#![deny(clippy::implicit_return)]
-#![allow(clippy::needless_return)]
 
 use std::{io::Write, path::PathBuf};
 

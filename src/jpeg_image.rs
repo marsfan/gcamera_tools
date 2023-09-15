@@ -4,8 +4,6 @@
 * file, You can obtain one at https: //mozilla.org/MPL/2.0/.
 */
 //! Logic for the entire JPEG image.
-#![deny(clippy::implicit_return)]
-#![allow(clippy::needless_return)]
 
 use crate::errors::GCameraError;
 use crate::jpeg_components::{JpegMarker, JpegSegment};

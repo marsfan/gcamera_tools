@@ -4,9 +4,6 @@
 * file, You can obtain one at https: //mozilla.org/MPL/2.0/.
 */
 //! Logic for working with the actual JPEG image
-#![deny(clippy::implicit_return)]
-// TODO: Can this be made to only apply to the enum?
-#![allow(clippy::needless_return)]
 
 use crate::errors::GCameraError;
 

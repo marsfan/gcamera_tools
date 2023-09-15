@@ -4,8 +4,6 @@
 * file, You can obtain one at https: //mozilla.org/MPL/2.0/.
 */
 //! Enumeration of errors the tool can produce.
-#![deny(clippy::implicit_return)]
-#![allow(clippy::needless_return)]
 
 use std::fmt;
 

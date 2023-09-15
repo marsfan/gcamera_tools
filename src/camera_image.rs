@@ -4,8 +4,6 @@
 * file, You can obtain one at https: //mozilla.org/MPL/2.0/.
 */
 //! Top-Level logic for processing an image.
-#![deny(clippy::implicit_return)]
-#![allow(clippy::needless_return)]
 use crate::debug_components::DebugComponents;
 use crate::errors::GCameraError;
 use crate::jpeg_image::JpegImage;
