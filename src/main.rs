@@ -22,7 +22,10 @@ fn main() {
 
     // Save the JPEG image if requested
     if args.save_image {
-        let output_path = args.input_path.with_extension("image.jpg");
+        let output_path = match args.image_path {
+            Some(image_path) => image_path,
+            None => args.input_path.with_extension("image.jpg"),
+        };
         image.save_image(output_path).unwrap_or_else(|err| {
             eprintln!("Problem Saving JPEG Image: {err}");
             exit(1)
@@ -31,7 +34,10 @@ fn main() {
 
     // Save the debug data if requested.
     if args.save_debug {
-        let output_path = args.input_path.with_extension("debug.bin");
+        let output_path = match args.debug_path {
+            Some(debug_path) => debug_path,
+            None => args.input_path.with_extension("debug.bin"),
+        };
         image.save_debug_data(output_path).unwrap_or_else(|err| {
             eprintln!("Problem Saving Debug Data: {err}");
             exit(1)
