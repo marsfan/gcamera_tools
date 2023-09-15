@@ -73,46 +73,52 @@ pub enum GCameraError {
 }
 
 impl fmt::Display for GCameraError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         return match self {
-            GCameraError::ImageReadError => write!(f, "Error reading the image."),
-            GCameraError::ImageWriteError => write!(f, "Error writing the image."),
-            GCameraError::DebugDataWriteError => write!(f, "Error writing the debug data."),
+            GCameraError::ImageReadError => write!(formatter, "Error reading the image."),
+            GCameraError::ImageWriteError => write!(formatter, "Error writing the image."),
+            GCameraError::DebugDataWriteError => write!(formatter, "Error writing the debug data."),
             GCameraError::InvalidJpegMagic => {
-                write!(f, "File does not start with valid JPEG Magic.!")
+                write!(formatter, "File does not start with valid JPEG Magic.!")
             }
             GCameraError::XMLParsingError { xml_error } => {
-                write!(f, "Error parsing XML Document. XML Error: {xml_error}.")
+                write!(
+                    formatter,
+                    "Error parsing XML Document. XML Error: {xml_error}."
+                )
             }
             GCameraError::XMLAttributeToU32Error { attribute } => {
                 write!(
-                    f,
+                    formatter,
                     "Error parsing XML Attribute to a u32. Attribute: {:?}.",
                     attribute
                 )
             }
-            GCameraError::NoXMPData => write!(f, "No XMP Data found in the image."),
+            GCameraError::NoXMPData => write!(formatter, "No XMP Data found in the image."),
             GCameraError::DescriptionNodeNotFound => {
-                write!(f, "Description not found in XMP data.")
+                write!(formatter, "Description not found in XMP data.")
             }
             GCameraError::UnknownResourceSemantic { semantic } => {
-                write!(f, "Resource has an unknown semantic type of '{semantic}'.")
+                write!(
+                    formatter,
+                    "Resource has an unknown semantic type of '{semantic}'."
+                )
             }
             GCameraError::MagicNotFound { magic } => {
-                write!(f, "Could not find magic '{magic}' in image.")
+                write!(formatter, "Could not find magic '{magic}' in image.")
             }
             GCameraError::JpegMarkerNotFound => {
-                write!(f, "Could not find another JPEG Segment Marker.")
+                write!(formatter, "Could not find another JPEG Segment Marker.")
             }
             GCameraError::UnknownJpegMarker { marker_byte } => {
                 write!(
-                    f,
+                    formatter,
                     "JPEG Marker with bytes '{:02x}' is not known.",
                     marker_byte
                 )
             }
             GCameraError::Other { msg } => {
-                write!(f, "Unknown Error Occurred. msg: {msg}")
+                write!(formatter, "Unknown Error Occurred. msg: {msg}")
             }
         };
     }
