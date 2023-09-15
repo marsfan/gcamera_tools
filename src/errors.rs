@@ -32,8 +32,8 @@ pub enum GCameraError {
         xml_error: roxmltree::Error,
     },
 
-    /// Indicates that an XML attribute could not be parsed to a U32
-    XMLAttributeToU32Error {
+    /// Indicates that an XML attribute could not be parsed
+    XMLAttributeParseError {
         /// The value of the attribute
         attribute: Option<String>,
     },
@@ -87,7 +87,7 @@ impl fmt::Display for GCameraError {
                     "Error parsing XML Document. XML Error: {xml_error}."
                 )
             }
-            GCameraError::XMLAttributeToU32Error { attribute } => {
+            GCameraError::XMLAttributeParseError { attribute } => {
                 write!(
                     formatter,
                     "Error parsing XML Attribute to a u32. Attribute: {attribute:?}.",

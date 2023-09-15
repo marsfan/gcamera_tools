@@ -59,7 +59,7 @@ fn parse_attribute<T: std::str::FromStr>(
         .map(|n| return n.parse())
         .transpose()
         .map_err(|_| {
-            return GCameraError::XMLAttributeToU32Error {
+            return GCameraError::XMLAttributeParseError {
                 attribute: attrib_val.map(|n| return String::from(n)),
             };
         });
@@ -391,7 +391,6 @@ mod tests {
 
         /// Test case where the attribute cannot be parsed to a string.
         #[test]
-        #[should_panic]
         fn test_not_parseable() {
             let test_xml = "<tagname t:a=\"Hello\" xmlns:t=\"http://ns.example.com\" />";
             let document = Document::parse(test_xml).unwrap();
@@ -399,7 +398,14 @@ mod tests {
                 .descendants()
                 .find(|n| return n.tag_name().name() == "tagname")
                 .unwrap();
-            parse_attribute::<u32>(xml_element, "http://ns.example.com", "a").unwrap();
+            let parse_result = parse_attribute::<u32>(xml_element, "http://ns.example.com", "a");
+
+            assert_eq!(
+                parse_result,
+                Err(GCameraError::XMLAttributeParseError {
+                    attribute: Some(String::from("Hello"))
+                })
+            )
         }
     }
 
