@@ -26,6 +26,11 @@ pub enum GCameraError {
     /// to be a JPEG file.
     InvalidJpegMagic,
 
+    /// Indicates that somehow the one of the `data` or `length` members
+    /// of `JpegSegment` is `None`, while the other is `Some`. This should
+    /// not be possible at all, so we need to error out right away.
+    LengthDataNotSameOption,
+
     /// Indicates that parsing the XML Document failed
     XMLParsingError {
         /// The XML Parser error
@@ -80,6 +85,9 @@ impl fmt::Display for GCameraError {
             GCameraError::DebugDataWriteError => write!(formatter, "Error writing the debug data."),
             GCameraError::InvalidJpegMagic => {
                 write!(formatter, "File does not start with valid JPEG Magic.!")
+            }
+            GCameraError::LengthDataNotSameOption => {
+                write!(formatter, "Data and length must either both be None, or both be some. This should not be possible.")
             }
             GCameraError::XMLParsingError { xml_error } => {
                 write!(

@@ -405,7 +405,37 @@ mod tests {
                 Err(GCameraError::XMLAttributeParseError {
                     attribute: Some(String::from("Hello"))
                 })
-            )
+            );
+        }
+    }
+
+    /// Tests for the `SemanticType` enum
+    mod semantic_type_test {
+        use super::*;
+
+        /// Test the `try_from` method
+        #[test]
+        fn test_try_from() {
+            let cases = vec![
+                (String::from("Primary"), SemanticType::Primary),
+                (String::from("MotionPhoto"), SemanticType::MotionPhoto),
+                (String::from("GainMap"), SemanticType::GainMap),
+            ];
+
+            for (input, expected) in cases {
+                assert_eq!(SemanticType::try_from(input), Ok(expected));
+            }
+        }
+
+        /// Test `try_from` with a bad string.
+        #[test]
+        fn test_try_from_bad_string() {
+            assert_eq!(
+                SemanticType::try_from(String::from("Hello")),
+                Err(GCameraError::UnknownResourceSemantic {
+                    semantic: String::from("Hello")
+                })
+            );
         }
     }
 

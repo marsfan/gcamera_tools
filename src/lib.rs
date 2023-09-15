@@ -53,11 +53,9 @@
 // Stuff from clippy::restriction we might want to enable
 #![allow(
     clippy::unwrap_in_result,
-    clippy::panic_in_result_fn,
     clippy::map_err_ignore,
     clippy::exhaustive_enums, // TODO: What is this?
     clippy::exhaustive_structs, // TODO: What is this?
-    clippy::panic,
 )]
 // Stuff from clippy::restruction we do want.
 #![allow(clippy::min_ident_chars)]

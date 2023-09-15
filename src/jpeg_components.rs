@@ -228,7 +228,7 @@ impl JpegSegment {
                 data,
             });
         } else {
-            panic!("Data and length must either both be None, or both be some. This should not be possible.");
+            return Err(GCameraError::LengthDataNotSameOption);
         }
     }
 
