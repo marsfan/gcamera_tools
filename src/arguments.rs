@@ -13,13 +13,10 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
-// TODO: Add arguments for optional change of output paths
-
 #[derive(Parser, Debug, Eq, PartialEq)]
 #[command(author, version, about = "Utility for working with photos take with Google Camera", long_about = None)]
 pub struct Arguments {
     /// Path to the image to process
-    // FIXME: Why is this showing up after positional arguments?
     #[arg(index = 1)]
     pub input_path: PathBuf, // Path to search
 
