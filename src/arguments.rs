@@ -23,17 +23,29 @@ pub struct Arguments {
     #[arg(index = 1)]
     pub input_path: PathBuf, // Path to search
 
-    /// Flag to save the debug data.
+    /// Save the primary image to a new file.
     #[arg(short, long)]
     pub image_output: bool,
 
-    /// flag to save the debug data
+    /// Optional path to save the primary image to
+    #[arg(long, requires = "image_output")]
+    pub image_path: Option<PathBuf>,
+
+    /// Save the debug data in a new file
     #[arg(short, long)]
     pub debug_output: bool,
+
+    /// Optional Path to save debug data to
+    #[arg(long, requires = "debug_output")]
+    pub debug_path: Option<PathBuf>,
 
     /// Flag to save the motion photo video
     #[arg(short, long)]
     pub motion_output: bool,
+
+    /// Optional path to save the motion video to
+    #[arg(long, requires = "motion_output")]
+    pub motion_path: Option<PathBuf>,
 
     /// Print out some information about the file
     #[arg(short = 'I', long)]
@@ -53,8 +65,11 @@ mod tests {
         let expected_result = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
             image_output: false,
+            image_path: None,
             debug_output: false,
+            debug_path: None,
             motion_output: false,
+            motion_path: None,
             info: false,
         };
         assert_eq!(parsed_args, expected_result);
@@ -68,8 +83,11 @@ mod tests {
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
             image_output: true,
+            image_path: None,
             debug_output: false,
+            debug_path: None,
             motion_output: false,
+            motion_path: None,
             info: false,
         };
         assert_eq!(parsed_args, expected_results);
@@ -83,8 +101,11 @@ mod tests {
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
             image_output: false,
+            image_path: None,
             debug_output: true,
+            debug_path: None,
             motion_output: false,
+            motion_path: None,
             info: false,
         };
         assert_eq!(parsed_args, expected_results);
@@ -98,8 +119,11 @@ mod tests {
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
             image_output: false,
+            image_path: None,
             debug_output: false,
+            debug_path: None,
             motion_output: true,
+            motion_path: None,
             info: false,
         };
         assert_eq!(parsed_args, expected_results);
@@ -112,8 +136,11 @@ mod tests {
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
             image_output: false,
+            image_path: None,
             debug_output: false,
+            debug_path: None,
             motion_output: false,
+            motion_path: None,
             info: true,
         };
         assert_eq!(parsed_args, expected_results);
