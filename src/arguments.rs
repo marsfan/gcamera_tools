@@ -13,6 +13,8 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
+// TODO: Add arguments for optional change of output paths
+
 #[derive(Parser, Debug, Eq, PartialEq)]
 #[command(author, version, about = "Utility for working with photos take with Google Camera", long_about = None)]
 pub struct Arguments {
@@ -21,17 +23,17 @@ pub struct Arguments {
     #[arg(index = 1)]
     pub input_path: PathBuf, // Path to search
 
-    /// Path to save just the JPEG image to
+    /// Flag to save the debug data.
     #[arg(short, long)]
-    pub image_output: Option<String>,
+    pub image_output: bool,
 
-    /// Path to save the debug data to
+    /// flag to save the debug data
     #[arg(short, long)]
-    pub debug_output: Option<String>,
+    pub debug_output: bool,
 
-    /// Path to save the motion video to
+    /// Flag to save the motion photo video
     #[arg(short, long)]
-    pub motion_output: Option<String>,
+    pub motion_output: bool,
 
     /// Print out some information about the file
     #[arg(short = 'I', long)]
@@ -50,9 +52,9 @@ mod tests {
 
         let expected_result = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
-            image_output: None,
-            debug_output: None,
-            motion_output: None,
+            image_output: false,
+            debug_output: false,
+            motion_output: false,
             info: false,
         };
         assert_eq!(parsed_args, expected_result);
@@ -61,18 +63,13 @@ mod tests {
     /// Test with image_output set.
     #[test]
     fn test_image_output() {
-        let input_args = vec![
-            "/bin/gcamera_tools",
-            "motion_photo.jpg",
-            "--image-output",
-            "just_photo.jpg",
-        ];
+        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "--image-output"];
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
-            image_output: Some(String::from("just_photo.jpg")),
-            debug_output: None,
-            motion_output: None,
+            image_output: true,
+            debug_output: false,
+            motion_output: false,
             info: false,
         };
         assert_eq!(parsed_args, expected_results);
@@ -81,18 +78,13 @@ mod tests {
     /// Test with debug_output set
     #[test]
     fn test_debug_output() {
-        let input_args = vec![
-            "/bin/gcamera_tools",
-            "motion_photo.jpg",
-            "--debug-output",
-            "debug_data.bin",
-        ];
+        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "--debug-output"];
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
-            image_output: None,
-            debug_output: Some(String::from("debug_data.bin")),
-            motion_output: None,
+            image_output: false,
+            debug_output: true,
+            motion_output: false,
             info: false,
         };
         assert_eq!(parsed_args, expected_results);
@@ -101,18 +93,13 @@ mod tests {
     /// Test with video-output set
     #[test]
     fn test_video_output() {
-        let input_args = vec![
-            "/bin/gcamera_tools",
-            "motion_photo.jpg",
-            "--motion-output",
-            "motion.mp4",
-        ];
+        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "--motion-output"];
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
-            image_output: None,
-            debug_output: None,
-            motion_output: Some(String::from("motion.mp4")),
+            image_output: false,
+            debug_output: false,
+            motion_output: true,
             info: false,
         };
         assert_eq!(parsed_args, expected_results);
@@ -124,9 +111,9 @@ mod tests {
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
-            image_output: None,
-            debug_output: None,
-            motion_output: None,
+            image_output: false,
+            debug_output: false,
+            motion_output: false,
             info: true,
         };
         assert_eq!(parsed_args, expected_results);

@@ -36,7 +36,7 @@ impl CameraImage {
     ///
     /// # Returns
     /// Instance of the structure, or an error code.
-    pub fn from_file(filepath: PathBuf) -> Result<Self, GCameraError> {
+    pub fn from_file(filepath: &PathBuf) -> Result<Self, GCameraError> {
         return match fs::read(filepath) {
             Ok(contents) => Self::try_from(contents),
             Err(_) => Err(GCameraError::ImageReadError),

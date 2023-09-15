@@ -15,28 +15,34 @@ fn main() {
     // Parse command line arguments
     let args = Arguments::parse();
 
-    let image = CameraImage::from_file(args.input_path).unwrap_or_else(|err| {
+    let image = CameraImage::from_file(&args.input_path).unwrap_or_else(|err| {
         eprintln!("Problem Parsing Image: {err}");
         exit(1);
     });
 
-    // Save the JPEG image if the user provides a save path.
-    if let Some(output_path) = args.image_output {
-        image.save_image(output_path).unwrap_or_else(|err| {
-            eprintln!("Problem Saving JPEG Image: {err}");
-            exit(1)
-        })
+    // Save the JPEG image if requested
+    if args.image_output {
+        let output_path = args.input_path.with_extension("image.jpg");
+        image
+            .save_image(String::from(output_path.to_str().unwrap()))
+            .unwrap_or_else(|err| {
+                eprintln!("Problem Saving JPEG Image: {err}");
+                exit(1)
+            })
     }
 
-    // Save the debug data if the user provides a save path.
-    if let Some(output_path) = args.debug_output {
-        image.save_debug_data(output_path).unwrap_or_else(|err| {
-            eprintln!("Problem Saving Debug Data: {err}");
-            exit(1)
-        })
+    // Save the debug data if requested.
+    if args.debug_output {
+        let output_path = args.input_path.with_extension("debug.bin");
+        image
+            .save_debug_data(String::from(output_path.to_str().unwrap()))
+            .unwrap_or_else(|err| {
+                eprintln!("Problem Saving Debug Data: {err}");
+                exit(1)
+            })
     }
-    // Save the motion photo if the user provides a save path
-    if args.motion_output.is_some() {
+    // Save the motion photo if requested
+    if args.motion_output {
         panic!("Motion extracting is not supported yet")
     }
 
