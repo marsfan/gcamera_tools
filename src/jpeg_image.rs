@@ -44,7 +44,7 @@ impl JpegImage {
     /// # Returns
     /// The XMP as XMPData, or an error message.
     pub fn get_xmp(&self) -> Result<XMPData, GCameraError> {
-        for segment in self.segments.iter() {
+        for segment in &self.segments {
             let xmp_string = segment.as_xmp_str();
             if let Some(xmp_string) = xmp_string {
                 return XMPData::try_from(xmp_string);

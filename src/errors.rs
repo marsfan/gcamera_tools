@@ -90,8 +90,7 @@ impl fmt::Display for GCameraError {
             GCameraError::XMLAttributeToU32Error { attribute } => {
                 write!(
                     formatter,
-                    "Error parsing XML Attribute to a u32. Attribute: {:?}.",
-                    attribute
+                    "Error parsing XML Attribute to a u32. Attribute: {attribute:?}.",
                 )
             }
             GCameraError::NoXMPData => write!(formatter, "No XMP Data found in the image."),
@@ -113,8 +112,7 @@ impl fmt::Display for GCameraError {
             GCameraError::UnknownJpegMarker { marker_byte } => {
                 write!(
                     formatter,
-                    "JPEG Marker with bytes '{:02x}' is not known.",
-                    marker_byte
+                    "JPEG Marker with bytes '{marker_byte:02x}' is not known.",
                 )
             }
             GCameraError::Other { msg } => {

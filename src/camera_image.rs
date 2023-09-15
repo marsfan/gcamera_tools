@@ -93,10 +93,10 @@ impl CameraImage {
                 println!(
                     "\tResource {index} has a semantic of '{:?}'",
                     resource.semantic
-                )
+                );
             }
         } else {
-            println!("XMP data not found")
+            println!("XMP data not found");
         }
     }
 
@@ -115,7 +115,7 @@ impl CameraImage {
         for (index, resource) in xmp_data.resources.iter().enumerate().rev() {
             if resource.semantic != SemanticType::Primary {
                 length_accumulation -= resource.length.unwrap();
-                println!("Resource {} starts at {}", index, length_accumulation);
+                println!("Resource {index} starts at {length_accumulation}");
 
                 // Also have to account for the padding between each resource
                 // that's the point of this
