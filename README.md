@@ -10,8 +10,6 @@ the images.
 
 * Use `serde`?
 * Find JPEG libraries for Rust?
-* Use `clap` to have a better CLI interface.
-* Look into using `cargo-nextest` for tests.
 
 ## Testing
 
