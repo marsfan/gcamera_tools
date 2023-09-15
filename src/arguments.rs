@@ -24,27 +24,27 @@ pub struct Arguments {
     pub input_path: PathBuf, // Path to search
 
     /// Save the primary image to a new file.
-    #[arg(short, long)]
-    pub image_output: bool,
+    #[arg(short = 'i', long)]
+    pub save_image: bool,
 
     /// Optional path to save the primary image to
-    #[arg(long, requires = "image_output")]
+    #[arg(long, requires = "save_image")]
     pub image_path: Option<PathBuf>,
 
     /// Save the debug data in a new file
-    #[arg(short, long)]
-    pub debug_output: bool,
+    #[arg(short = 'd', long)]
+    pub save_debug: bool,
 
-    /// Optional Path to save debug data to
-    #[arg(long, requires = "debug_output")]
+    /// Optional path to save debug data to
+    #[arg(long, requires = "save_debug")]
     pub debug_path: Option<PathBuf>,
 
     /// Flag to save the motion photo video
-    #[arg(short, long)]
-    pub motion_output: bool,
+    #[arg(short = 'm', long)]
+    pub save_motion: bool,
 
     /// Optional path to save the motion video to
-    #[arg(long, requires = "motion_output")]
+    #[arg(long, requires = "save_motion")]
     pub motion_path: Option<PathBuf>,
 
     /// Print out some information about the file
@@ -64,11 +64,11 @@ mod tests {
 
         let expected_result = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
-            image_output: false,
+            save_image: false,
             image_path: None,
-            debug_output: false,
+            save_debug: false,
             debug_path: None,
-            motion_output: false,
+            save_motion: false,
             motion_path: None,
             info: false,
         };
@@ -78,33 +78,33 @@ mod tests {
     /// Test with image_output set.
     #[test]
     fn test_image_output() {
-        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "--image-output"];
+        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "--save-image"];
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
-            image_output: true,
+            save_image: true,
             image_path: None,
-            debug_output: false,
+            save_debug: false,
             debug_path: None,
-            motion_output: false,
+            save_motion: false,
             motion_path: None,
             info: false,
         };
         assert_eq!(parsed_args, expected_results);
     }
 
-    /// Test with debug_output set
+    /// Test with save_debug set
     #[test]
-    fn test_debug_output() {
-        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "--debug-output"];
+    fn test_save_debug() {
+        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "--save-debug"];
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
-            image_output: false,
+            save_image: false,
             image_path: None,
-            debug_output: true,
+            save_debug: true,
             debug_path: None,
-            motion_output: false,
+            save_motion: false,
             motion_path: None,
             info: false,
         };
@@ -114,15 +114,15 @@ mod tests {
     /// Test with video-output set
     #[test]
     fn test_video_output() {
-        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "--motion-output"];
+        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "--save-motion"];
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
-            image_output: false,
+            save_image: false,
             image_path: None,
-            debug_output: false,
+            save_debug: false,
             debug_path: None,
-            motion_output: true,
+            save_motion: true,
             motion_path: None,
             info: false,
         };
@@ -135,11 +135,11 @@ mod tests {
         let parsed_args = Arguments::parse_from(input_args);
         let expected_results = Arguments {
             input_path: PathBuf::from("motion_photo.jpg"),
-            image_output: false,
+            save_image: false,
             image_path: None,
-            debug_output: false,
+            save_debug: false,
             debug_path: None,
-            motion_output: false,
+            save_motion: false,
             motion_path: None,
             info: true,
         };

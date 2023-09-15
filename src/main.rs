@@ -21,7 +21,7 @@ fn main() {
     });
 
     // Save the JPEG image if requested
-    if args.image_output {
+    if args.save_image {
         let output_path = args.input_path.with_extension("image.jpg");
         image.save_image(output_path).unwrap_or_else(|err| {
             eprintln!("Problem Saving JPEG Image: {err}");
@@ -30,7 +30,7 @@ fn main() {
     }
 
     // Save the debug data if requested.
-    if args.debug_output {
+    if args.save_debug {
         let output_path = args.input_path.with_extension("debug.bin");
         image.save_debug_data(output_path).unwrap_or_else(|err| {
             eprintln!("Problem Saving Debug Data: {err}");
@@ -38,7 +38,7 @@ fn main() {
         })
     }
     // Save the motion photo if requested
-    if args.motion_output {
+    if args.save_motion {
         panic!("Motion extracting is not supported yet")
     }
 
