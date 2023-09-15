@@ -42,7 +42,10 @@ impl JpegImage {
     /// Get the XMP data from the image
     ///
     /// # Returns
-    /// The XMP as XMPData, or an error message.
+    /// The XMP as `XMPData`.
+    ///
+    /// # Errors
+    /// Will return an error if there is no XMP data in the image
     pub fn get_xmp(&self) -> Result<XMPData, GCameraError> {
         for segment in &self.segments {
             let xmp_string = segment.as_xmp_str();

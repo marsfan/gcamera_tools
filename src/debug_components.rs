@@ -117,6 +117,9 @@ impl DebugComponents {
     ///
     /// # Returns
     /// Result of saving the data
+    ///
+    /// # Errors
+    /// Will error if writing the debug data to the disk fails
     pub fn save_data(&self, filepath: PathBuf) -> Result<(), GCameraError> {
         return std::fs::File::create(filepath)
             .map_err(|_| return GCameraError::DebugDataWriteError)?

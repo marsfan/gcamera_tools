@@ -46,7 +46,7 @@ pub enum JpegMarker {
     COM = 0xFE,
 }
 
-/// Conversion of a u8 into a JpegMarker
+/// Conversion of a u8 into a `JpegMarker`
 impl TryFrom<u8> for JpegMarker {
     type Error = GCameraError;
 
@@ -145,6 +145,16 @@ impl JpegSegment {
     ///
     /// # Returns
     /// Result containing either the created segment, or an error message.
+    ///
+    /// # Errors
+    /// Will error if creating a `JpegMarker` is not found.
+    /// Additionally, if the segment is a SOS segment, will error
+    /// if another segment cannot be found after the SOS Segment
+    ///
+    /// # Panics
+    /// Will panic if a segment has one (but not both of), a length
+    /// portion, and a data portion, as this is not possible under
+    /// the JPEG spec.
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, GCameraError> {
         let marker = JpegMarker::try_from(bytes[1])?;
 
@@ -199,6 +209,11 @@ impl JpegSegment {
     ///
     /// # Returns
     /// The XMP Data as a string, or None
+    ///
+    /// # Panics
+    /// Will panic if an attempt to parse the data to a UTF8 string
+    /// fails.
+    /// TODO: Replace with an error
     pub fn as_xmp_str(&self) -> Option<String> {
         let xmp_marker = "http://ns.adobe.com/xap/1.0/".as_bytes();
         if matches!(self.marker, JpegMarker::APP1)

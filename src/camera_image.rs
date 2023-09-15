@@ -34,6 +34,9 @@ impl CameraImage {
     ///
     /// # Returns
     /// Instance of the structure, or an error code.
+    ///
+    /// # Errors
+    /// Will return an error if reading the image from disk fails.
     pub fn from_file(filepath: &PathBuf) -> Result<Self, GCameraError> {
         return match fs::read(filepath) {
             Ok(contents) => Self::try_from(contents),
@@ -48,6 +51,9 @@ impl CameraImage {
     ///
     /// # Returns
     /// Result of saving the file.
+    ///
+    /// # Errors
+    /// Will error if writing the data to disk fails
     pub fn save_image(&self, filepath: PathBuf) -> Result<(), GCameraError> {
         return std::fs::File::create(filepath)
             .map_err(|_| return GCameraError::ImageWriteError)?
@@ -62,6 +68,9 @@ impl CameraImage {
     ///
     /// # Returns
     /// Result from saving the file.
+    ///
+    /// # Errors
+    /// Will error if writing the data to the disk fails.
     pub fn save_debug_data(&self, filepath: PathBuf) -> Result<(), GCameraError> {
         return self
             .debug_components
@@ -101,6 +110,10 @@ impl CameraImage {
     }
 
     /// Print info about resource offsets.
+    ///
+    /// # Panics
+    /// Will panic if XMP data is not found, resource does not have a length,
+    /// or resource does not have padding.
     pub fn print_resource_info(&self) {
         // FIXME: Work out how to integrate this into a new struct, so that it is not just being printed out
         // FIXME: Don't process the primary resource, which is the main JPEG image
