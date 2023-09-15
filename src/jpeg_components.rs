@@ -8,7 +8,6 @@
 use crate::errors::GCameraError;
 
 /// Enum of the different JPEG segment markers.
-#[repr(u8)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum JpegMarker {
     TEM = 0x01,
@@ -44,6 +43,54 @@ pub enum JpegMarker {
     APP14 = 0xEE,
     APP15 = 0xEF,
     COM = 0xFE,
+}
+
+/// Conversion of a `JpegMarker` into a u8
+impl From<JpegMarker> for u8 {
+    /// Convert `JpegMarker` to a u8
+    ///
+    /// # Arguments
+    /// * `value`: The value to convert to an integer
+    ///
+    /// # Returns
+    /// Integer form of the marker.
+    fn from(value: JpegMarker) -> Self {
+        return match value {
+            JpegMarker::TEM => 0x01,
+            JpegMarker::SOF0 => 0xC0,
+            JpegMarker::SOF1 => 0xC1,
+            JpegMarker::SOF2 => 0xC2,
+            JpegMarker::SOF3 => 0xC3,
+            JpegMarker::DHT => 0xC4,
+            JpegMarker::SOF5 => 0xC5,
+            JpegMarker::SOF6 => 0xC6,
+            JpegMarker::SOF7 => 0xC7,
+            JpegMarker::SOI => 0xD8,
+            JpegMarker::EOI => 0xD9,
+            JpegMarker::SOS => 0xDA,
+            JpegMarker::DQT => 0xDB,
+            JpegMarker::DNL => 0xDC,
+            JpegMarker::DRI => 0xDD,
+            JpegMarker::DHP => 0xDE,
+            JpegMarker::APP0 => 0xE0,
+            JpegMarker::APP1 => 0xE1,
+            JpegMarker::APP2 => 0xE2,
+            JpegMarker::APP3 => 0xE3,
+            JpegMarker::APP4 => 0xE4,
+            JpegMarker::APP5 => 0xE5,
+            JpegMarker::APP6 => 0xE6,
+            JpegMarker::APP7 => 0xE7,
+            JpegMarker::APP8 => 0xE8,
+            JpegMarker::APP9 => 0xE9,
+            JpegMarker::APP10 => 0xEA,
+            JpegMarker::APP11 => 0xEB,
+            JpegMarker::APP12 => 0xEC,
+            JpegMarker::APP13 => 0xED,
+            JpegMarker::APP14 => 0xEE,
+            JpegMarker::APP15 => 0xEF,
+            JpegMarker::COM => 0xFE,
+        };
+    }
 }
 
 /// Conversion of a u8 into a `JpegMarker`
@@ -248,7 +295,7 @@ impl From<&JpegSegment> for Vec<u8> {
 
         return [
             &[0xFF],
-            &[value.marker as u8],
+            &[u8::from(value.marker)],
             length_bytes.as_slice(),
             data_bytes,
         ]
@@ -302,7 +349,7 @@ mod tests {
             ];
             for (byte, marker) in test_cases {
                 assert_eq!(JpegMarker::try_from(byte), Ok(marker));
-                assert_eq!(marker as u8, byte);
+                assert_eq!(u8::from(marker), byte);
             }
         }
 
