@@ -12,8 +12,58 @@
 //! removing it altogether. This is provided both through a library, and
 //! as a command line tool.
 
+#![warn(
+    clippy::all,
+    clippy::correctness,
+    clippy::suspicious,
+    clippy::complexity,
+    clippy::perf,
+    clippy::pedantic,
+    clippy::restriction,
+    clippy::cargo
+)]
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
+// Stuff from clippy:pedantic we don't worry about
+#![allow(
+    clippy::redundant_else,
+    clippy::must_use_candidate,
+    clippy::struct_excessive_bools,
+    clippy::match_same_arms
+)]
+// Stuff from clippy::restriction we don't worry about
+#![allow(
+    clippy::question_mark_used,
+    clippy::single_call_fn,
+    clippy::missing_inline_in_public_items,
+    clippy::use_debug,
+    clippy::std_instead_of_alloc,
+    clippy::print_stdout,
+    clippy::std_instead_of_core
+)]
+// Stuff from clippy::restriction we might want to enable
+#![allow(
+    clippy::unwrap_used,
+    clippy::arithmetic_side_effects,
+    clippy::unwrap_in_result,
+    clippy::as_conversions,
+    clippy::default_numeric_fallback,
+    clippy::wildcard_enum_match_arm,
+    clippy::panic_in_result_fn,
+    clippy::pattern_type_mismatch,
+    clippy::big_endian_bytes,
+    clippy::indexing_slicing,
+    clippy::map_err_ignore,
+    clippy::shadow_reuse,
+    clippy::missing_docs_in_private_items,
+    clippy::exhaustive_enums, // TODO: What is this?
+    clippy::exhaustive_structs, // TOOD: What is this?
+    clippy::panic,
+    clippy::partial_pub_fields,
+    clippy::blanket_clippy_restriction_lints,
+)]
+// Stuff from clippy::restruction we do want.
+#![allow(clippy::min_ident_chars)]
 pub mod arguments;
 pub mod camera_image;
 pub mod debug_components;
