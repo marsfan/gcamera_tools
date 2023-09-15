@@ -6,8 +6,8 @@
 //! Top-Level logic for processing an image.
 use crate::debug_components::DebugComponents;
 use crate::errors::GCameraError;
-use crate::jpeg_image::JpegImage;
-use crate::xmp::SemanticType;
+use crate::jpeg::jpeg_image::JpegImage;
+use crate::jpeg::xmp::SemanticType;
 use std::convert::TryFrom;
 use std::fs;
 use std::io::Write;
@@ -168,7 +168,7 @@ impl TryFrom<Vec<u8>> for CameraImage {
 
 #[cfg(test)]
 mod test {
-    use crate::{debug_components::DebugChunk, jpeg_components::JpegSegment};
+    use crate::{debug_components::DebugChunk, jpeg::jpeg_components::JpegSegment};
 
     use super::*;
 
