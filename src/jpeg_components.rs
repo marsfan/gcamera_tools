@@ -161,7 +161,7 @@ impl JpegSegment {
         let length = match marker {
             JpegMarker::SOI => None,
             JpegMarker::EOI => None,
-            _ => Some((bytes[2] as u16) << 8 | (bytes[3] as u16)),
+            _ => Some((u16::from(bytes[2]) << 8) | u16::from(bytes[3])),
         };
 
         let data_length = match marker {
@@ -237,7 +237,7 @@ impl From<&JpegSegment> for Vec<u8> {
     /// Bytes of the JPEG segment.
     fn from(value: &JpegSegment) -> Self {
         let length_bytes = match value.length {
-            Some(length) => (length as u16).to_be_bytes().to_vec(),
+            Some(length) => length.to_be_bytes().to_vec(),
             None => Vec::new(),
         };
 
