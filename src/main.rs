@@ -23,23 +23,19 @@ fn main() {
     // Save the JPEG image if requested
     if args.image_output {
         let output_path = args.input_path.with_extension("image.jpg");
-        image
-            .save_image(String::from(output_path.to_str().unwrap()))
-            .unwrap_or_else(|err| {
-                eprintln!("Problem Saving JPEG Image: {err}");
-                exit(1)
-            })
+        image.save_image(output_path).unwrap_or_else(|err| {
+            eprintln!("Problem Saving JPEG Image: {err}");
+            exit(1)
+        })
     }
 
     // Save the debug data if requested.
     if args.debug_output {
         let output_path = args.input_path.with_extension("debug.bin");
-        image
-            .save_debug_data(String::from(output_path.to_str().unwrap()))
-            .unwrap_or_else(|err| {
-                eprintln!("Problem Saving Debug Data: {err}");
-                exit(1)
-            })
+        image.save_debug_data(output_path).unwrap_or_else(|err| {
+            eprintln!("Problem Saving Debug Data: {err}");
+            exit(1)
+        })
     }
     // Save the motion photo if requested
     if args.motion_output {

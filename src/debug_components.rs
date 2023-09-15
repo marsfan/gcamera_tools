@@ -7,7 +7,7 @@
 #![deny(clippy::implicit_return)]
 #![allow(clippy::needless_return)]
 
-use std::io::Write;
+use std::{io::Write, path::PathBuf};
 
 use crate::errors::GCameraError;
 
@@ -119,7 +119,7 @@ impl DebugComponents {
     ///
     /// # Returns
     /// Result of saving the data
-    pub fn save_data(&self, filepath: String) -> Result<(), GCameraError> {
+    pub fn save_data(&self, filepath: PathBuf) -> Result<(), GCameraError> {
         return std::fs::File::create(filepath)
             .map_err(|_| return GCameraError::DebugDataWriteError)?
             .write_all(&self.as_bytes())
