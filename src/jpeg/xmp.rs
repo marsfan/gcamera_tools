@@ -674,5 +674,18 @@ mod tests {
                 }),
             );
         }
+
+        /// Test case for invalid string
+        #[test]
+        fn test_from_str_invalid() {
+            let test_str = String::from("Hello World");
+            let parsed = XMPData::try_from(test_str);
+
+            assert!(parsed.is_err());
+            assert!(matches!(
+                parsed.unwrap_err(),
+                GCameraError::XMLParsingError { .. }
+            ));
+        }
     }
 }
