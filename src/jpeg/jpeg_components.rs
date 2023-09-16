@@ -534,5 +534,43 @@ mod tests {
                 );
             }
         }
+
+        /// Test getting the segment as an XMP String
+        #[test]
+        fn test_as_xmp_str() {
+            let data = "http://ns.adobe.com/xap/1.0/\0<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"Adobe XMP Core 5.1.0-jc003\"></x:xmpmeta>".as_bytes();
+            let expected_str = String::from("<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"Adobe XMP Core 5.1.0-jc003\"></x:xmpmeta>");
+
+            let segment = JpegSegment {
+                marker: JpegMarker::APP1,
+                length: Some(0x4EF),
+                data: Some(Vec::from(data)),
+            };
+
+            assert_eq!(segment.as_xmp_str(), Some(expected_str));
+        }
+
+        /// Test trying to get non XMP segment as xmp string when the marker is wrong.
+        #[test]
+        fn test_as_xmp_str_wrong_marker() {
+            let segment = JpegSegment {
+                marker: JpegMarker::APP0,
+                length: Some(0x04),
+                data: Some(vec![0x01, 0x02, 0x03, 0x04]),
+            };
+
+            assert_eq!(segment.as_xmp_str(), None);
+        }
+        /// Test trying to get non XMP segment as xmp string when the contents is not right
+        #[test]
+        fn test_as_xmp_str_wrong_data() {
+            let segment = JpegSegment {
+                marker: JpegMarker::APP1,
+                length: Some(0x04),
+                data: Some(vec![0x01, 0x02, 0x03, 0x04]),
+            };
+
+            assert_eq!(segment.as_xmp_str(), None);
+        }
     }
 }
