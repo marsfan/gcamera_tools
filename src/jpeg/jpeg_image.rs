@@ -9,8 +9,10 @@ use crate::errors::GCameraError;
 use crate::jpeg::jpeg_components::{JpegMarker, JpegSegment};
 use crate::jpeg::xmp::XMPData;
 
+/// Struct for holding a single JPEG image.
 #[derive(PartialEq, Eq, Debug)]
 pub struct JpegImage {
+    /// Vector of the individual JPEG Segments in the image.
     pub segments: Vec<JpegSegment>,
 }
 

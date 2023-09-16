@@ -182,7 +182,7 @@ impl TryFrom<Node<'_, '_>> for Item {
     }
 }
 
-// TODO: Document
+/// Struct holding data about resources as read from the XMP data.
 #[derive(Debug, Eq, PartialEq)]
 pub struct XMPData {
     /// The desscription of the XMP data

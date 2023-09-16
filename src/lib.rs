@@ -30,7 +30,8 @@
     clippy::must_use_candidate,
     clippy::struct_excessive_bools,
     clippy::match_same_arms,
-    clippy::unreadable_literal
+    clippy::unreadable_literal,
+    clippy::module_name_repetitions
 )]
 // Stuff from clippy::restriction we don't worry about
 #![allow(
@@ -48,7 +49,8 @@
     clippy::indexing_slicing,
     clippy::blanket_clippy_restriction_lints,
     clippy::arithmetic_side_effects,
-    clippy::unwrap_used
+    clippy::unwrap_used,
+    clippy::self_named_module_files
 )]
 // Stuff from clippy::restriction we might want to enable
 #![allow(
