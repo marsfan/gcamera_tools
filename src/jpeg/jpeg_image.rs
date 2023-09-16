@@ -125,4 +125,18 @@ mod test {
         let xmp_data = image.get_xmp();
         assert_eq!(xmp_data, Err(GCameraError::NoXMPData));
     }
+
+    /// Test getting XMP data
+    #[test]
+    fn test_get_xmp() {
+        let xmp_str = String::from("<x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='Adobe XMP Core 5.1.0-jc003'><rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'><rdf:Description rdf:about=''xmlns:xmpNote='http://ns.adobe.com/xmp/note/'xmlns:GCamera='http://ns.google.com/photos/1.0/camera/'xmlns:Container='http://ns.google.com/photos/1.0/container/'xmlns:Item='http://ns.google.com/photos/1.0/container/item/'xmpNote:HasExtendedXMP='DD558CA2166AEC119A42CDFB02D4F1EF'GCamera:MotionPhoto='1'GCamera:MotionPhotoVersion='1'GCamera:MotionPhotoPresentationTimestampUs='968644'><Container:Directory><rdf:Seq><rdf:li rdf:parseType='Resource'><Container:ItemItem:Mime='image/jpeg'Item:Semantic='Primary'Item:Length='0'Item:Padding='0' /></rdf:li><rdf:li rdf:parseType='Resource'><Container:ItemItem:Mime='video/mp4'Item:Semantic='MotionPhoto'Item:Length='4906025'Item:Padding='0' /></rdf:li></rdf:Seq></Container:Directory></rdf:Description></rdf:RDF></x:xmpmeta>",);
+        let mut data = vec![0xFF, 0xE1, 0x03, 0xC3];
+        data.extend("http://ns.adobe.com/xap/1.0/\0".as_bytes());
+        data.extend(xmp_str.as_bytes());
+        let image = JpegImage {
+            segments: vec![JpegSegment::from_bytes(&data).unwrap()],
+        };
+        let xmp_data = image.get_xmp();
+        assert_eq!(xmp_data, XMPData::try_from(xmp_str));
+    }
 }
