@@ -263,16 +263,21 @@ impl JpegSegment {
     /// # Panics
     /// Will panic if an attempt to parse the data to a UTF8 string
     /// fails.
-    /// TODO: Replace with an error
     pub fn as_xmp_str(&self) -> Option<String> {
         let xmp_marker = "http://ns.adobe.com/xap/1.0/".as_bytes();
-        if matches!(self.marker, JpegMarker::APP1)
-            && self.data.as_ref().unwrap().starts_with(xmp_marker)
-        {
-            return Some(
-                String::from_utf8(self.data.as_ref().unwrap()[xmp_marker.len() + 1..].to_vec())
-                    .unwrap(),
-            );
+
+        // Extract the data from the struct only if the marker is the right type.
+        let data = match (self.marker, &self.data) {
+            (JpegMarker::APP1, Some(data_bytes)) => data_bytes.clone(),
+            (_, _) => Vec::new(),
+        };
+
+        // Check for the XMP Marker
+        if data.starts_with(xmp_marker) {
+            // Parse to string and return
+            let xml_offset = xmp_marker.len() + 1;
+            let xml_portion = Vec::from(&data[xml_offset..]);
+            return Some(String::from_utf8(xml_portion).unwrap());
         } else {
             return None;
         }
