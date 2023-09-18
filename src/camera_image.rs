@@ -194,7 +194,7 @@ impl TryFrom<Vec<u8>> for CameraImage {
                     });
 
                     // Account for any data padding.
-                    length_accumulator -= resource.padding.unwrap();
+                    length_accumulator -= resource.padding;
                 }
             }
         }

@@ -151,7 +151,7 @@ pub struct Item {
     pub length: Option<usize>,
 
     /// Length in bytes between end of resource and start of next resource
-    pub padding: Option<usize>,
+    pub padding: usize,
 
     ///The semantic type of the resource.
     pub semantic: SemanticType,
@@ -172,7 +172,10 @@ impl TryFrom<Node<'_, '_>> for Item {
         return Ok(Self {
             mimetype: attribute_to_str(value, ITEM_NS, "Mime").unwrap(),
             length: parse_attribute(value, ITEM_NS, "Length")?,
-            padding: parse_attribute(value, ITEM_NS, "Padding")?,
+            padding: match parse_attribute(value, ITEM_NS, "Padding")? {
+                Some(val) => val,
+                None => 0,
+            },
             semantic: SemanticType::try_from(
                 attribute_to_str(value, ITEM_NS, "Semantic").unwrap(),
             )?,
@@ -487,7 +490,7 @@ mod tests {
               Item:Mime=\"video/mp4\"
               Item:Semantic=\"MotionPhoto\"
               Item:Length=\"4906025\"
-              Item:Padding=\"0\"
+              Item:Padding=\"1\"
               xmlns:Container=\"http://ns.google.com/photos/1.0/container/\"
               xmlns:Item=\"http://ns.google.com/photos/1.0/container/item/\"/>";
 
@@ -503,7 +506,37 @@ mod tests {
                 Ok(Item {
                     mimetype: String::from("video/mp4"),
                     length: Some(4906025),
-                    padding: Some(0),
+                    padding: 1,
+                    semantic: SemanticType::MotionPhoto,
+                    label: None,
+                    uri: None
+                })
+            );
+        }
+
+        /// Tests initializing without the "padding" member
+        #[test]
+        fn test_init_no_padding() {
+            let test_xml = "<Container:Item
+              Item:Mime=\"video/mp4\"
+              Item:Semantic=\"MotionPhoto\"
+              Item:Length=\"4906025\"
+              xmlns:Container=\"http://ns.google.com/photos/1.0/container/\"
+              xmlns:Item=\"http://ns.google.com/photos/1.0/container/item/\"/>";
+
+            let document = Document::parse(test_xml).unwrap();
+            let xml_element = document
+                .descendants()
+                .find(|n| return n.tag_name().name() == "Item")
+                .unwrap();
+            let item = Item::try_from(xml_element);
+
+            assert_eq!(
+                item,
+                Ok(Item {
+                    mimetype: String::from("video/mp4"),
+                    length: Some(4906025),
+                    padding: 0,
                     semantic: SemanticType::MotionPhoto,
                     label: None,
                     uri: None
@@ -571,7 +604,7 @@ mod tests {
                             mimetype: String::from("image/jpeg"),
                             semantic: SemanticType::Primary,
                             length: Some(0),
-                            padding: Some(0),
+                            padding: 0,
                             uri: None,
                             label: None,
                         },
@@ -579,7 +612,7 @@ mod tests {
                             mimetype: String::from("video/mp4"),
                             semantic: SemanticType::MotionPhoto,
                             length: Some(4906025),
-                            padding: Some(0),
+                            padding: 0,
                             uri: None,
                             label: None,
                         },
@@ -658,7 +691,7 @@ mod tests {
                             mimetype: String::from("image/jpeg"),
                             semantic: SemanticType::Primary,
                             length: Some(0),
-                            padding: Some(0),
+                            padding: 0,
                             uri: None,
                             label: None,
                         },
@@ -666,7 +699,7 @@ mod tests {
                             mimetype: String::from("video/mp4"),
                             semantic: SemanticType::MotionPhoto,
                             length: Some(4906025),
-                            padding: Some(0),
+                            padding: 0,
                             uri: None,
                             label: None,
                         },
