@@ -111,7 +111,7 @@ impl CameraImage {
                 "\tResource {index} has a size of {} and is of type '{:?}'.",
                 resource.data.len(),
                 resource.info.semantic
-            )
+            );
         }
     }
 }
@@ -139,9 +139,9 @@ impl TryFrom<Vec<u8>> for CameraImage {
         // TODO: Reduce mutable stuff. Likely using either the `scan` or `fold` methods.
         let xmp_data_wrapped = image.get_xmp();
         let mut resources: Vec<Resource> = Vec::new();
-        if xmp_data_wrapped.is_ok() {
+        if let Ok(xmp_data) = xmp_data_wrapped {
             let mut length_accumulator = bytes.len();
-            for (_, resource) in xmp_data_wrapped.unwrap().resources.iter().enumerate().rev() {
+            for (_, resource) in xmp_data.resources.iter().enumerate().rev() {
                 if resource.semantic != SemanticType::Primary {
                     let data_end = length_accumulator;
                     length_accumulator -= resource.length.unwrap();
