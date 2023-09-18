@@ -43,7 +43,14 @@ fn main() {
     }
     // Save the motion photo if requested
     if args.save_motion {
-        panic!("Motion extracting is not supported yet")
+        let output_path = match args.motion_path {
+            Some(motion_path) => motion_path,
+            None => args.input_path.with_extension("motion.mp4"),
+        };
+        image.save_motion_video(output_path).unwrap_or_else(|err| {
+            eprintln!("Problem Saving Motion Video: {err}");
+            exit(1)
+        })
     }
 
     if args.info {

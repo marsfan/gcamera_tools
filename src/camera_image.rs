@@ -57,6 +57,27 @@ impl CameraImage {
         };
     }
 
+    /// Get the first resource of the given semantic type
+    ///
+    /// # Arguments
+    /// * `resource_type`: The semantic type of the resource to get.
+    ///
+    /// # Returns
+    /// The first resource that has the matching semantic type
+    ///
+    /// # Errors
+    /// Will error if there are no resources of the given semantic type
+    fn get_resource_by_type(&self, resource_type: SemanticType) -> Result<&Resource, GCameraError> {
+        for resource in &self.resources {
+            if resource.info.semantic == resource_type {
+                return Ok(resource);
+            }
+        }
+        return Err(GCameraError::Other {
+            msg: String::from("No matching resource"),
+        });
+    }
+
     /// Save the JPEG component of the image.
     ///
     /// # Arguments
@@ -89,6 +110,23 @@ impl CameraImage {
             .debug_components
             .save_data(filepath)
             .map_err(|_| return GCameraError::DebugDataWriteError);
+    }
+
+    /// Save the motion photo from the image.
+    ///
+    /// # Arguments
+    /// * `filepath`: Path to save the video to
+    ///
+    /// # Returns
+    /// Result from saving the file
+    ///
+    /// # Errors
+    /// Will error if writing the video to the disk fails
+    pub fn save_motion_video(&self, filepath: PathBuf) -> Result<(), GCameraError> {
+        return std::fs::File::create(filepath)
+            .map_err(|_| return GCameraError::MotionVideoWriteError)?
+            .write_all(&self.get_resource_by_type(SemanticType::MotionPhoto)?.data)
+            .map_err(|_| return GCameraError::MotionVideoWriteError);
     }
 
     /// Print out some information about the file.
