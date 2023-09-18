@@ -172,7 +172,7 @@ impl TryFrom<Node<'_, '_>> for Item {
         return Ok(Self {
             mimetype: attribute_to_str(value, ITEM_NS, "Mime").unwrap(),
             length: parse_attribute(value, ITEM_NS, "Length")?,
-            padding: parse_attribute(value, ITEM_NS, "Padding").unwrap_or(0),
+            padding: parse_attribute(value, ITEM_NS, "Padding")?.unwrap_or(0),
             semantic: SemanticType::try_from(
                 attribute_to_str(value, ITEM_NS, "Semantic").unwrap(),
             )?,
