@@ -66,7 +66,7 @@ fn parse_attribute<T: std::str::FromStr>(
 }
 
 /// Enumeration of possible semantic types for for resources in the XMP data.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum SemanticType {
     /// The main JPEG image
     Primary,
@@ -141,7 +141,7 @@ impl TryFrom<Node<'_, '_>> for Description {
 }
 
 /// Data about a single resource in the file
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Item {
     /// The mimetype of the resource
     pub mimetype: String, // TODO: Enum?

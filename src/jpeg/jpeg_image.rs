@@ -76,6 +76,7 @@ impl TryFrom<&Vec<u8>> for JpegImage {
         }
 
         // FIXME: Figure out how to do this without mutable?
+        // Likely using either the `scan` or `fold` methods.
         let mut segments: Vec<JpegSegment> = Vec::new();
         segments.push(JpegSegment::from_bytes(bytes)?);
         let mut offset = 0;

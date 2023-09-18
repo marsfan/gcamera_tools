@@ -7,11 +7,21 @@
 use crate::debug_components::DebugComponents;
 use crate::errors::GCameraError;
 use crate::jpeg::jpeg_image::JpegImage;
-use crate::jpeg::xmp::SemanticType;
+use crate::jpeg::xmp::{Item, SemanticType};
 use std::convert::TryFrom;
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
+
+/// Struct for a single non-primary resource in the image.
+#[derive(Debug, PartialEq, Eq)]
+pub struct Resource {
+    /// The bytes of the resource.
+    pub data: Vec<u8>,
+
+    /// Information about the resource.
+    pub info: Item,
+}
 
 /// Struct holding all the data for a single image.
 #[derive(Debug, PartialEq, Eq)]
@@ -21,6 +31,9 @@ pub struct CameraImage {
 
     /// The camera debug information stored in the image.
     debug_components: DebugComponents,
+
+    /// Extra resources found in the image
+    resources: Vec<Resource>,
 
     /// The total size of the loaded image
     total_size: usize,
@@ -92,48 +105,13 @@ impl CameraImage {
             self.debug_components.size()
         );
 
-        if let Ok(xmp) = self.image.get_xmp() {
+        println!("Additional Resources:");
+        for (index, resource) in self.resources.iter().enumerate() {
             println!(
-                "There is a total of {} resources in the file according to the XMP data.",
-                xmp.resources.len()
-            );
-
-            for (index, resource) in xmp.resources.iter().enumerate() {
-                println!(
-                    "\tResource {index} has a semantic of '{:?}'",
-                    resource.semantic
-                );
-            }
-        } else {
-            println!("XMP data not found");
-        }
-    }
-
-    /// Print info about resource offsets.
-    ///
-    /// # Panics
-    /// Will panic if XMP data is not found, resource does not have a length,
-    /// or resource does not have padding.
-    pub fn print_resource_info(&self) {
-        // FIXME: Work out how to integrate this into a new struct, so that it is not just being printed out
-        // FIXME: Don't process the primary resource, which is the main JPEG image
-
-        // Computing the start point of each resource.
-        // Since we know the length of each resource, we can work backwards
-        // through the resources, subtracting the size of each from an
-        // variable that starts out at the total size of the image we are
-        // parsing.
-        let xmp_data = self.image.get_xmp().unwrap();
-        let mut length_accumulation = self.total_size;
-        for (index, resource) in xmp_data.resources.iter().enumerate().rev() {
-            if resource.semantic != SemanticType::Primary {
-                length_accumulation -= resource.length.unwrap();
-                println!("Resource {index} starts at {length_accumulation}");
-
-                // Also have to account for the padding between each resource
-                // that's the point of this
-                length_accumulation -= resource.padding.unwrap();
-            }
+                "\tResource {index} has a size of {} and is of type '{:?}'.",
+                resource.data.len(),
+                resource.info.semantic
+            )
         }
     }
 }
@@ -158,9 +136,29 @@ impl TryFrom<Vec<u8>> for CameraImage {
 
         let debug_components = DebugComponents::try_from(&bytes[image.image_size()..])?;
 
+        // TODO: Reduce mutable stuff. Likely using either the `scan` or `fold` methods.
+        let xmp_data_wrapped = image.get_xmp();
+        let mut resources: Vec<Resource> = Vec::new();
+        if xmp_data_wrapped.is_ok() {
+            let mut length_accumulator = bytes.len();
+            for (_, resource) in xmp_data_wrapped.unwrap().resources.iter().enumerate().rev() {
+                if resource.semantic != SemanticType::Primary {
+                    let data_end = length_accumulator;
+                    length_accumulator -= resource.length.unwrap();
+                    resources.push(Resource {
+                        data: Vec::from(&bytes[length_accumulator..data_end]),
+                        info: resource.clone(),
+                    });
+
+                    length_accumulator -= resource.padding.unwrap();
+                }
+            }
+        }
+
         return Ok(Self {
             image,
             debug_components,
+            resources: resources.into_iter().rev().collect(),
             total_size: bytes.len(),
         });
     }
@@ -207,6 +205,7 @@ mod test {
                         data: String::from("123").as_bytes().to_vec()
                     }
                 },
+                resources: Vec::new(),
                 total_size: 35,
             })
         );
