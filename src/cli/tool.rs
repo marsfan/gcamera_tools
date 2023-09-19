@@ -58,4 +58,8 @@ pub fn tool_main() {
     if args.info {
         image.print_debug_info();
     }
+
+    if args.list_resources {
+        image.print_resource_list();
+    }
 }

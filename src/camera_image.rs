@@ -132,17 +132,14 @@ impl CameraImage {
     /// Print out some information about the file.
     /// This is useful for basic debugging.
     pub fn print_debug_info(&self) {
-        println!(
-            "The main JPEG image has {} segments, for a total of {} bytes.",
-            self.image.segments.len(),
-            self.image.image_size(),
-        );
+        println!("Number of JPEG segments: {}", self.image.segments.len());
+        println!("JPEG image size:         {}", self.image.image_size());
+        println!("Debug section size:      {}", self.debug_components.size());
+        println!("Number of resources:     {}", self.resources.len());
+    }
 
-        println!(
-            "The debug section is a total of {} bytes in size.",
-            self.debug_components.size()
-        );
-
+    /// Print out a list of the additional resources
+    pub fn print_resource_list(&self) {
         println!("Additional Resources:");
         for (index, resource) in self.resources.iter().enumerate() {
             println!(

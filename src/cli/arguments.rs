@@ -45,6 +45,10 @@ pub struct Arguments {
     /// Print out some information about the file
     #[arg(short = 'I', long)]
     pub info: bool,
+
+    /// Print out a list of the additional resources
+    #[arg(short = 'l', long)]
+    pub list_resources: bool,
 }
 
 #[cfg(test)]
@@ -66,6 +70,7 @@ mod tests {
             save_motion: false,
             motion_path: None,
             info: false,
+            list_resources: false,
         };
         assert_eq!(parsed_args, expected_result);
     }
@@ -84,6 +89,7 @@ mod tests {
             save_motion: false,
             motion_path: None,
             info: false,
+            list_resources: false,
         };
         assert_eq!(parsed_args, expected_results);
     }
@@ -102,6 +108,7 @@ mod tests {
             save_motion: false,
             motion_path: None,
             info: false,
+            list_resources: false,
         };
         assert_eq!(parsed_args, expected_results);
     }
@@ -120,9 +127,11 @@ mod tests {
             save_motion: true,
             motion_path: None,
             info: false,
+            list_resources: false,
         };
         assert_eq!(parsed_args, expected_results);
     }
+
     /// Test with info set
     #[test]
     fn test_info_enabled() {
@@ -137,6 +146,26 @@ mod tests {
             save_motion: false,
             motion_path: None,
             info: true,
+            list_resources: false,
+        };
+        assert_eq!(parsed_args, expected_results);
+    }
+
+    /// Test with list_resources set
+    #[test]
+    fn test_list_resources() {
+        let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "-l"];
+        let parsed_args = Arguments::parse_from(input_args);
+        let expected_results = Arguments {
+            input_path: PathBuf::from("motion_photo.jpg"),
+            save_image: false,
+            image_path: None,
+            save_debug: false,
+            debug_path: None,
+            save_motion: false,
+            motion_path: None,
+            info: false,
+            list_resources: true,
         };
         assert_eq!(parsed_args, expected_results);
     }
