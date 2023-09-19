@@ -4,6 +4,8 @@
 * file, You can obtain one at https: //mozilla.org/MPL/2.0/.
 */
 //! Main logic for the command line tool.
+#![allow(clippy::print_stderr)]
+#![allow(clippy::exit)]
 
 use crate::camera_image::CameraImage;
 use crate::cli::arguments::Arguments;
@@ -28,8 +30,8 @@ pub fn tool_main() {
         };
         image.save_image(output_path).unwrap_or_else(|err| {
             eprintln!("Problem Saving JPEG Image: {err}");
-            exit(1)
-        })
+            exit(1);
+        });
     }
 
     // Save the debug data if requested.
@@ -40,8 +42,8 @@ pub fn tool_main() {
         };
         image.save_debug_data(output_path).unwrap_or_else(|err| {
             eprintln!("Problem Saving Debug Data: {err}");
-            exit(1)
-        })
+            exit(1);
+        });
     }
     // Save the motion photo if requested
     if args.save_motion {
@@ -51,8 +53,8 @@ pub fn tool_main() {
         };
         image.save_motion_video(output_path).unwrap_or_else(|err| {
             eprintln!("Problem Saving Motion Video: {err}");
-            exit(1)
-        })
+            exit(1);
+        });
     }
 
     if args.info {
