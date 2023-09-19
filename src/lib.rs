@@ -61,8 +61,8 @@
 )]
 // Stuff from clippy::restruction we do want.
 #![allow(clippy::min_ident_chars)]
-pub mod arguments;
 pub mod camera_image;
+pub mod cli;
 mod debug_components;
 pub mod errors;
 mod jpeg;
