@@ -151,7 +151,7 @@ mod tests {
         assert_eq!(parsed_args, expected_results);
     }
 
-    /// Test with list_resources set
+    /// Test with `list_resources` set
     #[test]
     fn test_list_resources() {
         let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "-l"];
