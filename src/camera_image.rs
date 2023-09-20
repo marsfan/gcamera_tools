@@ -135,7 +135,7 @@ impl CameraImage {
     /// A string with the debug info to print
     fn get_debug_info(&self) -> String {
         return format!(
-            "
+            "\
 Number of JPEG segments: {}
 JPEG image size:         {}
 Debug section size:      {}
@@ -174,7 +174,7 @@ Number of resources:     {}",
 
     /// Print out a list of the additional resources
     pub fn print_resource_list(&self) {
-        println!("{}", self.get_resource_str());
+        print!("{}", self.get_resource_str());
     }
 }
 
@@ -285,5 +285,112 @@ mod test {
         let bytes = vec![0xFF, 0xAA];
         let function_result = CameraImage::try_from(bytes);
         assert_eq!(function_result, Err(GCameraError::InvalidJpegMagic));
+    }
+
+    /// Test the `get_debug_info` function
+    #[test]
+    fn test_get_debug_info() {
+        let test_image = CameraImage {
+            image: JpegImage {
+                segments: vec![
+                    JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
+                    JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap(),
+                ],
+            },
+            debug_components: DebugComponents {
+                aecdebug: {
+                    DebugChunk {
+                        magic: String::from("aecDebug"),
+                        data: String::from("hi").as_bytes().to_vec(),
+                    }
+                },
+                afdebug: DebugChunk {
+                    magic: String::from("afDebug"),
+                    data: String::from("bye").as_bytes().to_vec(),
+                },
+                awbdebug: DebugChunk {
+                    magic: String::from("awbDebug"),
+                    data: String::from("123").as_bytes().to_vec(),
+                },
+            },
+            resources: Vec::new(),
+            total_size: 35,
+        };
+        let debug_info = test_image.get_debug_info();
+        assert_eq!(
+            debug_info,
+            String::from(
+                "\
+Number of JPEG segments: 2
+JPEG image size:         4
+Debug section size:      31
+Number of resources:     0"
+            )
+        );
+    }
+
+    /// Test the `get_resource_str` method
+    #[test]
+    fn test_get_resource_str() {
+        let test_image = CameraImage {
+            image: JpegImage {
+                segments: vec![
+                    JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
+                    JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap(),
+                ],
+            },
+            debug_components: DebugComponents {
+                aecdebug: {
+                    DebugChunk {
+                        magic: String::from("aecDebug"),
+                        data: String::from("hi").as_bytes().to_vec(),
+                    }
+                },
+                afdebug: DebugChunk {
+                    magic: String::from("afDebug"),
+                    data: String::from("bye").as_bytes().to_vec(),
+                },
+                awbdebug: DebugChunk {
+                    magic: String::from("awbDebug"),
+                    data: String::from("123").as_bytes().to_vec(),
+                },
+            },
+            resources: vec![
+                Resource {
+                    data: vec![0x01, 0x02],
+                    info: Item {
+                        mimetype: String::from("video/mp4"),
+                        length: Some(2),
+                        padding: 0,
+                        semantic: SemanticType::MotionPhoto,
+                        label: None,
+
+                        uri: None,
+                    },
+                },
+                Resource {
+                    data: vec![0x03, 0x04],
+                    info: Item {
+                        mimetype: String::from("image/jpeg"),
+                        length: Some(2),
+                        padding: 0,
+                        semantic: SemanticType::GainMap,
+                        label: None,
+                        uri: None,
+                    },
+                },
+            ],
+            total_size: 39,
+        };
+        let resource_str = test_image.get_resource_str();
+        assert_eq!(
+            resource_str,
+            String::from(
+                "\
+Additional Resources:
+\tResource 0 has a size of 2 and is of type 'MotionPhoto'
+\tResource 1 has a size of 2 and is of type 'GainMap'\n"
+            )
+        );
     }
 }
