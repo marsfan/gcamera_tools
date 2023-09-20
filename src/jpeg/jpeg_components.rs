@@ -153,10 +153,9 @@ impl TryFrom<u8> for JpegMarker {
 /// # Returns
 /// Offset that the next marker is at, or an error message
 fn find_next_segment(bytes: &[u8]) -> Result<usize, GCameraError> {
-    let bytes_chunk = bytes.to_vec();
-    for (index, byte) in bytes_chunk.iter().enumerate() {
+    for (index, byte) in bytes.iter().enumerate() {
         if byte == &0xFF {
-            let marker = JpegMarker::try_from(bytes_chunk[index + 1]);
+            let marker = JpegMarker::try_from(bytes[index + 1]);
             if marker.is_ok() {
                 return Ok(index);
             }
