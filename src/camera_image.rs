@@ -9,10 +9,10 @@ use crate::errors::GCameraError;
 use crate::jpeg::jpeg_image::JpegImage;
 use crate::jpeg::xmp::{Item, SemanticType};
 use std::convert::TryFrom;
+use std::fmt::Write as _; // import without risk of name clashing
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-
 /// Struct for a single non-primary resource in the image.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Resource {
@@ -129,25 +129,52 @@ impl CameraImage {
             .map_err(|_| return GCameraError::MotionVideoWriteError);
     }
 
+    /// Get a string of the debug info
+    ///
+    /// # Returns
+    /// A string with the debug info to print
+    fn get_debug_info(&self) -> String {
+        return format!(
+            "
+Number of JPEG segments: {}
+JPEG image size:         {}
+Debug section size:      {}
+Number of resources:     {}",
+            self.image.segments.len(),
+            self.image.image_size(),
+            self.debug_components.size(),
+            self.resources.len(),
+        );
+    }
+
     /// Print out some information about the file.
     /// This is useful for basic debugging.
     pub fn print_debug_info(&self) {
-        println!("Number of JPEG segments: {}", self.image.segments.len());
-        println!("JPEG image size:         {}", self.image.image_size());
-        println!("Debug section size:      {}", self.debug_components.size());
-        println!("Number of resources:     {}", self.resources.len());
+        println!("{}", self.get_debug_info());
+    }
+
+    /// Get a string list of the additional resources.
+    ///
+    /// # Returns
+    /// A string containing a list of the additional resources in the file.
+    fn get_resource_str(&self) -> String {
+        let mut resource_str = String::new();
+        resource_str.push_str("Additional Resources:\n");
+        for (index, resource) in self.resources.iter().enumerate() {
+            writeln!(
+                resource_str,
+                "\tResource {index} has a size of {} and is of type '{:?}'",
+                resource.data.len(),
+                resource.info.semantic
+            )
+            .unwrap();
+        }
+        return resource_str;
     }
 
     /// Print out a list of the additional resources
     pub fn print_resource_list(&self) {
-        println!("Additional Resources:");
-        for (index, resource) in self.resources.iter().enumerate() {
-            println!(
-                "\tResource {index} has a size of {} and is of type '{:?}'.",
-                resource.data.len(),
-                resource.info.semantic
-            );
-        }
+        println!("{}", self.get_resource_str());
     }
 }
 
