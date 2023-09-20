@@ -53,7 +53,7 @@ fn find_magic_start(data: &[u8], magic: &str) -> Result<usize, GCameraError> {
     let loop_end_point = data.len() - magic_bytes.len();
     for (position, _) in data[..loop_end_point].iter().enumerate() {
         let last_byte = position + magic_bytes.len();
-        let chunk = data[position..last_byte].to_vec();
+        let chunk = &data[position..last_byte];
         if chunk == magic_bytes {
             return Ok(position);
         }
