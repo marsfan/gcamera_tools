@@ -63,39 +63,6 @@ fn find_magic_start(data: &[u8], magic: &str) -> Result<usize, GCameraError> {
     });
 }
 
-// TODO: Better logic since there could be other data than just MP4
-// TODO: Could possibly use "bytes.window" instead?
-/// Search for the end of the awbDebug chunk.
-///
-/// This searches for either the header for a mp4 section (i.e. for a Motion Photo)
-///
-/// # Arguments
-/// * `bytes`: The bytes to search through.
-///
-/// # Returns
-/// The index of the end of the awbDebug chunk
-fn find_awb_end(bytes: &[u8]) -> usize {
-    let magic = "\x00\x00\x00\x1cftypisom".as_bytes();
-
-    // Special case for when the total number of bytes is less than
-    // the size of the MP4 magic. This means that there is no MP4 magic.
-    if bytes.len() < magic.len() {
-        return bytes.len();
-    }
-
-    // Loop through looking for MP4 magic
-    let length = bytes.len();
-    let range_end = length - magic.len() + 1;
-    for (offset, _) in bytes[..range_end].iter().enumerate() {
-        if &bytes[offset..offset + magic.len()] == magic {
-            return offset;
-        }
-    }
-
-    // MP4 magic not found. Size is the total length
-    return bytes.len();
-}
-
 /// All of the debug information from the image.
 #[derive(Debug, PartialEq, Eq)]
 pub struct DebugComponents {
@@ -165,7 +132,6 @@ impl TryFrom<&[u8]> for DebugComponents {
         let aec_start = find_magic_start(bytes, "aecDebug")?;
         let af_start = find_magic_start(&bytes[aec_start..], "afDebug")? + aec_start;
         let awb_start = find_magic_start(&bytes[af_start..], "awbDebug")? + af_start;
-        let awb_end = find_awb_end(&bytes[awb_start..]) + awb_start;
 
         return Ok(DebugComponents {
             aecdebug: DebugChunk {
@@ -178,7 +144,7 @@ impl TryFrom<&[u8]> for DebugComponents {
             },
             awbdebug: DebugChunk {
                 magic: String::from_utf8(bytes[awb_start..awb_start + 8].to_vec()).unwrap(),
-                data: bytes[awb_start + 8..awb_end].to_vec(),
+                data: bytes[awb_start + 8..].to_vec(),
             },
         });
     }
@@ -246,51 +212,6 @@ mod tests {
         }
     }
 
-    mod find_awb_end_tests {
-        use crate::debug_components::find_awb_end;
-
-        /// Test where there is MP4 magic and additional bytes
-        #[test]
-        fn test_end_from_magic() {
-            let test_bytes =
-                "hello how are you\x00\x00\x00\x1cftypisom this is more data.".as_bytes();
-
-            let function_result = find_awb_end(test_bytes);
-
-            assert_eq!(function_result, 17);
-        }
-
-        /// Test where there is a MP4 magic, but nothing afterwards
-        #[test]
-        fn test_end_from_magic_no_trailing() {
-            let test_bytes = "hello how are you\x00\x00\x00\x1cftypisom".as_bytes();
-
-            let function_result = find_awb_end(test_bytes);
-
-            assert_eq!(function_result, 17);
-        }
-
-        /// Test where the end of the section is the end of all of the bytes.
-        #[test]
-        fn test_end_from_vec_end() {
-            let test_bytes = "hello how are you.".as_bytes();
-
-            let function_result = find_awb_end(test_bytes);
-
-            assert_eq!(function_result, 18);
-        }
-
-        /// Test case for if the total number of bytes is less than the MP4 magic
-        #[test]
-        fn test_shorter_than_mp4_magic() {
-            let test_bytes = [
-                0x61, 0x77, 0x62, 0x44, 0x65, 0x62, 0x75, 0x67, 0x31, 0x32, 0x33,
-            ];
-            let function_result = find_awb_end(&test_bytes);
-            assert_eq!(function_result, 11);
-        }
-    }
-
     mod test_debug_components {
         use super::*;
 
@@ -312,31 +233,6 @@ mod tests {
         #[test]
         fn test_successful_creation() {
             let test_bytes = "aecDebug abc afDebug def awbDebug ghi".as_bytes();
-            let result = DebugComponents::try_from(test_bytes);
-
-            let expected_struct = DebugComponents {
-                aecdebug: DebugChunk {
-                    magic: String::from("aecDebug"),
-                    data: vec![0x20, 0x61, 0x62, 0x63, 0x20],
-                },
-                afdebug: DebugChunk {
-                    magic: String::from("afDebug"),
-                    data: vec![0x20, 0x64, 0x65, 0x66, 0x20],
-                },
-                awbdebug: DebugChunk {
-                    magic: String::from("awbDebug"),
-                    data: vec![0x20, 0x67, 0x68, 0x69],
-                },
-            };
-
-            assert_eq!(result, Ok(expected_struct));
-        }
-
-        /// Test successfully creating when there is MP4 trailing bytes
-        #[test]
-        fn test_successful_creation_with_mp4() {
-            let test_bytes =
-                "aecDebug abc afDebug def awbDebug ghi\x00\x00\x00\x1cftypisom".as_bytes();
             let result = DebugComponents::try_from(test_bytes);
 
             let expected_struct = DebugComponents {
