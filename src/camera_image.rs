@@ -227,7 +227,7 @@ impl TryFrom<Vec<u8>> for CameraImage {
         return Ok(Self {
             image,
             debug_components,
-            resources: resources.into_iter().rev().collect(),
+            resources: resources.into_iter().rev().collect(), // Get resources back into correct order.
             total_size: bytes.len(),
         });
     }

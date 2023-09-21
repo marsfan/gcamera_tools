@@ -128,7 +128,8 @@ impl TryFrom<&[u8]> for DebugComponents {
     /// # Returns
     /// Result containing either the instance, or an error message
     fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-        // TODO: Proper Error Handling
+        // TODO: use slice.split_array_ref instead of find_magic_start.
+        // slice.split_array_ref is still in nightly only
         let aec_start = find_magic_start(bytes, "aecDebug")?;
         let af_start = find_magic_start(&bytes[aec_start..], "afDebug")? + aec_start;
         let awb_start = find_magic_start(&bytes[af_start..], "awbDebug")? + af_start;
