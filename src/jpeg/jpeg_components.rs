@@ -285,6 +285,7 @@ impl JpegSegment {
 }
 
 /// Implementation to create a vec from a jpeg segment
+//FIXME: Replace with a to_bytes method.
 impl From<&JpegSegment> for Vec<u8> {
     /// Convert the segment to bytes.
     ///
@@ -292,7 +293,7 @@ impl From<&JpegSegment> for Vec<u8> {
     /// Bytes of the JPEG segment.
     fn from(value: &JpegSegment) -> Self {
         let length_bytes = match value.length {
-            Some(length) => length.to_be_bytes().to_vec(),
+            Some(length) => length.to_be_bytes().to_vec(), // FIXME: Get rid of the to_vec call
             None => Vec::new(),
         };
 
