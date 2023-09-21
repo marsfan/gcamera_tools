@@ -196,16 +196,14 @@ impl TryFrom<Vec<u8>> for CameraImage {
 
         let image = JpegImage::try_from(&bytes)?;
 
-        let debug_components = DebugComponents::try_from(&bytes[image.image_size()..])?;
-
         // TODO: Reduce mutable stuff. Likely using either the `scan` or `fold` methods.
         // TODO: Reduce unwrapping. Probably by adding methods to `Item` that return 0 instead of None, or by always initializing with 0 if missingd
         let mut resources: Vec<Resource> = Vec::new();
+        // Accumulator that starts at file end. We will iterate over
+        // resources from XMP backwards and use each resource's length and
+        // padding members to compute the start of the resource.
+        let mut length_accumulator = bytes.len();
         if let Ok(xmp_data) = image.get_xmp() {
-            // Accumulator that starts at file end. We will iterate over
-            // resources from XMP backwards and use each resource's length and
-            // padding members to compute the start of the resource.
-            let mut length_accumulator = bytes.len();
             for (_, resource) in xmp_data.resources.iter().enumerate().rev() {
                 if resource.semantic != SemanticType::Primary {
                     // Data chunk ends at the previous accumulator value
@@ -222,6 +220,9 @@ impl TryFrom<Vec<u8>> for CameraImage {
                 }
             }
         }
+
+        let debug_components =
+            DebugComponents::try_from(&bytes[image.image_size()..length_accumulator])?;
 
         return Ok(Self {
             image,
