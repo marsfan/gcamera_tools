@@ -7,8 +7,8 @@
 use roxmltree::{Document, ExpandedName, Node};
 
 use crate::errors::GCameraError;
+
 // Namespace consants.
-// TODO: Could we use some other structure/enum instead?
 
 /// RDF Namespace
 const RDF_NS: &str = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
@@ -63,6 +63,29 @@ fn parse_attribute<T: std::str::FromStr>(
                 attribute: attrib_val.map(|n| return String::from(n)),
             };
         });
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum MimeType {
+    /// JPEG Image
+    Jpeg,
+
+    ///MP4 Video
+    Mp4,
+}
+
+impl TryFrom<String> for MimeType {
+    type Error = GCameraError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        return match value.as_str() {
+            "image/jpeg" => Ok(Self::Jpeg),
+            "video/mp4" => Ok(Self::Mp4),
+            _ => Err(GCameraError::UnknownMimeType {
+                mime: String::from(value),
+            }),
+        };
+    }
 }
 
 /// Enumeration of possible semantic types for for resources in the XMP data.
@@ -144,7 +167,7 @@ impl TryFrom<Node<'_, '_>> for Description {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Item {
     /// The mimetype of the resource
-    pub mimetype: String, // TODO: Enum?
+    pub mimetype: MimeType,
 
     /// The length of the resource
     /// Optional for primary resource.
@@ -170,7 +193,7 @@ impl TryFrom<Node<'_, '_>> for Item {
     // FIXME: Handle when strings are None properly
     fn try_from(value: Node<'_, '_>) -> Result<Self, Self::Error> {
         return Ok(Self {
-            mimetype: attribute_to_str(value, ITEM_NS, "Mime").unwrap(),
+            mimetype: MimeType::try_from(attribute_to_str(value, ITEM_NS, "Mime").unwrap())?,
             length: parse_attribute(value, ITEM_NS, "Length")?,
             padding: parse_attribute(value, ITEM_NS, "Padding")?.unwrap_or(0),
             semantic: SemanticType::try_from(
@@ -409,6 +432,35 @@ mod tests {
         }
     }
 
+    /// Tests for the `MimeType` enum
+    mod mime_type_test {
+        use super::*;
+
+        /// Test the `try_from` method
+        #[test]
+        fn test_try_from() {
+            let cases = vec![
+                (String::from("image/jpeg"), MimeType::Jpeg),
+                (String::from("video/mp4"), MimeType::Mp4),
+            ];
+
+            for (input, expected) in cases {
+                assert_eq!(MimeType::try_from(input), Ok(expected));
+            }
+        }
+
+        /// Test `try_from` when the mimetype is not known by the tool
+        #[test]
+        fn test_try_from_bad_string() {
+            assert_eq!(
+                MimeType::try_from(String::from("Hello")),
+                Err(GCameraError::UnknownMimeType {
+                    mime: String::from("Hello")
+                })
+            )
+        }
+    }
+
     /// Tests for the `SemanticType` enum
     mod semantic_type_test {
         use super::*;
@@ -501,7 +553,7 @@ mod tests {
             assert_eq!(
                 item,
                 Ok(Item {
-                    mimetype: String::from("video/mp4"),
+                    mimetype: MimeType::Mp4,
                     length: Some(4906025),
                     padding: 1,
                     semantic: SemanticType::MotionPhoto,
@@ -531,7 +583,7 @@ mod tests {
             assert_eq!(
                 item,
                 Ok(Item {
-                    mimetype: String::from("video/mp4"),
+                    mimetype: MimeType::Mp4,
                     length: Some(4906025),
                     padding: 0,
                     semantic: SemanticType::MotionPhoto,
@@ -598,7 +650,7 @@ mod tests {
                     },
                     resources: vec![
                         Item {
-                            mimetype: String::from("image/jpeg"),
+                            mimetype: MimeType::Jpeg,
                             semantic: SemanticType::Primary,
                             length: Some(0),
                             padding: 0,
@@ -606,7 +658,7 @@ mod tests {
                             label: None,
                         },
                         Item {
-                            mimetype: String::from("video/mp4"),
+                            mimetype: MimeType::Mp4,
                             semantic: SemanticType::MotionPhoto,
                             length: Some(4906025),
                             padding: 0,
@@ -685,7 +737,7 @@ mod tests {
                     },
                     resources: vec![
                         Item {
-                            mimetype: String::from("image/jpeg"),
+                            mimetype: MimeType::Jpeg,
                             semantic: SemanticType::Primary,
                             length: Some(0),
                             padding: 0,
@@ -693,7 +745,7 @@ mod tests {
                             label: None,
                         },
                         Item {
-                            mimetype: String::from("video/mp4"),
+                            mimetype: MimeType::Mp4,
                             semantic: SemanticType::MotionPhoto,
                             length: Some(4906025),
                             padding: 0,

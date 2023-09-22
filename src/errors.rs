@@ -61,6 +61,12 @@ pub enum GCameraError {
         semantic: String,
     },
 
+    /// Indicates that the given MIME Type is not known by the tool
+    UnknownMimeType {
+        /// The string that could not be converted to the Mimetype Enum
+        mime: String,
+    },
+
     /// Indicates that the given magic start point could not be found.
     MagicNotFound {
         /// The magic that was being searched for.
@@ -124,6 +130,9 @@ impl fmt::Display for GCameraError {
                     formatter,
                     "Resource has an unknown semantic type of '{semantic}'."
                 )
+            }
+            GCameraError::UnknownMimeType { mime } => {
+                write!(formatter, "Resource has an unknown MIME Type of '{mime}'")
             }
             GCameraError::MagicNotFound { magic } => {
                 write!(formatter, "Could not find magic '{magic}' in image.")

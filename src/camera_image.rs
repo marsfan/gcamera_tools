@@ -235,7 +235,10 @@ impl TryFrom<Vec<u8>> for CameraImage {
 
 #[cfg(test)]
 mod test {
-    use crate::{debug_components::DebugChunk, jpeg::jpeg_components::JpegSegment};
+    use crate::{
+        debug_components::DebugChunk,
+        jpeg::{jpeg_components::JpegSegment, xmp::MimeType},
+    };
 
     use super::*;
 
@@ -360,7 +363,7 @@ Number of resources:     0"
                 Resource {
                     data: vec![0x01, 0x02],
                     info: Item {
-                        mimetype: String::from("video/mp4"),
+                        mimetype: MimeType::Mp4,
                         length: Some(2),
                         padding: 0,
                         semantic: SemanticType::MotionPhoto,
@@ -372,7 +375,7 @@ Number of resources:     0"
                 Resource {
                     data: vec![0x03, 0x04],
                     info: Item {
-                        mimetype: String::from("image/jpeg"),
+                        mimetype: MimeType::Jpeg,
                         length: Some(2),
                         padding: 0,
                         semantic: SemanticType::GainMap,
