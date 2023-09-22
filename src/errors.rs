@@ -5,7 +5,7 @@
 */
 //! Enumeration of errors the tool can produce.
 
-use std::fmt;
+use std::{error::Error, fmt};
 
 use crate::jpeg::xmp::SemanticType;
 
@@ -158,3 +158,6 @@ impl fmt::Display for GCameraError {
         };
     }
 }
+
+// TODO: Implement `source` method
+impl Error for GCameraError {}
