@@ -193,9 +193,9 @@ fn get_resources_from_xmp(xmp: XMPData, bytes: &[u8]) -> (Vec<Resource>, usize) 
     let mut length_accumulator = bytes.len();
     for (_, resource) in xmp.resources.iter().enumerate().rev() {
         // data chunk ends at the previous accumulator values.
-        let data_end = length_accumulator;
-        length_accumulator -= resource.length.unwrap();
         if resource.semantic != SemanticType::Primary {
+            let data_end = length_accumulator;
+            length_accumulator -= resource.length.unwrap();
             resources.push(Resource {
                 data: Vec::from(&bytes[length_accumulator..data_end]),
                 info: resource.clone(),
@@ -205,7 +205,7 @@ fn get_resources_from_xmp(xmp: XMPData, bytes: &[u8]) -> (Vec<Resource>, usize) 
             length_accumulator -= resource.padding;
         }
     }
-    // Get resources back into correct order when returning
+    // Get resources back into correct order when re
     return (resources.into_iter().rev().collect(), length_accumulator);
 }
 
