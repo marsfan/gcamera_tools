@@ -7,7 +7,7 @@
 use crate::debug_components::DebugComponents;
 use crate::errors::GCameraError;
 use crate::jpeg::jpeg_image::JpegImage;
-use crate::jpeg::xmp::{Item, SemanticType};
+use crate::jpeg::xmp::{Item, SemanticType, XMPData};
 use std::convert::TryFrom;
 use std::fmt::Write as _; // import without risk of name clashing
 use std::fs;
@@ -175,6 +175,40 @@ Number of resources:     {}",
     }
 }
 
+/// Create resource vector based on XMP Data, and bytes
+///
+/// # Arguments
+/// * `xmp`: The `XMPData` to parse to find the resources.
+/// * `bytes`: The bytes to extract resources from
+///
+/// # Returns
+/// Tuple where the first element is a vector of all non-primary resources.
+/// and the second element is the offset where the resources start.
+fn get_resources_from_xmp(xmp: XMPData, bytes: &[u8]) -> (Vec<Resource>, usize) {
+    // TODO: Reduce mutable stuff. Likely using either the `scan` or `fold` methods.
+    let mut resources: Vec<Resource> = Vec::new();
+    // Accumulator that starts at file end. We will iterate over
+    // resources from XMP backwards and use each resource's length and
+    // padding members to compute the start of the resource.
+    let mut length_accumulator = bytes.len();
+    for (_, resource) in xmp.resources.iter().enumerate().rev() {
+        // data chunk ends at the previous accumulator values.
+        let data_end = length_accumulator;
+        length_accumulator -= resource.length.unwrap();
+        if resource.semantic != SemanticType::Primary {
+            resources.push(Resource {
+                data: Vec::from(&bytes[length_accumulator..data_end]),
+                info: resource.clone(),
+            });
+
+            // Account for any data padding.
+            length_accumulator -= resource.padding;
+        }
+    }
+    // Get resources back into correct order when returning
+    return (resources.into_iter().rev().collect(), length_accumulator);
+}
+
 // Implementation of TryFrom for CameraImage
 impl TryFrom<Vec<u8>> for CameraImage {
     type Error = GCameraError;
@@ -193,37 +227,18 @@ impl TryFrom<Vec<u8>> for CameraImage {
 
         let image = JpegImage::try_from(&bytes)?;
 
-        // TODO: Reduce mutable stuff. Likely using either the `scan` or `fold` methods.
-        let mut resources: Vec<Resource> = Vec::new();
-        // Accumulator that starts at file end. We will iterate over
-        // resources from XMP backwards and use each resource's length and
-        // padding members to compute the start of the resource.
-        let mut length_accumulator = bytes.len();
-        if let Ok(xmp_data) = image.get_xmp() {
-            for (_, resource) in xmp_data.resources.iter().enumerate().rev() {
-                if resource.semantic != SemanticType::Primary {
-                    // Data chunk ends at the previous accumulator value
-                    let data_end = length_accumulator;
-
-                    length_accumulator -= resource.length.unwrap();
-                    resources.push(Resource {
-                        data: Vec::from(&bytes[length_accumulator..data_end]),
-                        info: resource.clone(),
-                    });
-
-                    // Account for any data padding.
-                    length_accumulator -= resource.padding;
-                }
-            }
-        }
+        let (resources, resources_start) = match image.get_xmp() {
+            Ok(xmp_data) => get_resources_from_xmp(xmp_data, &bytes),
+            Err(_) => (Vec::new(), bytes.len()),
+        };
 
         let debug_components =
-            DebugComponents::try_from(&bytes[image.image_size()..length_accumulator])?;
+            DebugComponents::try_from(&bytes[image.image_size()..resources_start])?;
 
         return Ok(Self {
             image,
             debug_components,
-            resources: resources.into_iter().rev().collect(), // Get resources back into correct order.
+            resources,
             total_size: bytes.len(),
         });
     }
