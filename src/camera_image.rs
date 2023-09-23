@@ -194,7 +194,6 @@ impl TryFrom<Vec<u8>> for CameraImage {
         let image = JpegImage::try_from(&bytes)?;
 
         // TODO: Reduce mutable stuff. Likely using either the `scan` or `fold` methods.
-        // TODO: Reduce unwrapping. Probably by adding methods to `Item` that return 0 instead of None, or by always initializing with 0 if missingd
         let mut resources: Vec<Resource> = Vec::new();
         // Accumulator that starts at file end. We will iterate over
         // resources from XMP backwards and use each resource's length and
