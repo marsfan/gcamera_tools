@@ -282,29 +282,25 @@ impl JpegSegment {
             return None;
         }
     }
-}
 
-/// Implementation to create a vec from a jpeg segment
-//FIXME: Replace with a to_bytes method.
-impl From<&JpegSegment> for Vec<u8> {
-    /// Convert the segment to bytes.
+    /// Get the segment as a vector of bytes.
     ///
     /// # Returns
-    /// Bytes of the JPEG segment.
-    fn from(value: &JpegSegment) -> Self {
-        let length_bytes = match value.length {
+    /// The segment as a vector of bytes.
+    pub fn as_bytes(&self) -> Vec<u8> {
+        let length_bytes = match self.length {
             Some(length) => length.to_be_bytes().to_vec(), // FIXME: Get rid of the to_vec call
             None => Vec::new(),
         };
 
-        let data_bytes = match &value.data {
+        let data_bytes = match &self.data {
             Some(data) => data.as_slice(),
             None => &[],
         };
 
         return [
             &[0xFF],
-            &[u8::from(value.marker)],
+            &[u8::from(self.marker)],
             length_bytes.as_slice(),
             data_bytes,
         ]
@@ -521,7 +517,7 @@ mod tests {
                     data: None,
                 };
 
-                assert_eq!(Vec::from(&segment), vec![0xFF, 0xD9]);
+                assert_eq!(segment.as_bytes(), vec![0xFF, 0xD9]);
             }
 
             /// Test case for a segment that contains both the length and
@@ -534,10 +530,7 @@ mod tests {
                     data: Some(vec![0x01, 0x02]),
                 };
 
-                assert_eq!(
-                    Vec::from(&segment),
-                    vec![0xFF, 0xE0, 0x00, 0x04, 0x01, 0x02]
-                );
+                assert_eq!(segment.as_bytes(), vec![0xFF, 0xE0, 0x00, 0x04, 0x01, 0x02]);
             }
         }
 

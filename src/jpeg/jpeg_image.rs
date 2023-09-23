@@ -37,7 +37,7 @@ impl JpegImage {
         return self
             .segments
             .iter()
-            .flat_map(|segment| return Vec::from(segment))
+            .flat_map(|segment| return segment.as_bytes())
             .collect();
     }
 
