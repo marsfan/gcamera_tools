@@ -5,7 +5,7 @@
 */
 //! Enumeration of errors the tool can produce.
 
-use std::{error::Error, fmt};
+use std::{error::Error, fmt, io::ErrorKind};
 
 use crate::jpeg::xmp::SemanticType;
 
@@ -13,20 +13,16 @@ use crate::jpeg::xmp::SemanticType;
 #[derive(PartialEq, Eq, Debug)]
 pub enum GCameraError {
     /// Indicates something went wrong with reading the image.
-    // TODO: Encapsulate the std::io::Error that was the source?
-    ImageReadError,
+    ImageReadError { kind: ErrorKind },
 
     /// Indicates something went wrong saving the image.
-    // TODO: Encapsulate the std::io::Error that was the source?
-    ImageWriteError,
+    ImageWriteError { kind: ErrorKind },
 
     ///Indicates something went wrong saving the debug data
-    // TODO: Encapsulate the std::io::Error that was the source?
-    DebugDataWriteError,
+    DebugDataWriteError { kind: ErrorKind },
 
     /// Indicates something went wro ng with saving the motion video
-    // TODO: Encapsulate the std::io::Error that was the source?
-    MotionVideoWriteError,
+    MotionVideoWriteError { kind: ErrorKind },
 
     /// Indicates that the provided file does not have the correct magic bytes
     /// to be a JPEG file.
@@ -97,11 +93,17 @@ pub enum GCameraError {
 impl fmt::Display for GCameraError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         return match self {
-            GCameraError::ImageReadError => write!(formatter, "Error reading the image."),
-            GCameraError::ImageWriteError => write!(formatter, "Error writing the image."),
-            GCameraError::DebugDataWriteError => write!(formatter, "Error writing the debug data."),
-            GCameraError::MotionVideoWriteError => {
-                write!(formatter, "Error writing the motion video.")
+            GCameraError::ImageReadError { kind } => {
+                write!(formatter, "Error reading the image. Kind: {kind}")
+            }
+            GCameraError::ImageWriteError { kind } => {
+                write!(formatter, "Error writing the image. Kind: {kind}")
+            }
+            GCameraError::DebugDataWriteError { kind } => {
+                write!(formatter, "Error writing the debug data. Kind: {kind}")
+            }
+            GCameraError::MotionVideoWriteError { kind } => {
+                write!(formatter, "Error writing the motion video. Kind: {kind}")
             }
             GCameraError::InvalidJpegMagic => {
                 write!(formatter, "File does not start with valid JPEG Magic.!")

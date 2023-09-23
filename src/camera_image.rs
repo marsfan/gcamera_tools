@@ -53,7 +53,7 @@ impl CameraImage {
     pub fn from_file(filepath: &PathBuf) -> Result<Self, GCameraError> {
         return match fs::read(filepath) {
             Ok(contents) => Self::try_from(contents),
-            Err(_) => Err(GCameraError::ImageReadError),
+            Err(error) => Err(GCameraError::ImageReadError { kind: error.kind() }),
         };
     }
 
@@ -90,9 +90,9 @@ impl CameraImage {
     /// Will error if writing the data to disk fails
     pub fn save_image(&self, filepath: PathBuf) -> Result<(), GCameraError> {
         return std::fs::File::create(filepath)
-            .map_err(|_| return GCameraError::ImageWriteError)?
+            .map_err(|error| return GCameraError::ImageWriteError { kind: error.kind() })?
             .write_all(&self.image.as_bytes())
-            .map_err(|_| return GCameraError::ImageWriteError);
+            .map_err(|error| return GCameraError::ImageWriteError { kind: error.kind() });
     }
 
     /// Save the debug data from the image.
@@ -106,10 +106,7 @@ impl CameraImage {
     /// # Errors
     /// Will error if writing the data to the disk fails.
     pub fn save_debug_data(&self, filepath: PathBuf) -> Result<(), GCameraError> {
-        return self
-            .debug_components
-            .save_data(filepath)
-            .map_err(|_| return GCameraError::DebugDataWriteError);
+        return self.debug_components.save_data(filepath);
     }
 
     /// Save the motion photo from the image.
@@ -124,9 +121,9 @@ impl CameraImage {
     /// Will error if writing the video to the disk fails
     pub fn save_motion_video(&self, filepath: PathBuf) -> Result<(), GCameraError> {
         return std::fs::File::create(filepath)
-            .map_err(|_| return GCameraError::MotionVideoWriteError)?
+            .map_err(|error| return GCameraError::MotionVideoWriteError { kind: error.kind() })?
             .write_all(&self.get_resource_by_type(SemanticType::MotionPhoto)?.data)
-            .map_err(|_| return GCameraError::MotionVideoWriteError);
+            .map_err(|error| return GCameraError::MotionVideoWriteError { kind: error.kind() });
     }
 
     /// Get a string of the debug info

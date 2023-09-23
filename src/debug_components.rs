@@ -89,9 +89,9 @@ impl DebugComponents {
     /// Will error if writing the debug data to the disk fails
     pub fn save_data(&self, filepath: PathBuf) -> Result<(), GCameraError> {
         return std::fs::File::create(filepath)
-            .map_err(|_| return GCameraError::DebugDataWriteError)?
+            .map_err(|error| return GCameraError::DebugDataWriteError { kind: error.kind() })?
             .write_all(&self.as_bytes())
-            .map_err(|_| return GCameraError::DebugDataWriteError);
+            .map_err(|error| return GCameraError::DebugDataWriteError { kind: error.kind() });
     }
 
     /// Convert the debug data back into bytes.
