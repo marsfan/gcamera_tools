@@ -73,8 +73,8 @@ impl CameraImage {
                 return Ok(resource);
             }
         }
-        return Err(GCameraError::Other {
-            msg: String::from("No matching resource"),
+        return Err(GCameraError::NoResourcesOfType {
+            semantic_type: resource_type,
         });
     }
 

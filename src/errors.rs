@@ -83,11 +83,6 @@ pub enum GCameraError {
         /// The type of resource that was searched for
         semantic_type: SemanticType,
     },
-    /// Catch-all for any other possible error type
-    Other {
-        /// The error message
-        msg: String,
-    },
 }
 
 impl fmt::Display for GCameraError {
@@ -153,9 +148,6 @@ impl fmt::Display for GCameraError {
                     formatter,
                     "The image contains no resources of type {semantic_type:?}"
                 )
-            }
-            GCameraError::Other { msg } => {
-                write!(formatter, "Unknown Error Occurred. msg: {msg}")
             }
         };
     }
