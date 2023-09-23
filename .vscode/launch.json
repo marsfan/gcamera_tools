@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "type": "cppvsdbg",
+            "request": "launch",
+            "name": "run gcamera_tools",
+            "program": "${workspaceRoot}\\target\\debug\\gcamera_tools.exe",
+            "args": [
+                "motion_photo.jpg",
+                "-i",
+                "--image-path",
+                "test"
+            ],
+            "cwd": "${workspaceRoot}",
+        }
+    ]
+}
