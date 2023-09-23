@@ -161,5 +161,11 @@ impl fmt::Display for GCameraError {
     }
 }
 
-// TODO: Implement `source` method
-impl Error for GCameraError {}
+impl Error for GCameraError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        return match self {
+            GCameraError::XMLParsingError { xml_error } => Some(xml_error),
+            _ => None,
+        };
+    }
+}
