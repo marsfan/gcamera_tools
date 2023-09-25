@@ -66,6 +66,7 @@ fn parse_attribute<T: std::str::FromStr>(
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+/// Enumeration of different MIME Types that resources can have.
 pub enum MimeType {
     /// JPEG Image
     Jpeg,
@@ -81,9 +82,7 @@ impl TryFrom<String> for MimeType {
         return match value.as_str() {
             "image/jpeg" => Ok(Self::Jpeg),
             "video/mp4" => Ok(Self::Mp4),
-            _ => Err(GCameraError::UnknownMimeType {
-                mime: String::from(value),
-            }),
+            _ => Err(GCameraError::UnknownMimeType { mime: value }),
         };
     }
 }
@@ -457,7 +456,7 @@ mod tests {
                 Err(GCameraError::UnknownMimeType {
                     mime: String::from("Hello")
                 })
-            )
+            );
         }
     }
 

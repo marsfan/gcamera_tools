@@ -153,8 +153,10 @@ impl fmt::Display for GCameraError {
     }
 }
 
+#[allow(clippy::missing_trait_methods)] // Allow because other methods are deprecated
 impl Error for GCameraError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
+        #[allow(clippy::wildcard_enum_match_arm)]
         return match self {
             GCameraError::XMLParsingError { xml_error } => Some(xml_error),
             _ => None,

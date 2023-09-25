@@ -184,7 +184,7 @@ Number of resources:     {}",
 /// # Returns
 /// Tuple where the first element is a vector of all non-primary resources.
 /// and the second element is the offset where the resources start.
-fn get_resources_from_xmp(xmp: XMPData, bytes: &[u8]) -> (Vec<Resource>, usize) {
+fn get_resources_from_xmp(xmp: &XMPData, bytes: &[u8]) -> (Vec<Resource>, usize) {
     // TODO: Reduce mutable stuff. Likely using either the `scan` or `fold` methods.
 
     // Pre-allocating to be 1 less than total number of resources, since
@@ -231,7 +231,7 @@ impl TryFrom<&[u8]> for CameraImage {
         let image = JpegImage::try_from(bytes)?;
 
         let (resources, resources_start) = match image.get_xmp() {
-            Ok(xmp_data) => get_resources_from_xmp(xmp_data, &bytes),
+            Ok(xmp_data) => get_resources_from_xmp(&xmp_data, bytes),
             Err(_) => (Vec::new(), bytes.len()),
         };
 

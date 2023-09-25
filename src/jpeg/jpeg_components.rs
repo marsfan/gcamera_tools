@@ -9,6 +9,7 @@ use crate::errors::GCameraError;
 
 /// Enum of the different JPEG segment markers.
 #[allow(clippy::upper_case_acronyms)] // Allowing because names are upper for JPEG segments
+#[allow(clippy::missing_docs_in_private_items)] // Allowing since documenting this would be a pain
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum JpegMarker {
     TEM,
