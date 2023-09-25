@@ -186,7 +186,11 @@ Number of resources:     {}",
 /// and the second element is the offset where the resources start.
 fn get_resources_from_xmp(xmp: XMPData, bytes: &[u8]) -> (Vec<Resource>, usize) {
     // TODO: Reduce mutable stuff. Likely using either the `scan` or `fold` methods.
-    let mut resources: Vec<Resource> = Vec::new();
+
+    // Pre-allocating to be 1 less than total number of resources, since
+    // One of the resources is probably the primary.
+    // This will make the loop faster, as it does not need to expand the vec
+    let mut resources: Vec<Resource> = Vec::with_capacity(xmp.resources.len() - 1);
     // Accumulator that starts at file end. We will iterate over
     // resources from XMP backwards and use each resource's length and
     // padding members to compute the start of the resource.
