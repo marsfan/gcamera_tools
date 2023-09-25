@@ -185,6 +185,50 @@ pub struct JpegSegment {
 }
 
 impl JpegSegment {
+    /// Create a new segment.
+    ///
+    /// Not to be used for creating the SOS, SOI, or EOI segments.
+    ///
+    /// # Arguments
+    /// * `marker`: Segment marker type.
+    /// * `data`: Segment data (as bytes)
+    ///
+    /// # Returns
+    /// Created segment
+    pub fn new(marker: JpegMarker, data: Vec<u8>) -> Self {
+        #[allow(clippy::wildcard_enum_match_arm)]
+        match marker {
+            JpegMarker::SOI => {
+                return Self {
+                    marker,
+                    length: None,
+                    data: None,
+                }
+            }
+            JpegMarker::EOI => {
+                return Self {
+                    marker,
+                    length: None,
+                    data: None,
+                }
+            }
+            JpegMarker::SOS => {
+                return Self {
+                    marker,
+                    length: Some(0x0C),
+                    data: Some(data),
+                }
+            }
+            _ => {
+                return Self {
+                    marker,
+                    length: Some((data.len() + 2).try_into().unwrap()),
+                    data: Some(data),
+                }
+            }
+        }
+    }
+
     // TODO: Instead use TryFrom?
     /// Create a new segment from bytes.
     ///
@@ -265,6 +309,7 @@ impl JpegSegment {
     /// Will panic if an attempt to parse the data to a UTF8 string
     /// fails.
     pub fn as_xmp_str(&self) -> Option<String> {
+        // FIXME: COnstant to share with XMP Module
         let xmp_marker = "http://ns.adobe.com/xap/1.0/".as_bytes();
 
         // Extract the data from the struct only if the marker is the right type.

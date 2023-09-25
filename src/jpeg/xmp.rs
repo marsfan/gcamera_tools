@@ -8,6 +8,8 @@ use roxmltree::{Document, ExpandedName, Node};
 
 use crate::errors::GCameraError;
 
+use super::jpeg_components::{JpegMarker, JpegSegment};
+
 // Namespace consants.
 
 /// RDF Namespace
@@ -212,6 +214,44 @@ pub struct XMPData {
 
     /// Vector of the resources defined in the file, according to the XMP data.
     pub resources: Vec<Item>,
+}
+
+impl XMPData {
+    /// Create XML for the XMP that does not have any resources.
+    ///
+    /// # Returns
+    /// XML for the XMP that does not have any resources.
+    fn as_resourceless_string(&self) -> String {
+        // FIXME: No unwrapping extended ID.
+        return format!(
+            "\
+<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"Adobe XMP Core 5.1.0-jc003\">
+  <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">
+    <rdf:Description rdf:about=\"\"
+      xmlns:xmpNote=\"http://ns.adobe.com/xmp/note/\"
+      xmpNote:HasExtendedXMP=\"{}\"/>
+  </rdf:RDF>
+</x:xmpmeta>",
+            self.description.extended_xmp_id.as_ref().unwrap()
+        );
+    }
+
+    /// Create `JpegSegment` for XMP data that has no resources.
+    ///
+    /// # Returns
+    /// Segment for XMP Resource that does not have any resources.
+    pub fn as_resourceless_segment(&self) -> JpegSegment {
+        // FIXME: Test for case with depth map
+        let data = [
+            "http://ns.adobe.com/xap/1.0/".as_bytes(), // FIXME: Constant to share with jpeg_components
+            &[0x00],
+            self.as_resourceless_string().as_bytes(),
+        ]
+        .concat();
+
+        // return JpegSegment {};
+        return JpegSegment::new(JpegMarker::APP1, data);
+    }
 }
 
 /// Implementation to create XMP Data from XML Document

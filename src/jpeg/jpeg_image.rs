@@ -29,15 +29,25 @@ impl JpegImage {
             .sum();
     }
 
-    /// Convert the image to bytes.
+    /// Convert the image to bytes, removing motion data from the XMP
     ///
     /// # Returns
-    /// The JPEG image as a vector of bytes
-    pub fn as_bytes(&self) -> Vec<u8> {
+    /// The JPEG image as a vector of bytes, but with the motion data removed
+    /// from the XMP data.
+    pub fn as_resourceless_bytes(&self) -> Vec<u8> {
         return self
             .segments
             .iter()
-            .flat_map(|segment| return segment.as_bytes())
+            .flat_map(|segment| {
+                if segment.as_xmp_str().is_some() {
+                    return XMPData::try_from(segment.as_xmp_str().unwrap())
+                        .unwrap()
+                        .as_resourceless_segment()
+                        .as_bytes();
+                } else {
+                    return segment.as_bytes();
+                }
+            })
             .collect();
     }
 
@@ -104,7 +114,7 @@ mod test {
             ],
         };
 
-        assert_eq!(image.as_bytes(), vec![0xFF, 0xD8, 0xFF, 0xD9]);
+        assert_eq!(image.as_resourceless_bytes(), vec![0xFF, 0xD8, 0xFF, 0xD9]);
     }
 
     /// Test case for when there JPEG magic is invalid

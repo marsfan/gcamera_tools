@@ -91,7 +91,7 @@ impl CameraImage {
     pub fn save_image(&self, filepath: PathBuf) -> Result<(), GCameraError> {
         return std::fs::File::create(filepath)
             .map_err(|error| return GCameraError::ImageWriteError { kind: error.kind() })?
-            .write_all(&self.image.as_bytes())
+            .write_all(&self.image.as_resourceless_bytes())
             .map_err(|error| return GCameraError::ImageWriteError { kind: error.kind() });
     }
 
