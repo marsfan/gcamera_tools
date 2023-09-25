@@ -7,6 +7,8 @@
 
 use crate::errors::GCameraError;
 
+use super::xmp::XMPData;
+
 /// Enum of the different JPEG segment markers.
 #[allow(clippy::upper_case_acronyms)] // Allowing because names are upper for JPEG segments
 #[allow(clippy::missing_docs_in_private_items)] // Allowing since documenting this would be a pain
@@ -308,7 +310,7 @@ impl JpegSegment {
     /// # Panics
     /// Will panic if an attempt to parse the data to a UTF8 string
     /// fails.
-    pub fn as_xmp_str(&self) -> Option<String> {
+    fn as_xmp_str(&self) -> Option<String> {
         // FIXME: COnstant to share with XMP Module
         let xmp_marker = "http://ns.adobe.com/xap/1.0/".as_bytes();
 
@@ -327,6 +329,20 @@ impl JpegSegment {
         } else {
             return None;
         }
+    }
+    /// Get XMP Data
+    ///
+    /// If this segment is the XMP data segment, this will return
+    /// the `XMPData` struct. Otherwise it will return None
+    ///
+    /// # Returns
+    /// The XMP Data, or None
+    pub fn as_xmp_data(&self) -> Option<Result<XMPData, GCameraError>> {
+        let xmp_str_option = self.as_xmp_str();
+        if let Some(xmp_string) = xmp_str_option {
+            return Some(XMPData::try_from(xmp_string));
+        }
+        return None;
     }
 
     /// Get the segment as a vector of bytes.
