@@ -7,7 +7,7 @@
 
 use crate::errors::GCameraError;
 
-use super::xmp::XMPData;
+use super::xmp::{XMPData, XMP_MARKER};
 
 /// Enum of the different JPEG segment markers.
 #[allow(clippy::upper_case_acronyms)] // Allowing because names are upper for JPEG segments
@@ -311,9 +311,6 @@ impl JpegSegment {
     /// Will panic if an attempt to parse the data to a UTF8 string
     /// fails.
     fn as_xmp_str(&self) -> Option<String> {
-        // FIXME: COnstant to share with XMP Module
-        let xmp_marker = "http://ns.adobe.com/xap/1.0/".as_bytes();
-
         // Extract the data from the struct only if the marker is the right type.
         let data = match (self.marker, &self.data) {
             (JpegMarker::APP1, Some(data_bytes)) => data_bytes.clone(),
@@ -321,9 +318,9 @@ impl JpegSegment {
         };
 
         // Check for the XMP Marker
-        if data.starts_with(xmp_marker) {
+        if data.starts_with(XMP_MARKER) {
             // Parse to string and return
-            let xml_offset = xmp_marker.len() + 1;
+            let xml_offset = XMP_MARKER.len() + 1;
             let xml_portion = Vec::from(&data[xml_offset..]);
             return Some(String::from_utf8(xml_portion).unwrap());
         } else {

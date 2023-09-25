@@ -26,6 +26,9 @@ const CONTAINER_NS: &str = "http://ns.google.com/photos/1.0/container/";
 /// Google Resource item info
 const ITEM_NS: &str = "http://ns.google.com/photos/1.0/container/item/";
 
+/// String that occurs at the start of the XMP section
+pub const XMP_MARKER: &[u8] = "http://ns.adobe.com/xap/1.0/".as_bytes();
+
 /// Convert an XML attribute in a node to a string.
 ///
 /// # Arguments
@@ -243,7 +246,7 @@ impl XMPData {
     pub fn as_resourceless_segment(&self) -> JpegSegment {
         // FIXME: Test for case with depth map
         let data = [
-            "http://ns.adobe.com/xap/1.0/".as_bytes(), // FIXME: Constant to share with jpeg_components
+            XMP_MARKER,
             &[0x00],
             self.as_resourceless_string().as_bytes(),
         ]
