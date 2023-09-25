@@ -214,7 +214,7 @@ fn get_resources_from_xmp(xmp: XMPData, bytes: &[u8]) -> (Vec<Resource>, usize) 
 }
 
 // Implementation of TryFrom for CameraImage
-impl TryFrom<Vec<u8>> for CameraImage {
+impl TryFrom<&[u8]> for CameraImage {
     type Error = GCameraError;
 
     /// Create a new instance from a vector of bytes.
@@ -224,12 +224,12 @@ impl TryFrom<Vec<u8>> for CameraImage {
     ///
     /// # Returns
     /// Result holding the created instance, or an error message
-    fn try_from(bytes: Vec<u8>) -> Result<Self, Self::Error> {
+    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
         if bytes[0..2] != vec![0xFF, 0xD8] {
             return Err(GCameraError::InvalidJpegMagic);
         }
         // FIXME: Make try_from be for &[u8] so we don't need as_slice?
-        let image = JpegImage::try_from(bytes.as_slice())?;
+        let image = JpegImage::try_from(bytes)?;
 
         let (resources, resources_start) = match image.get_xmp() {
             Ok(xmp_data) => get_resources_from_xmp(xmp_data, &bytes),
@@ -245,6 +245,14 @@ impl TryFrom<Vec<u8>> for CameraImage {
             resources,
             total_size: bytes.len(),
         });
+    }
+}
+
+impl TryFrom<Vec<u8>> for CameraImage {
+    type Error = GCameraError;
+
+    fn try_from(value: Vec<u8>) -> Result<Self, Self::Error> {
+        return Self::try_from(value.as_slice());
     }
 }
 
