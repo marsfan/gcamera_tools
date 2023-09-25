@@ -235,7 +235,7 @@ impl JpegSegment {
     /// Get the total number of bytes in the segment, if it was serialized to bytes
     ///
     /// # Returns
-    /// The total number of bytes in the segment, if it was serialized to bytes
+    /// The total number of bytes in the segment, if it were to be serialized to bytes
     pub fn byte_count(&self) -> usize {
         // Len size is a u16
         let len_size = match self.length {
