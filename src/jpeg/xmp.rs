@@ -220,13 +220,13 @@ pub struct XMPData {
 }
 
 impl XMPData {
-    /// Create XML for the XMP that does not have any resources.
+    /// Create `JpegSegment` for XMP data that has no resources.
     ///
     /// # Returns
-    /// XML for the XMP that does not have any resources.
-    fn as_resourceless_string(&self) -> String {
-        // FIXME: No unwrapping extended ID.
-        return format!(
+    /// Segment for XMP Resource that does not have any resources.
+    pub fn as_resourceless_segment(&self) -> JpegSegment {
+        // FIXME: Test for case with depth map
+        let xml_string = format!(
             "\
 <x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"Adobe XMP Core 5.1.0-jc003\">
   <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">
@@ -237,20 +237,7 @@ impl XMPData {
 </x:xmpmeta>",
             self.description.extended_xmp_id.as_ref().unwrap()
         );
-    }
-
-    /// Create `JpegSegment` for XMP data that has no resources.
-    ///
-    /// # Returns
-    /// Segment for XMP Resource that does not have any resources.
-    pub fn as_resourceless_segment(&self) -> JpegSegment {
-        // FIXME: Test for case with depth map
-        let data = [
-            XMP_MARKER,
-            &[0x00],
-            self.as_resourceless_string().as_bytes(),
-        ]
-        .concat();
+        let data = [XMP_MARKER, &[0x00], xml_string.as_bytes()].concat();
 
         // return JpegSegment {};
         return JpegSegment::new(JpegMarker::APP1, data);
