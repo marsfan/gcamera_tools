@@ -39,13 +39,8 @@ impl JpegImage {
             .segments
             .iter()
             .flat_map(|segment| {
-                if segment.as_xmp_data().is_some() {
-                    return segment
-                        .as_xmp_data()
-                        .unwrap()
-                        .unwrap()
-                        .as_resourceless_segment()
-                        .as_bytes();
+                if let Some(xmp_data) = segment.as_xmp_data() {
+                    return xmp_data.unwrap().as_resourceless_segment().as_bytes();
                 } else {
                     return segment.as_bytes();
                 }
