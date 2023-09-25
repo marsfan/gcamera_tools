@@ -60,7 +60,7 @@ impl JpegImage {
     }
 }
 
-impl TryFrom<&Vec<u8>> for JpegImage {
+impl TryFrom<&[u8]> for JpegImage {
     type Error = GCameraError;
 
     /// Create a new instance from a vector of bytes.
@@ -70,7 +70,7 @@ impl TryFrom<&Vec<u8>> for JpegImage {
     ///
     /// # Returns
     /// Resulting holding the created image, or an error message.
-    fn try_from(bytes: &Vec<u8>) -> Result<Self, Self::Error> {
+    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
         if bytes[0..2] != vec![0xFF, 0xD8] {
             return Err(GCameraError::InvalidJpegMagic);
         }
@@ -110,8 +110,8 @@ mod test {
     /// Test case for when there JPEG magic is invalid
     #[test]
     fn test_invalid_jpeg_magic() {
-        let test_bytes = vec![0xFF, 0xDD, 0xAA, 0xBB];
-        let image = JpegImage::try_from(&test_bytes);
+        let test_bytes: &[u8] = &[0xFF, 0xDD, 0xAA, 0xBB];
+        let image = JpegImage::try_from(test_bytes);
 
         assert_eq!(image, Err(GCameraError::InvalidJpegMagic));
     }

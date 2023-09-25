@@ -228,8 +228,8 @@ impl TryFrom<Vec<u8>> for CameraImage {
         if bytes[0..2] != vec![0xFF, 0xD8] {
             return Err(GCameraError::InvalidJpegMagic);
         }
-
-        let image = JpegImage::try_from(&bytes)?;
+        // FIXME: Make try_from be for &[u8] so we don't need as_slice?
+        let image = JpegImage::try_from(bytes.as_slice())?;
 
         let (resources, resources_start) = match image.get_xmp() {
             Ok(xmp_data) => get_resources_from_xmp(xmp_data, &bytes),
