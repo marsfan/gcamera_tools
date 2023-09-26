@@ -197,12 +197,18 @@ impl TryFrom<Node<'_, '_>> for Item {
     // FIXME: Handle when strings are None properly
     fn try_from(value: Node<'_, '_>) -> Result<Self, Self::Error> {
         return Ok(Self {
-            mimetype: MimeType::try_from(attribute_to_str(value, ITEM_NS, "Mime").unwrap())?,
+            mimetype: MimeType::try_from(attribute_to_str(value, ITEM_NS, "Mime").ok_or(
+                GCameraError::XMLMissingAttribute {
+                    attribute: String::from("Mime"),
+                },
+            )?)?,
             length: parse_attribute(value, ITEM_NS, "Length")?,
             padding: parse_attribute(value, ITEM_NS, "Padding")?.unwrap_or(0),
-            semantic: SemanticType::try_from(
-                attribute_to_str(value, ITEM_NS, "Semantic").unwrap(),
-            )?,
+            semantic: SemanticType::try_from(attribute_to_str(value, ITEM_NS, "Semantic").ok_or(
+                GCameraError::XMLMissingAttribute {
+                    attribute: String::from("Semantic"),
+                },
+            )?)?,
             label: attribute_to_str(value, ITEM_NS, "Label"),
             uri: attribute_to_str(value, ITEM_NS, "URI"),
         });

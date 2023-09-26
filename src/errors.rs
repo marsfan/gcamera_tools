@@ -56,6 +56,13 @@ pub enum GCameraError {
         attribute: Option<String>,
     },
 
+    /// Indicates that a required attribute could not be found.
+    #[error("Required attribute '{attribute}' could not be found.")]
+    XMLMissingAttribute {
+        /// The attribute that could not be found.
+        attribute: String,
+    },
+
     /// Indicates that XMP Data could not be found in any segments.
     #[error("No XMP Data found in the image.")]
     NoXMPData,
