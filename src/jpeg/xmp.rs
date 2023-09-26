@@ -43,6 +43,29 @@ fn attribute_to_str(node: Node, namespace: &str, attribute: &str) -> Option<Stri
         .attribute((namespace, attribute))
         .map(|n| return String::from(n));
 }
+
+/// Convert an XML Attribute in a node to a string, erroring if the attribute is missing.
+///
+/// # Arguments
+/// * `node`: The node to read the attribute from
+/// * `namespace`: The namespace of the attribute
+/// * `attribute`: The name of the attribute
+///
+/// # Returns
+///  Option holding the attribute converted to a string.
+///
+/// # Error
+/// Will error if the attribute is not found.
+fn attribute_to_str_req(
+    node: Node,
+    namespace: &str,
+    attribute: &str,
+) -> Result<String, GCameraError> {
+    return attribute_to_str(node, namespace, attribute).ok_or(GCameraError::XMLMissingAttribute {
+        attribute: String::from(attribute),
+    });
+}
+
 /// Parse an attribute.
 ///
 /// This parsing it using the str.parse method.
@@ -194,21 +217,13 @@ pub struct Item {
 /// Implementation to create item from a XML Node.
 impl TryFrom<Node<'_, '_>> for Item {
     type Error = GCameraError;
-    // FIXME: Handle when strings are None properly
+
     fn try_from(value: Node<'_, '_>) -> Result<Self, Self::Error> {
         return Ok(Self {
-            mimetype: MimeType::try_from(attribute_to_str(value, ITEM_NS, "Mime").ok_or(
-                GCameraError::XMLMissingAttribute {
-                    attribute: String::from("Mime"),
-                },
-            )?)?,
+            mimetype: MimeType::try_from(attribute_to_str_req(value, ITEM_NS, "Mime")?)?,
             length: parse_attribute(value, ITEM_NS, "Length")?,
             padding: parse_attribute(value, ITEM_NS, "Padding")?.unwrap_or(0),
-            semantic: SemanticType::try_from(attribute_to_str(value, ITEM_NS, "Semantic").ok_or(
-                GCameraError::XMLMissingAttribute {
-                    attribute: String::from("Semantic"),
-                },
-            )?)?,
+            semantic: SemanticType::try_from(attribute_to_str_req(value, ITEM_NS, "Semantic")?)?,
             label: attribute_to_str(value, ITEM_NS, "Label"),
             uri: attribute_to_str(value, ITEM_NS, "URI"),
         });
