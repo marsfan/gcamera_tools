@@ -50,7 +50,8 @@
     clippy::blanket_clippy_restriction_lints,
     clippy::arithmetic_side_effects,
     clippy::unwrap_used,
-    clippy::self_named_module_files
+    clippy::self_named_module_files,
+    clippy::as_conversions
 )]
 // Stuff from clippy::restriction we might want to enable
 #![allow(
