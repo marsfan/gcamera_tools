@@ -39,6 +39,7 @@ impl JpegImage {
             .segments
             .iter()
             .flat_map(|segment| {
+                // If it is the XMP segment, remove resources.
                 if let Some(xmp_data) = segment.as_xmp_data() {
                     return xmp_data.unwrap().as_resourceless_segment().as_bytes();
                 } else {

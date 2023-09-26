@@ -33,14 +33,6 @@ pub enum GCameraError {
     #[error("File does not start with valid JPEG Magic.")]
     InvalidJpegMagic,
 
-    /// Indicates that somehow the one of the `data` or `length` members
-    /// of `JpegSegment` is `None`, while the other is `Some`. This should
-    /// not be possible at all, so we need to error out right away.
-    #[error(
-        "Data and length must either both be None, or both be some. This should not be possible."
-    )]
-    LengthDataNotSameOption,
-
     /// Indicates that parsing the XML Document failed
     #[error("Error parsing XML Document. XML Error: {xml_error}.")]
     XMLParsingError {

@@ -157,11 +157,8 @@ impl TryFrom<u8> for JpegMarker {
 /// Offset that the next marker is at, or an error message
 fn find_next_segment(bytes: &[u8]) -> Result<usize, GCameraError> {
     for (index, byte) in bytes.iter().enumerate() {
-        if byte == &0xFF {
-            let marker = JpegMarker::try_from(bytes[index + 1]);
-            if marker.is_ok() {
-                return Ok(index);
-            }
+        if byte == &0xFF && JpegMarker::try_from(bytes[index + 1]).is_ok() {
+            return Ok(index);
         }
     }
     return Err(GCameraError::JpegMarkerNotFound);
@@ -253,30 +250,26 @@ impl JpegSegment {
         let marker = JpegMarker::try_from(bytes[1])?;
 
         #[allow(clippy::wildcard_enum_match_arm)]
-        let length = match marker {
-            JpegMarker::SOI => None,
-            JpegMarker::EOI => None,
-            _ => Some((u16::from(bytes[2]) << 8) | u16::from(bytes[3])),
-        };
-
-        // Allow wildcard matching here since we only care about if we have SOS
-        #[allow(clippy::wildcard_enum_match_arm)]
-        let data_length = match marker {
-            JpegMarker::SOS => Some(find_next_segment(&bytes[2..])?),
-            _ => length.map(|val| return usize::from(val)),
+        let (length, data_length) = match marker {
+            JpegMarker::SOI => (None, None),
+            JpegMarker::EOI => (None, None),
+            JpegMarker::SOS => (
+                Some((u16::from(bytes[2]) << 8) | u16::from(bytes[3])),
+                Some(find_next_segment(&bytes[2..])?),
+            ),
+            _ => {
+                let length = (u16::from(bytes[2]) << 8) | u16::from(bytes[3]);
+                (Some(length), Some(usize::from(length)))
+            }
         };
 
         let data = data_length.map(|len| return bytes[4..(2 + len)].to_vec());
 
-        if (data.is_none() && length.is_none()) || (data.is_some() && length.is_some()) {
-            return Ok(JpegSegment {
-                marker,
-                length,
-                data,
-            });
-        } else {
-            return Err(GCameraError::LengthDataNotSameOption);
-        }
+        return Ok(JpegSegment {
+            marker,
+            length,
+            data,
+        });
     }
 
     /// Get the total number of bytes in the segment, if it was serialized to bytes
