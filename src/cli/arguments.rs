@@ -51,6 +51,24 @@ pub struct Arguments {
     pub list_resources: bool,
 }
 
+impl Arguments {
+    /// Create the output file path from the provided argument, or a default value
+    ///
+    /// If the given argument is `Some()`, use that value as the output path
+    /// Otherwise, construct the output path by using the name of the input file
+    /// with a custom extension.
+    ///
+    /// # Arguments
+    /// * `argument`: The argument used for a user to manually specify an output path
+    /// * `extension`: The extension to use with the input path.
+    pub fn create_output_path(&self, argument: &Option<PathBuf>, extension: &str) -> PathBuf {
+        return match argument {
+            Some(path) => path.clone(),
+            None => self.input_path.with_extension(extension),
+        };
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
