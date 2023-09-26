@@ -230,12 +230,10 @@ impl JpegSegment {
             }
         };
 
-        let data = data_length.map(|len| return bytes[4..(2 + len)].to_vec());
-
         return Ok(JpegSegment {
             marker,
             length,
-            data,
+            data: data_length.map(|len| return bytes[4..(2 + len)].to_vec()),
         });
     }
 
@@ -295,8 +293,7 @@ impl JpegSegment {
     /// # Returns
     /// The XMP Data, or None
     pub fn as_xmp_data(&self) -> Option<Result<XMPData, GCameraError>> {
-        let xmp_str_option = self.as_xmp_str();
-        if let Some(xmp_string) = xmp_str_option {
+        if let Some(xmp_string) = self.as_xmp_str() {
             return Some(XMPData::try_from(xmp_string));
         }
         return None;
