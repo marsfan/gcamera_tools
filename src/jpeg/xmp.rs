@@ -247,16 +247,20 @@ impl XMPData {
     /// Segment for XMP Resource that does not have any resources.
     pub fn as_resourceless_segment(&self) -> JpegSegment {
         // FIXME: Test for case with depth map
+
+        let extended_xmp_note = match &self.description.extended_xmp_id {
+            Some(note) => format!("\n      xmpNote:HasExtendedXMP=\"{note}\"/>"),
+            None => String::new(),
+        };
+
         let xml_string = format!(
             "\
 <x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"Adobe XMP Core 5.1.0-jc003\">
   <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">
     <rdf:Description rdf:about=\"\"
-      xmlns:xmpNote=\"http://ns.adobe.com/xmp/note/\"
-      xmpNote:HasExtendedXMP=\"{}\"/>
+      xmlns:xmpNote=\"http://ns.adobe.com/xmp/note/\"{extended_xmp_note}
   </rdf:RDF>
-</x:xmpmeta>",
-            self.description.extended_xmp_id.as_ref().unwrap()
+</x:xmpmeta>"
         );
         let data = [XMP_MARKER, &[0x00], xml_string.as_bytes()].concat();
 
