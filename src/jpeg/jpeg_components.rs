@@ -56,6 +56,10 @@ impl JpegSegment {
     ///
     /// # Returns
     /// Created segment
+    ///
+    /// # Panics
+    /// Will panic if attemping to create a SOS segment with a length shorter
+    /// Than 10.
     pub fn new(marker: JpegMarker, data: Vec<u8>) -> Self {
         #[allow(clippy::wildcard_enum_match_arm)]
         match marker {
@@ -74,11 +78,15 @@ impl JpegSegment {
                 }
             }
             JpegMarker::SOS => {
+                assert!(
+                    data.len() >= 10,
+                    "Attemping to create SOS segment that is too short"
+                );
                 return Self {
                     marker,
                     length: Some(0x0C),
                     data: Some(data),
-                }
+                };
             }
             _ => {
                 return Self {
@@ -256,6 +264,81 @@ mod tests {
 
     mod test_jpeg_segment {
         use super::*;
+
+        /// Tests for the `new` method
+        mod test_new {
+            use super::*;
+
+            /// Test creating a new SOI segment.
+            #[test]
+            fn test_new_soi() {
+                let segment = JpegSegment::new(JpegMarker::SOI, vec![0x00, 0x01, 0x02]);
+                assert_eq!(
+                    segment,
+                    JpegSegment {
+                        marker: JpegMarker::SOI,
+                        length: None,
+                        data: None
+                    }
+                );
+            }
+
+            /// Test creating a new EOI segment
+            #[test]
+            fn test_new_eoi() {
+                let segment = JpegSegment::new(JpegMarker::EOI, vec![0x00, 0x01, 0x02]);
+                assert_eq!(
+                    segment,
+                    JpegSegment {
+                        marker: JpegMarker::EOI,
+                        length: None,
+                        data: None
+                    }
+                );
+            }
+
+            /// Test creating a new SOS Segment
+            #[test]
+            fn test_new_sos() {
+                let segment = JpegSegment::new(
+                    JpegMarker::SOS,
+                    vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09],
+                );
+                assert_eq!(
+                    segment,
+                    JpegSegment {
+                        marker: JpegMarker::SOS,
+                        length: Some(0x0C),
+                        data: Some(vec![
+                            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09
+                        ])
+                    }
+                );
+            }
+            /// Test panicing if SOS Segment creation is too small
+            #[test]
+            #[should_panic(expected = "Attemping to create SOS segment that is too short")]
+            fn test_new_sos_err() {
+                JpegSegment::new(
+                    JpegMarker::SOS,
+                    vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
+                );
+            }
+
+            /// Test creating some other segment
+            #[test]
+            fn test_new_segment() {
+                let segment = JpegSegment::new(JpegMarker::APP0, vec![0x00, 0x01, 0x02, 0x03]);
+                assert_eq!(
+                    segment,
+                    JpegSegment {
+                        marker: JpegMarker::APP0,
+                        length: Some(6),
+                        data: Some(vec![0x00, 0x01, 0x02, 0x03])
+                    }
+                );
+            }
+        }
 
         mod test_from_bytes {
             use super::*;
