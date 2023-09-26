@@ -7,8 +7,9 @@
 use roxmltree::{Document, ExpandedName, Node};
 
 use crate::errors::GCameraError;
+use crate::jpeg::marker::JpegMarker;
 
-use super::jpeg_components::{JpegMarker, JpegSegment};
+use crate::jpeg::jpeg_components::JpegSegment;
 
 // Namespace consants.
 

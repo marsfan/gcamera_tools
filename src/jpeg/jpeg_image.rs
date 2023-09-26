@@ -6,7 +6,8 @@
 //! Logic for the entire JPEG image.
 
 use crate::errors::GCameraError;
-use crate::jpeg::jpeg_components::{JpegMarker, JpegSegment};
+use crate::jpeg::jpeg_components::JpegSegment;
+use crate::jpeg::marker::JpegMarker;
 use crate::jpeg::xmp::XMPData;
 
 /// Struct for holding a single JPEG image.
