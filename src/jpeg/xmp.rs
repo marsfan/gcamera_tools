@@ -250,7 +250,7 @@ impl XMPData {
         // FIXME: Test for case with depth map
 
         let extended_xmp_note = match &self.description.extended_xmp_id {
-            Some(note) => format!("\n      xmpNote:HasExtendedXMP=\"{note}\"/>"),
+            Some(note) => format!("\n      xmpNote:HasExtendedXMP=\"{note}\""),
             None => String::new(),
         };
 
@@ -259,14 +259,13 @@ impl XMPData {
 <x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"Adobe XMP Core 5.1.0-jc003\">
   <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">
     <rdf:Description rdf:about=\"\"
-      xmlns:xmpNote=\"http://ns.adobe.com/xmp/note/\"{extended_xmp_note}
+      xmlns:xmpNote=\"http://ns.adobe.com/xmp/note/\"{extended_xmp_note}/>
   </rdf:RDF>
 </x:xmpmeta>"
         );
         let data = [XMP_MARKER, &[0x00], xml_string.as_bytes()].concat();
 
-        // return JpegSegment {};
-        return JpegSegment::new(JpegMarker::APP1, data);
+        return JpegSegment::new(JpegMarker::APP1, &data);
     }
 }
 
@@ -823,6 +822,59 @@ mod tests {
                 parsed.unwrap_err(),
                 GCameraError::XMLParsingError { .. }
             ));
+        }
+
+        /// Test the `as_resourceless_segment` method when there is extended XMP data
+        #[test]
+        fn test_resourceless_segment_with_extended() {
+            let expected_data_bytes = "\
+http://ns.adobe.com/xap/1.0/\x00<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"Adobe XMP Core 5.1.0-jc003\">
+  <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">
+    <rdf:Description rdf:about=\"\"
+      xmlns:xmpNote=\"http://ns.adobe.com/xmp/note/\"
+      xmpNote:HasExtendedXMP=\"ABCDEFG\"/>
+  </rdf:RDF>
+</x:xmpmeta>".as_bytes();
+            let data = XMPData {
+                description: Description {
+                    extended_xmp_id: Some(String::from("ABCDEFG")),
+                    motion_photo: Some(1),
+                    motion_photo_version: Some(1),
+                    motion_photo_timestamp_us: Some(5),
+                },
+                resources: Vec::new(),
+            };
+            let created_segment = data.as_resourceless_segment();
+            assert_eq!(
+                created_segment,
+                JpegSegment::new(JpegMarker::APP1, expected_data_bytes)
+            );
+        }
+
+        /// Test the `as_resourceless_segment` method when there is no extended XMP data
+        #[test]
+        fn test_resourceless_segment_without_extended() {
+            let expected_data_bytes = "\
+http://ns.adobe.com/xap/1.0/\x00<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"Adobe XMP Core 5.1.0-jc003\">
+  <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">
+    <rdf:Description rdf:about=\"\"
+      xmlns:xmpNote=\"http://ns.adobe.com/xmp/note/\"/>
+  </rdf:RDF>
+</x:xmpmeta>".as_bytes();
+            let data = XMPData {
+                description: Description {
+                    extended_xmp_id: None,
+                    motion_photo: Some(1),
+                    motion_photo_version: Some(1),
+                    motion_photo_timestamp_us: Some(5),
+                },
+                resources: Vec::new(),
+            };
+            let created_segment = data.as_resourceless_segment();
+            assert_eq!(
+                created_segment,
+                JpegSegment::new(JpegMarker::APP1, expected_data_bytes)
+            );
         }
     }
 }

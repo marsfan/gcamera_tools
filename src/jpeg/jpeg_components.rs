@@ -60,7 +60,7 @@ impl JpegSegment {
     /// # Panics
     /// Will panic if attemping to create a SOS segment with a length shorter
     /// Than 10.
-    pub fn new(marker: JpegMarker, data: Vec<u8>) -> Self {
+    pub fn new(marker: JpegMarker, data: &[u8]) -> Self {
         #[allow(clippy::wildcard_enum_match_arm)]
         match marker {
             JpegMarker::SOI => {
@@ -85,14 +85,14 @@ impl JpegSegment {
                 return Self {
                     marker,
                     length: Some(0x0C),
-                    data: Some(data),
+                    data: Some(Vec::from(data)),
                 };
             }
             _ => {
                 return Self {
                     marker,
                     length: Some((data.len() + 2).try_into().unwrap()),
-                    data: Some(data),
+                    data: Some(Vec::from(data)),
                 }
             }
         }
@@ -272,7 +272,7 @@ mod tests {
             /// Test creating a new SOI segment.
             #[test]
             fn test_new_soi() {
-                let segment = JpegSegment::new(JpegMarker::SOI, vec![0x00, 0x01, 0x02]);
+                let segment = JpegSegment::new(JpegMarker::SOI, &[0x00, 0x01, 0x02]);
                 assert_eq!(
                     segment,
                     JpegSegment {
@@ -286,7 +286,7 @@ mod tests {
             /// Test creating a new EOI segment
             #[test]
             fn test_new_eoi() {
-                let segment = JpegSegment::new(JpegMarker::EOI, vec![0x00, 0x01, 0x02]);
+                let segment = JpegSegment::new(JpegMarker::EOI, &[0x00, 0x01, 0x02]);
                 assert_eq!(
                     segment,
                     JpegSegment {
@@ -302,7 +302,7 @@ mod tests {
             fn test_new_sos() {
                 let segment = JpegSegment::new(
                     JpegMarker::SOS,
-                    vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09],
+                    &[0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09],
                 );
                 assert_eq!(
                     segment,
@@ -321,14 +321,14 @@ mod tests {
             fn test_new_sos_err() {
                 JpegSegment::new(
                     JpegMarker::SOS,
-                    vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
+                    &[0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
                 );
             }
 
             /// Test creating some other segment
             #[test]
             fn test_new_segment() {
-                let segment = JpegSegment::new(JpegMarker::APP0, vec![0x00, 0x01, 0x02, 0x03]);
+                let segment = JpegSegment::new(JpegMarker::APP0, &[0x00, 0x01, 0x02, 0x03]);
                 assert_eq!(
                     segment,
                     JpegSegment {
