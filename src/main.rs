@@ -4,8 +4,12 @@
 * file, You can obtain one at https: //mozilla.org/MPL/2.0/.
 */
 use gcamera_tools::cli::tool::tool_main;
+use std::process::exit;
 
 /// Main function that is run from the command line.
 fn main() {
-    tool_main();
+    tool_main().unwrap_or_else(|err| {
+        eprintln!("Error: {err}");
+        exit(1)
+    });
 }

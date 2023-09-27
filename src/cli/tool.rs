@@ -9,43 +9,31 @@
 
 use crate::camera_image::CameraImage;
 use crate::cli::arguments::Arguments;
+use crate::errors::GCameraError;
 use clap::Parser;
-use std::process::exit;
 
 /// Main function to be called when running the tool.
-pub fn tool_main() {
+pub fn tool_main() -> Result<(), GCameraError> {
     // Parse command line arguments
     let args = Arguments::parse();
 
-    let image = CameraImage::from_file(&args.input_path).unwrap_or_else(|err| {
-        eprintln!("Problem Parsing Image: {err}");
-        exit(1);
-    });
+    let image = CameraImage::from_file(&args.input_path)?;
 
     // Save the JPEG image if requested
     if args.save_image {
         let output_path = args.create_output_path(&args.image_path, "image.jpg");
-        image.save_image(output_path).unwrap_or_else(|err| {
-            eprintln!("Problem Saving JPEG Image: {err}");
-            exit(1);
-        });
+        image.save_image(output_path)?;
     }
 
     // Save the debug data if requested.
     if args.save_debug {
         let output_path = args.create_output_path(&args.debug_path, "debug.bin");
-        image.save_debug_data(output_path).unwrap_or_else(|err| {
-            eprintln!("Problem Saving Debug Data: {err}");
-            exit(1);
-        });
+        image.save_debug_data(output_path)?;
     }
     // Save the motion photo if requested
     if args.save_motion {
         let output_path = args.create_output_path(&args.motion_path, "motion.mp4");
-        image.save_motion_video(output_path).unwrap_or_else(|err| {
-            eprintln!("Problem Saving Motion Video: {err}");
-            exit(1);
-        });
+        image.save_motion_video(output_path)?;
     }
 
     if args.info {
@@ -55,4 +43,6 @@ pub fn tool_main() {
     if args.list_resources {
         image.print_resource_list();
     }
+
+    return Ok(());
 }
