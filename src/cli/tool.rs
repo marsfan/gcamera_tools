@@ -13,6 +13,9 @@ use crate::errors::GCameraError;
 use clap::Parser;
 
 /// Main function to be called when running the tool.
+///
+/// # Errors
+/// Will return an error if the tool fails for any reason.
 pub fn tool_main() -> Result<(), GCameraError> {
     // Parse command line arguments
     let args = Arguments::parse();
