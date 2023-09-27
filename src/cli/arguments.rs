@@ -71,6 +71,8 @@ impl Arguments {
 
 #[cfg(test)]
 mod tests {
+    use clap::error::ErrorKind;
+
     use super::*;
 
     /// Test for when not enough arguments are supplied
@@ -91,6 +93,72 @@ mod tests {
         let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "second_photo.jpg"];
         let parsed_args = Arguments::try_parse_from(input_args);
         parsed_args.unwrap();
+    }
+
+    /// Test that the `image_path` arg without `save_image` fails.
+    #[test]
+    fn test_image_path_missing_flag() {
+        let input_args = vec![
+            "/bin/gcamera_tools",
+            "motion_photo.jpg",
+            "--image-path",
+            "image.jpg",
+        ];
+        let parsed_args = Arguments::try_parse_from(input_args);
+        assert!(parsed_args.is_err());
+        assert_eq!(
+            parsed_args.unwrap_err().kind(),
+            ErrorKind::MissingRequiredArgument
+        );
+    }
+    /// Test that the `debug_path` arg without `save_debug` fails.
+    #[test]
+    fn test_debug_path_missing_flag() {
+        let input_args = vec![
+            "/bin/gcamera_tools",
+            "motion_photo.jpg",
+            "--debug-path",
+            "image.bin",
+        ];
+        let parsed_args = Arguments::try_parse_from(input_args);
+        assert!(parsed_args.is_err());
+        assert_eq!(
+            parsed_args.unwrap_err().kind(),
+            ErrorKind::MissingRequiredArgument
+        );
+    }
+    /// Test that the `motion_path` arg without `save_motion` fails.
+    #[test]
+    fn test_motion_path_missing_flag() {
+        let input_args = vec![
+            "/bin/gcamera_tools",
+            "motion_photo.jpg",
+            "--motion-path",
+            "image.mp4",
+        ];
+        let parsed_args = Arguments::try_parse_from(input_args);
+        assert!(parsed_args.is_err());
+        assert_eq!(
+            parsed_args.unwrap_err().kind(),
+            ErrorKind::MissingRequiredArgument
+        );
+    }
+
+    /// Test `create_output_path` when the default should be used
+    #[test]
+    fn test_create_output_path_default() {
+        let parsed_args = Arguments::parse_from(vec!["/bin/gcamera_tools", "motion_photo.jpg"]);
+        let output_path = parsed_args.create_output_path(&None, "motion.mp4");
+        assert_eq!(output_path, PathBuf::from("motion_photo.motion.mp4"));
+    }
+
+    /// Test `create_output_path` when an argument is provided.
+    #[test]
+    fn test_create_output_path_no_default() {
+        let parsed_args = Arguments::parse_from(vec!["/bin/gcamera_tools", "motion_photo.jpg"]);
+        let output_path =
+            parsed_args.create_output_path(&Some(PathBuf::from("hello.mp4")), "motion.mp4");
+        assert_eq!(output_path, PathBuf::from("hello.mp4"));
     }
 
     /// Use clap's built in unit test ability.
