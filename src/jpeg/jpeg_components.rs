@@ -61,6 +61,11 @@ impl JpegSegment {
     /// Will panic if attemping to create a SOS segment with a length shorter
     /// Than 10.
     pub fn new(marker: JpegMarker, data: &[u8]) -> Self {
+        assert_ne!(
+            JpegMarker::SOS,
+            marker,
+            "Constructing a SOS Segment is not supported."
+        );
         #[allow(clippy::wildcard_enum_match_arm)]
         match marker {
             JpegMarker::SOI => {
@@ -77,17 +82,17 @@ impl JpegSegment {
                     data: None,
                 }
             }
-            JpegMarker::SOS => {
-                assert!(
-                    data.len() >= 10,
-                    "Attemping to create SOS segment that is too short"
-                );
-                return Self {
-                    marker,
-                    length: Some(0x0C),
-                    data: Some(Vec::from(data)),
-                };
-            }
+            // JpegMarker::SOS => {
+            //     assert!(
+            //         data.len() >= 10,
+            //         "Attemping to create SOS segment that is too short"
+            //     );
+            //     return Self {
+            //         marker,
+            //         length: Some(0x0C),
+            //         data: Some(Vec::from(data)),
+            //     };
+            // }
             _ => {
                 return Self {
                     marker,
@@ -297,8 +302,9 @@ mod tests {
                 );
             }
 
-            /// Test creating a new SOS Segment
+            /// Test panicking if user tries to create a SOS segment
             #[test]
+            #[should_panic(expected = "Constructing a SOS Segment is not supported.")]
             fn test_new_sos() {
                 let segment = JpegSegment::new(
                     JpegMarker::SOS,
@@ -313,15 +319,6 @@ mod tests {
                             0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09
                         ])
                     }
-                );
-            }
-            /// Test panicing if SOS Segment creation is too small
-            #[test]
-            #[should_panic(expected = "Attemping to create SOS segment that is too short")]
-            fn test_new_sos_err() {
-                JpegSegment::new(
-                    JpegMarker::SOS,
-                    &[0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
                 );
             }
 
