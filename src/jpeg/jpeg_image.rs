@@ -58,13 +58,11 @@ impl JpegImage {
     /// # Errors
     /// Will return an error if there is no XMP data in the image
     pub fn get_xmp(&self) -> Result<XMPData, GCameraError> {
-        for segment in &self.segments {
-            if let Some(xmp_data) = segment.as_xmp_data() {
-                return xmp_data;
-            }
-        }
-
-        return Err(GCameraError::NoXMPData);
+        return self
+            .segments
+            .iter()
+            .find_map(|e| return e.as_xmp_data())
+            .unwrap_or(Err(GCameraError::NoXMPData));
     }
 }
 

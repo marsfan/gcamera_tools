@@ -68,6 +68,7 @@ impl CameraImage {
     /// # Errors
     /// Will error if there are no resources of the given semantic type
     fn get_resource_by_type(&self, resource_type: SemanticType) -> Result<&Resource, GCameraError> {
+        // TODO: use `position or find_map` to find resource instead.
         for resource in &self.resources {
             if resource.info.semantic == resource_type {
                 return Ok(resource);
