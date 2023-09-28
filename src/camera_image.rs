@@ -404,4 +404,37 @@ Additional Resources:
             )
         );
     }
+
+    /// Test the `get_resource_by_type` method when a resource can be found.
+    #[test]
+    fn test_get_resource_by_type_ok() {
+        let test_image = get_test_image();
+        let resource = test_image.get_resource_by_type(SemanticType::GainMap);
+        assert_eq!(
+            resource,
+            Ok(&Resource {
+                data: vec![0x03, 0x04],
+                info: Item {
+                    mimetype: MimeType::Jpeg,
+                    length: Some(2),
+                    padding: 0,
+                    semantic: SemanticType::GainMap,
+                    label: None,
+                    uri: None,
+                },
+            })
+        );
+    }
+    /// Test the `get_resource_by_type` method when a resource can not be found.
+    #[test]
+    fn test_get_resource_by_type_err() {
+        let test_image = get_test_image();
+        let resource = test_image.get_resource_by_type(SemanticType::Primary);
+        assert_eq!(
+            resource,
+            Err(GCameraError::NoResourcesOfType {
+                semantic_type: SemanticType::Primary
+            })
+        );
+    }
 }
