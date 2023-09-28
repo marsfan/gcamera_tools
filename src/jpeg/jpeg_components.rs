@@ -18,12 +18,15 @@ use super::xmp::{XMPData, XMP_MARKER};
 /// # Returns
 /// Offset that the next marker is at, or an error message
 fn find_next_segment(bytes: &[u8]) -> Result<usize, GCameraError> {
-    for (index, byte) in bytes.iter().enumerate() {
-        if byte == &0xFF && JpegMarker::try_from(bytes[index + 1]).is_ok() {
-            return Ok(index);
-        }
+    let search_result = bytes.windows(2).enumerate().find(|(_, window)| {
+        return window[0] == 0xFF && JpegMarker::try_from(window[1]).is_ok();
+    });
+
+    if let Some((index, _)) = search_result {
+        return Ok(index);
+    } else {
+        return Err(GCameraError::JpegMarkerNotFound);
     }
-    return Err(GCameraError::JpegMarkerNotFound);
 }
 
 /// A single JPEG segment.
