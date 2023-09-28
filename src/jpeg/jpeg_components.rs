@@ -8,7 +8,7 @@
 use crate::errors::GCameraError;
 use crate::jpeg::marker::JpegMarker;
 
-use super::xmp::{XMPData, XMP_MARKER};
+use crate::jpeg::xmp::{XMPData, XMP_MARKER};
 
 /// Linear search for the next JPEG Segment.
 ///
