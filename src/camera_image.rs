@@ -196,6 +196,7 @@ fn get_resources_from_xmp(xmp: &XMPData, bytes: &[u8]) -> (Vec<Resource>, usize)
     // resources from XMP backwards and use each resource's length and
     // padding members to compute the start of the resource.
     let mut length_accumulator = bytes.len();
+    // FIXME: Can we remove enumerate?
     for (_, resource) in xmp.resources.iter().enumerate().rev() {
         // data chunk ends at the previous accumulator values.
         if resource.semantic != SemanticType::Primary {
@@ -265,6 +266,63 @@ mod test {
 
     use super::*;
 
+    /// Function for getting a test image to use in unit tests
+    ///
+    /// # Returns
+    /// A test image to use in tests
+    fn get_test_image() -> CameraImage {
+        return CameraImage {
+            image: JpegImage {
+                segments: vec![
+                    JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
+                    JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap(),
+                ],
+            },
+            debug_components: DebugComponents {
+                aecdebug: {
+                    DebugChunk {
+                        magic: String::from("aecDebug"),
+                        data: String::from("hi").as_bytes().to_vec(),
+                    }
+                },
+                afdebug: DebugChunk {
+                    magic: String::from("afDebug"),
+                    data: String::from("bye").as_bytes().to_vec(),
+                },
+                awbdebug: DebugChunk {
+                    magic: String::from("awbDebug"),
+                    data: String::from("123").as_bytes().to_vec(),
+                },
+            },
+            resources: vec![
+                Resource {
+                    data: vec![0x01, 0x02],
+                    info: Item {
+                        mimetype: MimeType::Mp4,
+                        length: Some(2),
+                        padding: 0,
+                        semantic: SemanticType::MotionPhoto,
+                        label: None,
+
+                        uri: None,
+                    },
+                },
+                Resource {
+                    data: vec![0x03, 0x04],
+                    info: Item {
+                        mimetype: MimeType::Jpeg,
+                        length: Some(2),
+                        padding: 0,
+                        semantic: SemanticType::GainMap,
+                        label: None,
+                        uri: None,
+                    },
+                },
+            ],
+            total_size: 39,
+        };
+    }
+
     /// Tests for the `from_bytes` method
     #[test]
     fn test_from_bytes() {
@@ -317,32 +375,7 @@ mod test {
     /// Test the `get_debug_info` function
     #[test]
     fn test_get_debug_info() {
-        let test_image = CameraImage {
-            image: JpegImage {
-                segments: vec![
-                    JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
-                    JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap(),
-                ],
-            },
-            debug_components: DebugComponents {
-                aecdebug: {
-                    DebugChunk {
-                        magic: String::from("aecDebug"),
-                        data: String::from("hi").as_bytes().to_vec(),
-                    }
-                },
-                afdebug: DebugChunk {
-                    magic: String::from("afDebug"),
-                    data: String::from("bye").as_bytes().to_vec(),
-                },
-                awbdebug: DebugChunk {
-                    magic: String::from("awbDebug"),
-                    data: String::from("123").as_bytes().to_vec(),
-                },
-            },
-            resources: Vec::new(),
-            total_size: 35,
-        };
+        let test_image = get_test_image();
         let debug_info = test_image.get_debug_info();
         assert_eq!(
             debug_info,
@@ -351,7 +384,7 @@ mod test {
 Number of JPEG segments: 2
 JPEG image size:         4
 Debug section size:      31
-Number of resources:     0"
+Number of resources:     2"
             )
         );
     }
@@ -359,56 +392,7 @@ Number of resources:     0"
     /// Test the `get_resource_str` method
     #[test]
     fn test_get_resource_str() {
-        let test_image = CameraImage {
-            image: JpegImage {
-                segments: vec![
-                    JpegSegment::from_bytes(&[0xFF, 0xD8]).unwrap(),
-                    JpegSegment::from_bytes(&[0xFF, 0xD9]).unwrap(),
-                ],
-            },
-            debug_components: DebugComponents {
-                aecdebug: {
-                    DebugChunk {
-                        magic: String::from("aecDebug"),
-                        data: String::from("hi").as_bytes().to_vec(),
-                    }
-                },
-                afdebug: DebugChunk {
-                    magic: String::from("afDebug"),
-                    data: String::from("bye").as_bytes().to_vec(),
-                },
-                awbdebug: DebugChunk {
-                    magic: String::from("awbDebug"),
-                    data: String::from("123").as_bytes().to_vec(),
-                },
-            },
-            resources: vec![
-                Resource {
-                    data: vec![0x01, 0x02],
-                    info: Item {
-                        mimetype: MimeType::Mp4,
-                        length: Some(2),
-                        padding: 0,
-                        semantic: SemanticType::MotionPhoto,
-                        label: None,
-
-                        uri: None,
-                    },
-                },
-                Resource {
-                    data: vec![0x03, 0x04],
-                    info: Item {
-                        mimetype: MimeType::Jpeg,
-                        length: Some(2),
-                        padding: 0,
-                        semantic: SemanticType::GainMap,
-                        label: None,
-                        uri: None,
-                    },
-                },
-            ],
-            total_size: 39,
-        };
+        let test_image = get_test_image();
         let resource_str = test_image.get_resource_str();
         assert_eq!(
             resource_str,
