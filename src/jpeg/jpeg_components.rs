@@ -82,17 +82,6 @@ impl JpegSegment {
                     data: None,
                 }
             }
-            // JpegMarker::SOS => {
-            //     assert!(
-            //         data.len() >= 10,
-            //         "Attemping to create SOS segment that is too short"
-            //     );
-            //     return Self {
-            //         marker,
-            //         length: Some(0x0C),
-            //         data: Some(Vec::from(data)),
-            //     };
-            // }
             _ => {
                 return Self {
                     marker,
