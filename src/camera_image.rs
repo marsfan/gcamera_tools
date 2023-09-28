@@ -60,23 +60,19 @@ impl CameraImage {
     /// Get the first resource of the given semantic type
     ///
     /// # Arguments
-    /// * `resource_type`: The semantic type of the resource to get.
+    /// * `semantic_type`: The semantic type of the resource to get.
     ///
     /// # Returns
     /// The first resource that has the matching semantic type
     ///
     /// # Errors
     /// Will error if there are no resources of the given semantic type
-    fn get_resource_by_type(&self, resource_type: SemanticType) -> Result<&Resource, GCameraError> {
-        // TODO: use `position or find_map` to find resource instead.
-        for resource in &self.resources {
-            if resource.info.semantic == resource_type {
-                return Ok(resource);
-            }
-        }
-        return Err(GCameraError::NoResourcesOfType {
-            semantic_type: resource_type,
-        });
+    fn get_resource_by_type(&self, semantic_type: SemanticType) -> Result<&Resource, GCameraError> {
+        return self
+            .resources
+            .iter()
+            .find(|e| return e.info.semantic == semantic_type)
+            .ok_or(GCameraError::NoResourcesOfType { semantic_type });
     }
 
     /// Save the JPEG component of the image.
