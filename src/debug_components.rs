@@ -50,17 +50,19 @@ fn find_magic_start(data: &[u8], magic: &str) -> Result<usize, GCameraError> {
     // End point must be total length minus magic length, or we we attempt to
     // read outside the array.
     let magic_bytes = magic.as_bytes();
-    let loop_end_point = data.len() - magic_bytes.len();
-    for (position, _) in data[..loop_end_point].iter().enumerate() {
-        let last_byte = position + magic_bytes.len();
-        let chunk = &data[position..last_byte];
-        if chunk == magic_bytes {
-            return Ok(position);
-        }
+
+    let search_result = data
+        .windows(magic_bytes.len())
+        .enumerate()
+        .find(|(_, window)| return window == &magic_bytes);
+
+    if let Some((index, _)) = search_result {
+        return Ok(index);
+    } else {
+        return Err(GCameraError::MagicNotFound {
+            magic: String::from(magic),
+        });
     }
-    return Err(GCameraError::MagicNotFound {
-        magic: String::from(magic),
-    });
 }
 
 /// All of the debug information from the image.
