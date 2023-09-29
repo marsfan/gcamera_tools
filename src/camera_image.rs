@@ -229,6 +229,7 @@ impl TryFrom<&[u8]> for CameraImage {
         let image = JpegImage::try_from(bytes)?;
 
         let (resources, resources_start) = match image.get_xmp() {
+            // TODO: Test case for OK
             Ok(xmp_data) => get_resources_from_xmp(&xmp_data, bytes),
             Err(_) => (Vec::new(), bytes.len()),
         };
@@ -432,5 +433,87 @@ Additional Resources:
                 semantic_type: SemanticType::Primary
             })
         );
+    }
+
+    /// Test the `get_resources_from_xmp` method
+    #[test]
+    fn test_get_resources_from_xmp() {
+        let xmp = XMPData::try_from(String::from(
+            "<x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='Adobe XMP Core 5.1.0-jc003'>
+                <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+                    <rdf:Description rdf:about=''
+                    xmlns:xmpNote='http://ns.adobe.com/xmp/note/'
+                    xmlns:GCamera='http://ns.google.com/photos/1.0/camera/'
+                    xmlns:Container='http://ns.google.com/photos/1.0/container/'
+                    xmlns:Item='http://ns.google.com/photos/1.0/container/item/'
+                    xmpNote:HasExtendedXMP='DD558CA2166AEC119A42CDFB02D4F1EF'
+                    GCamera:MotionPhoto='1'
+                    GCamera:MotionPhotoVersion='1'
+                    GCamera:MotionPhotoPresentationTimestampUs='968644'>
+                    <Container:Directory>
+                        <rdf:Seq>
+                        <rdf:li rdf:parseType='Resource'>
+                            <Container:Item
+                            Item:Mime='image/jpeg'
+                            Item:Semantic='Primary'
+                            Item:Length='0'
+                            Item:Padding='0' />
+                        </rdf:li>
+                        <rdf:li rdf:parseType='Resource'>
+                            <Container:Item
+                            Item:Mime='video/mp4'
+                            Item:Semantic='MotionPhoto'
+                            Item:Length='4'
+                            Item:Padding='0' />
+                        </rdf:li>
+                        <rdf:li rdf:parseType='Resource'>
+                            <Container:Item
+                            Item:Mime='image/jpeg'
+                            Item:Semantic='GainMap'
+                            Item:Length='5'
+                            Item:Padding='1' />
+                        </rdf:li>
+                        </rdf:Seq>
+                    </Container:Directory>
+                    </rdf:Description>
+                </rdf:RDF>
+                </x:xmpmeta>",
+        ))
+        .unwrap();
+
+        let test_bytes = vec![
+            0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x00, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E,
+        ];
+
+        let (resources, resource_start_point) = get_resources_from_xmp(&xmp, &test_bytes);
+
+        assert_eq!(
+            resources,
+            vec![
+                Resource {
+                    data: vec![0x05, 0x06, 0x07, 0x08],
+                    info: Item {
+                        mimetype: MimeType::Mp4,
+                        length: Some(4),
+                        padding: 0,
+                        semantic: SemanticType::MotionPhoto,
+                        label: None,
+                        uri: None
+                    }
+                },
+                Resource {
+                    data: vec![0x0A, 0x0B, 0x0C, 0x0D, 0x0E],
+                    info: Item {
+                        mimetype: MimeType::Jpeg,
+                        length: Some(5),
+                        padding: 1,
+                        semantic: SemanticType::GainMap,
+                        label: None,
+                        uri: None
+                    }
+                }
+            ]
+        );
+        assert_eq!(resource_start_point, 4);
     }
 }
