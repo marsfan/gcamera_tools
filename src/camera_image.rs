@@ -182,8 +182,6 @@ Number of resources:     {}",
 /// Tuple where the first element is a vector of all non-primary resources.
 /// and the second element is the offset where the resources start.
 fn get_resources_from_xmp(xmp: &XMPData, bytes: &[u8]) -> (Vec<Resource>, usize) {
-    // TODO: Reduce mutable stuff. Likely using either the `scan` or `fold` methods.
-
     // Pre-allocating to be 1 less than total number of resources, since
     // One of the resources is probably the primary.
     // This will make the loop faster, as it does not need to expand the vec
@@ -192,8 +190,7 @@ fn get_resources_from_xmp(xmp: &XMPData, bytes: &[u8]) -> (Vec<Resource>, usize)
     // resources from XMP backwards and use each resource's length and
     // padding members to compute the start of the resource.
     let mut length_accumulator = bytes.len();
-    // FIXME: Can we remove enumerate?
-    for (_, resource) in xmp.resources.iter().enumerate().rev() {
+    for resource in xmp.resources.iter().rev() {
         // data chunk ends at the previous accumulator values.
         if resource.semantic != SemanticType::Primary {
             let data_end = length_accumulator;
