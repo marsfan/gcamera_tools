@@ -22,11 +22,10 @@ fn find_next_segment(bytes: &[u8]) -> Result<usize, GCameraError> {
         return window[0] == 0xFF && JpegMarker::try_from(window[1]).is_ok();
     });
 
-    if let Some((index, _)) = search_result {
-        return Ok(index);
-    } else {
-        return Err(GCameraError::JpegMarkerNotFound);
-    }
+    return match search_result {
+        Some((index, _)) => Ok(index),
+        None => Err(GCameraError::JpegMarkerNotFound),
+    };
 }
 
 /// A single JPEG segment.

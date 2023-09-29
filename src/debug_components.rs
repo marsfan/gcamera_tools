@@ -56,13 +56,12 @@ fn find_magic_start(data: &[u8], magic: &str) -> Result<usize, GCameraError> {
         .enumerate()
         .find(|(_, window)| return window == &magic_bytes);
 
-    if let Some((index, _)) = search_result {
-        return Ok(index);
-    } else {
-        return Err(GCameraError::MagicNotFound {
+    return match search_result {
+        Some((index, _)) => Ok(index),
+        None => Err(GCameraError::MagicNotFound {
             magic: String::from(magic),
-        });
-    }
+        }),
+    };
 }
 
 /// All of the debug information from the image.
