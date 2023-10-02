@@ -10,5 +10,5 @@ license = "MPL-2.0"
 
 [dependencies]
 clap = { version = "4.4.3", features = ["derive"] }
-roxmltree = "0.18.0"
+roxmltree = "0.18.1"
 thiserror = "1.0.48"
