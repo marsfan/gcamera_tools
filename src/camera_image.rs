@@ -182,10 +182,7 @@ Number of resources:     {}",
 /// Tuple where the first element is a vector of all non-primary resources.
 /// and the second element is the offset where the resources start.
 fn get_resources_from_xmp(xmp: &XMPData, bytes: &[u8]) -> (Vec<Resource>, usize) {
-    // Pre-allocating to be 1 less than total number of resources, since
-    // One of the resources is probably the primary.
-    // This will make the loop faster, as it does not need to expand the vec
-    let mut resources: Vec<Resource> = Vec::with_capacity(xmp.resources.len() - 1);
+    let mut resources: Vec<Resource> = Vec::with_capacity(xmp.resources.len());
     // Accumulator that starts at file end. We will iterate over
     // resources from XMP backwards and use each resource's length and
     // padding members to compute the start of the resource.
@@ -224,7 +221,6 @@ impl TryFrom<&[u8]> for CameraImage {
             return Err(GCameraError::InvalidJpegMagic);
         }
         let image = JpegImage::try_from(bytes)?;
-
         let (resources, resources_start) = match image.get_xmp() {
             // TODO: Test case for OK
             Ok(xmp_data) => get_resources_from_xmp(&xmp_data, bytes),
