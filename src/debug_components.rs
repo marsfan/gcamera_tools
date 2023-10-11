@@ -147,8 +147,8 @@ impl TryFrom<&[u8]> for DebugComponents {
         // TODO: use slice.split_array_ref instead of find_magic_start.
         // slice.split_array_ref is still in nightly only
         let aec_start = find_magic_start(bytes, "aecDebug")?;
-        let af_start = find_magic_start(&bytes[aec_start..], "afDebug")? + aec_start;
-        let awb_start = find_magic_start(&bytes[af_start..], "awbDebug")? + af_start;
+        let af_start = find_magic_start(bytes, "afDebug")?;
+        let awb_start = find_magic_start(bytes, "awbDebug")?;
 
         return Ok(DebugComponents {
             aecdebug: Some(DebugChunk {
