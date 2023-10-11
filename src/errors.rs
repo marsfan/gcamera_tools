@@ -77,13 +77,6 @@ pub enum GCameraError {
         mime: String,
     },
 
-    /// Indicates that the given magic start point could not be found.
-    #[error("Could not find magic '{magic}' in image.")]
-    MagicNotFound {
-        /// The magic that was being searched for.
-        magic: String,
-    },
-
     /// Indicates that the next JPEG marker could not be found.
     #[error("Could not find another JPEG Segment Marker.")]
     JpegMarkerNotFound,
