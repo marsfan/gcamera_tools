@@ -135,7 +135,7 @@ impl From<&[u8]> for DebugComponents {
     /// * `bytes`: The bytes to create the instance from.
     ///
     /// # Returns
-    /// The created DebugComponents struct
+    /// The created `DebugComponents` struct
     fn from(bytes: &[u8]) -> Self {
         // TODO: use slice.split_array_ref instead of find_magic_start.
         // slice.split_array_ref is still in nightly only
