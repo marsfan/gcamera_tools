@@ -127,18 +127,16 @@ impl DebugComponents {
     }
 }
 
-/// Implementation to create debug components from
-impl TryFrom<&[u8]> for DebugComponents {
-    type Error = GCameraError;
-
+/// Implementation to create debug components from a slice of bytes.
+impl From<&[u8]> for DebugComponents {
     /// Create an instance from the bytes.
     ///
     /// # Arguments
     /// * `bytes`: The bytes to create the instance from.
     ///
     /// # Returns
-    /// Result containing either the instance, or an error message
-    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+    /// The created DebugComponents struct
+    fn from(bytes: &[u8]) -> Self {
         // TODO: use slice.split_array_ref instead of find_magic_start.
         // slice.split_array_ref is still in nightly only
         let aec_start = find_magic_start(bytes, "aecDebug");
@@ -172,11 +170,11 @@ impl TryFrom<&[u8]> for DebugComponents {
             };
         });
 
-        return Ok(DebugComponents {
+        return DebugComponents {
             aecdebug: aec_chunk,
             afdebug: af_chunk,
             awbdebug: awb_chunk,
-        });
+        };
     }
 }
 

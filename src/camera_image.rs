@@ -228,8 +228,7 @@ impl TryFrom<&[u8]> for CameraImage {
             Err(_) => (Vec::new(), bytes.len()),
         };
 
-        let debug_components =
-            DebugComponents::try_from(&bytes[image.image_size()..resources_start])?;
+        let debug_components = DebugComponents::from(&bytes[image.image_size()..resources_start]);
 
         return Ok(Self {
             image,
