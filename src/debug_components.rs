@@ -57,10 +57,7 @@ fn find_magic_start(data: &[u8], magic: &str) -> Option<usize> {
         .enumerate()
         .find(|(_, window)| return window == &magic_bytes);
 
-    return match search_result {
-        Some((index, _)) => Some(index),
-        None => None,
-    };
+    return search_result.map(|(index, _)| return index);
 }
 
 /// All of the debug information from the image.
@@ -148,35 +145,32 @@ impl TryFrom<&[u8]> for DebugComponents {
         let af_start = find_magic_start(bytes, "afDebug");
         let awb_start = find_magic_start(bytes, "awbDebug");
 
-        let awb_chunk = match awb_start {
-            Some(start) => Some(DebugChunk {
+        let awb_chunk = awb_start.map(|start| {
+            return DebugChunk {
                 magic: String::from_utf8(bytes[start..start + 8].to_vec()).unwrap(),
                 data: bytes[start + 8..].to_vec(),
-            }),
-            None => None,
-        };
+            };
+        });
 
         // End point of AF is the start of AWB, or if there is no AWB, the end of the binary.
         let af_end = bytes.len() - awb_chunk.as_ref().map_or(0, |chunk| return chunk.size());
 
-        let af_chunk = match af_start {
-            Some(start) => Some(DebugChunk {
+        let af_chunk = af_start.map(|start| {
+            return DebugChunk {
                 magic: String::from_utf8(bytes[start..start + 7].to_vec()).unwrap(),
                 data: bytes[start + 7..af_end].to_vec(),
-            }),
-            None => None,
-        };
+            };
+        });
 
         // Subtract the af size from the AF end if it exists, otherwise, we propagate af_end.
         let aec_end = af_end - af_chunk.as_ref().map_or(0, |chunk| return chunk.size());
 
-        let aec_chunk = match aec_start {
-            Some(start) => Some(DebugChunk {
+        let aec_chunk = aec_start.map(|start| {
+            return DebugChunk {
                 magic: String::from_utf8(bytes[start..start + 8].to_vec()).unwrap(),
                 data: bytes[start + 8..aec_end].to_vec(),
-            }),
-            None => None,
-        };
+            };
+        });
 
         return Ok(DebugComponents {
             aecdebug: aec_chunk,
