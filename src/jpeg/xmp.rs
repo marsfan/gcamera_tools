@@ -5,6 +5,7 @@
 */
 //! Logic for parsing the XMP data in an image.
 use roxmltree::{Document, ExpandedName, Node};
+use std::str;
 
 use crate::errors::GCameraError;
 use crate::jpeg::marker::JpegMarker;
@@ -78,7 +79,7 @@ fn attribute_to_str_req(
 ///
 /// # Returns
 ///  Option holding the parsed attribute, or an error.
-fn parse_attribute<T: std::str::FromStr>(
+fn parse_attribute<T: str::FromStr>(
     node: Node,
     namespace: &str,
     attribute: &str,

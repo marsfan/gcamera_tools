@@ -5,6 +5,7 @@
 */
 //! Logic for working with camera debug information in an image.
 
+use std::fs::File;
 use std::{io::Write, path::PathBuf};
 
 use crate::errors::GCameraError;
@@ -89,7 +90,7 @@ impl DebugComponents {
     /// # Errors
     /// Will error if writing the debug data to the disk fails
     pub fn save_data(&self, filepath: PathBuf) -> Result<(), GCameraError> {
-        return std::fs::File::create(filepath)
+        return File::create(filepath)
             .map_err(|error| return GCameraError::DebugDataWriteError { kind: error.kind() })?
             .write_all(&self.as_bytes())
             .map_err(|error| return GCameraError::DebugDataWriteError { kind: error.kind() });

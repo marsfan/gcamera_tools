@@ -11,6 +11,7 @@ use crate::jpeg::xmp::{Item, SemanticType, XMPData};
 use std::convert::TryFrom;
 use std::fmt::Write as _; // import without risk of name clashing
 use std::fs;
+use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 /// Struct for a single non-primary resource in the image.
@@ -86,7 +87,7 @@ impl CameraImage {
     /// # Errors
     /// Will error if writing the data to disk fails
     pub fn save_image(&self, filepath: PathBuf) -> Result<(), GCameraError> {
-        return std::fs::File::create(filepath)
+        return File::create(filepath)
             .map_err(|error| return GCameraError::ImageWriteError { kind: error.kind() })?
             .write_all(&self.image.as_resourceless_bytes())
             .map_err(|error| return GCameraError::ImageWriteError { kind: error.kind() });
@@ -117,7 +118,7 @@ impl CameraImage {
     /// # Errors
     /// Will error if writing the video to the disk fails
     pub fn save_motion_video(&self, filepath: PathBuf) -> Result<(), GCameraError> {
-        return std::fs::File::create(filepath)
+        return File::create(filepath)
             .map_err(|error| return GCameraError::MotionVideoWriteError { kind: error.kind() })?
             .write_all(&self.get_resource_by_type(SemanticType::MotionPhoto)?.data)
             .map_err(|error| return GCameraError::MotionVideoWriteError { kind: error.kind() });
