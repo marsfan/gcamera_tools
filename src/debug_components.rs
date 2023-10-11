@@ -69,13 +69,13 @@ fn find_magic_start(data: &[u8], magic: &str) -> Result<usize, GCameraError> {
 #[derive(Debug, PartialEq, Eq)]
 pub struct DebugComponents {
     /// Contents of the aecDebug portion
-    pub aecdebug: DebugChunk,
+    pub aecdebug: Option<DebugChunk>,
 
     /// Contents of the afDebug portion
-    pub afdebug: DebugChunk,
+    pub afdebug: Option<DebugChunk>,
 
     /// Contents of the awbDebug portion.
-    pub awbdebug: DebugChunk,
+    pub awbdebug: Option<DebugChunk>,
 }
 
 impl DebugComponents {
@@ -101,10 +101,22 @@ impl DebugComponents {
     /// # Returns
     /// The data as a vector of bytes.
     pub fn as_bytes(&self) -> Vec<u8> {
+        let aec_bytes = match &self.aecdebug {
+            Some(data) => data.as_bytes(),
+            None => Vec::new(),
+        };
+
+        let af_bytes = match &self.afdebug {
+            Some(data) => data.as_bytes(),
+            None => Vec::new(),
+        };
+
+        let awb_bytes = match &self.awbdebug {
+            Some(data) => data.as_bytes(),
+            None => Vec::new(),
+        };
         return [
-            self.aecdebug.as_bytes(),
-            self.afdebug.as_bytes(),
-            self.awbdebug.as_bytes(),
+            aec_bytes, af_bytes, awb_bytes, // self.awbdebug.as_bytes(),
         ]
         .concat();
     }
@@ -114,7 +126,9 @@ impl DebugComponents {
     /// # Returns
     /// The total size of all of the debug components.
     pub fn size(&self) -> usize {
-        return self.aecdebug.size() + self.afdebug.size() + self.awbdebug.size();
+        return self.aecdebug.as_ref().map_or(0, |data| return data.size())
+            + self.afdebug.as_ref().map_or(0, |data| return data.size())
+            + self.awbdebug.as_ref().map_or(0, |data| return data.size());
     }
 }
 
@@ -137,18 +151,18 @@ impl TryFrom<&[u8]> for DebugComponents {
         let awb_start = find_magic_start(&bytes[af_start..], "awbDebug")? + af_start;
 
         return Ok(DebugComponents {
-            aecdebug: DebugChunk {
+            aecdebug: Some(DebugChunk {
                 magic: String::from_utf8(bytes[aec_start..aec_start + 8].to_vec()).unwrap(),
                 data: bytes[aec_start + 8..af_start].to_vec(),
-            },
-            afdebug: DebugChunk {
+            }),
+            afdebug: Some(DebugChunk {
                 magic: String::from_utf8(bytes[af_start..af_start + 7].to_vec()).unwrap(),
                 data: bytes[af_start + 7..awb_start].to_vec(),
-            },
-            awbdebug: DebugChunk {
+            }),
+            awbdebug: Some(DebugChunk {
                 magic: String::from_utf8(bytes[awb_start..awb_start + 8].to_vec()).unwrap(),
                 data: bytes[awb_start + 8..].to_vec(),
-            },
+            }),
         });
     }
 }
@@ -239,18 +253,18 @@ mod tests {
             let result = DebugComponents::try_from(test_bytes);
 
             let expected_struct = DebugComponents {
-                aecdebug: DebugChunk {
+                aecdebug: Some(DebugChunk {
                     magic: String::from("aecDebug"),
                     data: vec![0x20, 0x61, 0x62, 0x63, 0x20],
-                },
-                afdebug: DebugChunk {
+                }),
+                afdebug: Some(DebugChunk {
                     magic: String::from("afDebug"),
                     data: vec![0x20, 0x64, 0x65, 0x66, 0x20],
-                },
-                awbdebug: DebugChunk {
+                }),
+                awbdebug: Some(DebugChunk {
                     magic: String::from("awbDebug"),
                     data: vec![0x20, 0x67, 0x68, 0x69],
-                },
+                }),
             };
 
             assert_eq!(result, Ok(expected_struct));
@@ -260,18 +274,18 @@ mod tests {
         #[test]
         fn test_to_bytes() {
             let debug_components = DebugComponents {
-                aecdebug: DebugChunk {
+                aecdebug: Some(DebugChunk {
                     magic: String::from("aecDebug"),
                     data: vec![0x20, 0x61, 0x62, 0x63, 0x20],
-                },
-                afdebug: DebugChunk {
+                }),
+                afdebug: Some(DebugChunk {
                     magic: String::from("afDebug"),
                     data: vec![0x20, 0x64, 0x65, 0x66, 0x20],
-                },
-                awbdebug: DebugChunk {
+                }),
+                awbdebug: Some(DebugChunk {
                     magic: String::from("awbDebug"),
                     data: vec![0x20, 0x67, 0x68, 0x69],
-                },
+                }),
             };
 
             let generated_bytes = debug_components.as_bytes();
@@ -285,18 +299,18 @@ mod tests {
         #[test]
         fn test_size() {
             let debug_components = DebugComponents {
-                aecdebug: DebugChunk {
+                aecdebug: Some(DebugChunk {
                     magic: String::from("aecDebug"),
                     data: vec![0x20, 0x61, 0x62, 0x63, 0x20],
-                },
-                afdebug: DebugChunk {
+                }),
+                afdebug: Some(DebugChunk {
                     magic: String::from("afDebug"),
                     data: vec![0x20, 0x64, 0x65, 0x66, 0x20],
-                },
-                awbdebug: DebugChunk {
+                }),
+                awbdebug: Some(DebugChunk {
                     magic: String::from("awbDebug"),
                     data: vec![0x20, 0x67, 0x68, 0x69],
-                },
+                }),
             };
 
             assert_eq!(debug_components.size(), 37);

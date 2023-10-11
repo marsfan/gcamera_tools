@@ -271,19 +271,19 @@ mod test {
             },
             debug_components: DebugComponents {
                 aecdebug: {
-                    DebugChunk {
+                    Some(DebugChunk {
                         magic: String::from("aecDebug"),
                         data: String::from("hi").as_bytes().to_vec(),
-                    }
+                    })
                 },
-                afdebug: DebugChunk {
+                afdebug: Some(DebugChunk {
                     magic: String::from("afDebug"),
                     data: String::from("bye").as_bytes().to_vec(),
-                },
-                awbdebug: DebugChunk {
+                }),
+                awbdebug: Some(DebugChunk {
                     magic: String::from("awbDebug"),
                     data: String::from("123").as_bytes().to_vec(),
-                },
+                }),
             },
             resources: vec![
                 Resource {
@@ -335,19 +335,19 @@ mod test {
                 },
                 debug_components: DebugComponents {
                     aecdebug: {
-                        DebugChunk {
+                        Some(DebugChunk {
                             magic: String::from("aecDebug"),
                             data: String::from("hi").as_bytes().to_vec(),
-                        }
+                        })
                     },
-                    afdebug: DebugChunk {
+                    afdebug: Some(DebugChunk {
                         magic: String::from("afDebug"),
                         data: String::from("bye").as_bytes().to_vec()
-                    },
-                    awbdebug: DebugChunk {
+                    }),
+                    awbdebug: Some(DebugChunk {
                         magic: String::from("awbDebug"),
                         data: String::from("123").as_bytes().to_vec()
-                    }
+                    })
                 },
                 resources: Vec::new(),
                 total_size: 35,
