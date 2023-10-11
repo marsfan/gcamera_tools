@@ -35,6 +35,22 @@ impl DebugChunk {
     pub fn size(&self) -> usize {
         return self.magic.as_bytes().len() + self.data.len();
     }
+
+    /// Create a new chunk from the given slice and magic length.
+    ///
+    /// Arguments:
+    /// * `bytes`: Slice of bytes to create the chunk from
+    /// * `magic_len`: The length of the magic portion at the start of
+    ///     the slice.
+    ///
+    /// Returns:
+    ///     The created chunk
+    pub fn create_chunk(bytes: &[u8], magic_len: usize) -> Self {
+        return Self {
+            magic: String::from_utf8(bytes[..magic_len].to_vec()).unwrap(),
+            data: bytes[magic_len..].to_vec(),
+        };
+    }
 }
 
 /// Find the start index of the given magic using a linear search.
@@ -143,32 +159,20 @@ impl From<&[u8]> for DebugComponents {
         let af_start = find_magic_start(bytes, "afDebug");
         let awb_start = find_magic_start(bytes, "awbDebug");
 
-        let awb_chunk = awb_start.map(|start| {
-            return DebugChunk {
-                magic: String::from_utf8(bytes[start..start + 8].to_vec()).unwrap(),
-                data: bytes[start + 8..].to_vec(),
-            };
-        });
+        let awb_chunk = awb_start.map(|start| return DebugChunk::create_chunk(&bytes[start..], 8));
 
         // End point of AF is the start of AWB, or if there is no AWB, the end of the binary.
         let af_end = bytes.len() - awb_chunk.as_ref().map_or(0, |chunk| return chunk.size());
 
         let af_chunk = af_start.map(|start| {
-            return DebugChunk {
-                magic: String::from_utf8(bytes[start..start + 7].to_vec()).unwrap(),
-                data: bytes[start + 7..af_end].to_vec(),
-            };
+            return DebugChunk::create_chunk(&bytes[start..af_end], 7);
         });
 
         // Subtract the af size from the AF end if it exists, otherwise, we propagate af_end.
         let aec_end = af_end - af_chunk.as_ref().map_or(0, |chunk| return chunk.size());
 
-        let aec_chunk = aec_start.map(|start| {
-            return DebugChunk {
-                magic: String::from_utf8(bytes[start..start + 8].to_vec()).unwrap(),
-                data: bytes[start + 8..aec_end].to_vec(),
-            };
-        });
+        let aec_chunk =
+            aec_start.map(|start| return DebugChunk::create_chunk(&bytes[start..aec_end], 8));
 
         return DebugComponents {
             aecdebug: aec_chunk,
@@ -184,6 +188,23 @@ mod tests {
 
     mod chunk_tests {
         use super::*;
+
+        /// Test the `create_chunk` method
+        #[test]
+        fn test_create_chunk() {
+            let created_chunk = DebugChunk::create_chunk(
+                &[0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x01, 0x02, 0x03, 0xFF, 0xAB],
+                5,
+            );
+
+            assert_eq!(
+                created_chunk,
+                DebugChunk {
+                    magic: String::from("hello"),
+                    data: vec![0x01, 0x02, 0x03, 0xFF, 0xAB],
+                }
+            );
+        }
 
         /// Test the `as_bytes` method
         #[test]
