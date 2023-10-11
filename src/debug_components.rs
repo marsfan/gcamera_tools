@@ -112,20 +112,24 @@ impl DebugComponents {
     /// # Returns
     /// The data as a vector of bytes.
     pub fn as_bytes(&self) -> Vec<u8> {
-        let aec_bytes = match &self.aecdebug {
-            Some(data) => data.as_bytes(),
-            None => Vec::new(),
-        };
+        let aec_bytes = self
+            .aecdebug
+            .as_ref()
+            .map_or(Vec::new(), |data| return data.as_bytes());
 
-        let af_bytes = match &self.afdebug {
-            Some(data) => data.as_bytes(),
-            None => Vec::new(),
-        };
+        //     Some(data) => data.as_bytes(),
+        //     None => Vec::new(),
+        // };
+        let af_bytes = self
+            .afdebug
+            .as_ref()
+            .map_or(Vec::new(), |data| return data.as_bytes());
 
-        let awb_bytes = match &self.awbdebug {
-            Some(data) => data.as_bytes(),
-            None => Vec::new(),
-        };
+        let awb_bytes = self
+            .awbdebug
+            .as_ref()
+            .map_or(Vec::new(), |data| return data.as_bytes());
+
         return [
             aec_bytes, af_bytes, awb_bytes, // self.awbdebug.as_bytes(),
         ]
@@ -155,6 +159,9 @@ impl From<&[u8]> for DebugComponents {
     fn from(bytes: &[u8]) -> Self {
         // TODO: use slice.split_array_ref instead of find_magic_start.
         // slice.split_array_ref is still in nightly only
+
+        // TODO: Can we create a single method/function that combines
+        // finding magic and creating the chunk?
         let aec_start = find_magic_start(bytes, "aecDebug");
         let af_start = find_magic_start(bytes, "afDebug");
         let awb_start = find_magic_start(bytes, "awbDebug");
