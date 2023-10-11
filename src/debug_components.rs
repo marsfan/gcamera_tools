@@ -47,7 +47,7 @@ impl DebugChunk {
 ///
 /// Result holding either the index of the start of the magic, or
 /// an error string.
-fn find_magic_start(data: &[u8], magic: &str) -> Result<usize, GCameraError> {
+fn find_magic_start(data: &[u8], magic: &str) -> Option<usize> {
     // End point must be total length minus magic length, or we we attempt to
     // read outside the array.
     let magic_bytes = magic.as_bytes();
@@ -58,10 +58,8 @@ fn find_magic_start(data: &[u8], magic: &str) -> Result<usize, GCameraError> {
         .find(|(_, window)| return window == &magic_bytes);
 
     return match search_result {
-        Some((index, _)) => Ok(index),
-        None => Err(GCameraError::MagicNotFound {
-            magic: String::from(magic),
-        }),
+        Some((index, _)) => Some(index),
+        None => None,
     };
 }
 
@@ -146,23 +144,44 @@ impl TryFrom<&[u8]> for DebugComponents {
     fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
         // TODO: use slice.split_array_ref instead of find_magic_start.
         // slice.split_array_ref is still in nightly only
-        let aec_start = find_magic_start(bytes, "aecDebug")?;
-        let af_start = find_magic_start(bytes, "afDebug")?;
-        let awb_start = find_magic_start(bytes, "awbDebug")?;
+        let aec_start = find_magic_start(bytes, "aecDebug");
+        let af_start = find_magic_start(bytes, "afDebug");
+        let awb_start = find_magic_start(bytes, "awbDebug");
+
+        let awb_chunk = match awb_start {
+            Some(start) => Some(DebugChunk {
+                magic: String::from_utf8(bytes[start..start + 8].to_vec()).unwrap(),
+                data: bytes[start + 8..].to_vec(),
+            }),
+            None => None,
+        };
+
+        // End point of AF is the start of AWB, or if there is no AWB, the end of the binary.
+        let af_end = bytes.len() - awb_chunk.as_ref().map_or(0, |chunk| return chunk.size());
+
+        let af_chunk = match af_start {
+            Some(start) => Some(DebugChunk {
+                magic: String::from_utf8(bytes[start..start + 7].to_vec()).unwrap(),
+                data: bytes[start + 7..af_end].to_vec(),
+            }),
+            None => None,
+        };
+
+        // Subtract the af size from the AF end if it exists, otherwise, we propagate af_end.
+        let aec_end = af_end - af_chunk.as_ref().map_or(0, |chunk| return chunk.size());
+
+        let aec_chunk = match aec_start {
+            Some(start) => Some(DebugChunk {
+                magic: String::from_utf8(bytes[start..start + 8].to_vec()).unwrap(),
+                data: bytes[start + 8..aec_end].to_vec(),
+            }),
+            None => None,
+        };
 
         return Ok(DebugComponents {
-            aecdebug: Some(DebugChunk {
-                magic: String::from_utf8(bytes[aec_start..aec_start + 8].to_vec()).unwrap(),
-                data: bytes[aec_start + 8..af_start].to_vec(),
-            }),
-            afdebug: Some(DebugChunk {
-                magic: String::from_utf8(bytes[af_start..af_start + 7].to_vec()).unwrap(),
-                data: bytes[af_start + 7..awb_start].to_vec(),
-            }),
-            awbdebug: Some(DebugChunk {
-                magic: String::from_utf8(bytes[awb_start..awb_start + 8].to_vec()).unwrap(),
-                data: bytes[awb_start + 8..].to_vec(),
-            }),
+            aecdebug: aec_chunk,
+            afdebug: af_chunk,
+            awbdebug: awb_chunk,
         });
     }
 }
@@ -209,7 +228,7 @@ mod tests {
 
             let found_offset = find_magic_start(&test_bytes, magic);
 
-            assert_eq!(found_offset, Ok(5));
+            assert_eq!(found_offset, Some(5));
         }
 
         /// Test not being able to find the magic
@@ -220,12 +239,7 @@ mod tests {
 
             let function_result = find_magic_start(&test_bytes, magic);
 
-            assert_eq!(
-                function_result,
-                Err(GCameraError::MagicNotFound {
-                    magic: String::from("hi")
-                })
-            );
+            assert_eq!(function_result, None);
         }
     }
 
@@ -240,8 +254,10 @@ mod tests {
 
             assert_eq!(
                 result,
-                Err(GCameraError::MagicNotFound {
-                    magic: String::from("aecDebug")
+                Ok(DebugComponents {
+                    aecdebug: None,
+                    afdebug: None,
+                    awbdebug: None
                 })
             );
         }
