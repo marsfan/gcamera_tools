@@ -78,6 +78,7 @@ mod tests {
     /// Test for when not enough arguments are supplied
     // FIXME: Validate the error output somehow
     #[test]
+    #[allow(clippy::should_panic_without_expect)]
     #[should_panic]
     fn test_not_enough_args() {
         let input_args = vec!["/bin/gcamera_tools"];
@@ -88,6 +89,7 @@ mod tests {
     /// Test for when too many positional arguments are supplied
     // FIXME: Validate the error output somehow
     #[test]
+    #[allow(clippy::should_panic_without_expect)]
     #[should_panic]
     fn test_too_many_args() {
         let input_args = vec!["/bin/gcamera_tools", "motion_photo.jpg", "second_photo.jpg"];
