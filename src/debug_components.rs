@@ -270,15 +270,15 @@ mod tests {
         #[test]
         fn test_no_magic_found() {
             let test_bytes = "hello how are you".as_bytes();
-            let result = DebugComponents::try_from(test_bytes);
+            let result = DebugComponents::from(test_bytes);
 
             assert_eq!(
                 result,
-                Ok(DebugComponents {
+                DebugComponents {
                     aecdebug: None,
                     afdebug: None,
                     awbdebug: None
-                })
+                }
             );
         }
 
@@ -286,7 +286,7 @@ mod tests {
         #[test]
         fn test_successful_creation() {
             let test_bytes = "aecDebug abc afDebug def awbDebug ghi".as_bytes();
-            let result = DebugComponents::try_from(test_bytes);
+            let result = DebugComponents::from(test_bytes);
 
             let expected_struct = DebugComponents {
                 aecdebug: Some(DebugChunk {
@@ -303,7 +303,7 @@ mod tests {
                 }),
             };
 
-            assert_eq!(result, Ok(expected_struct));
+            assert_eq!(result, expected_struct);
         }
 
         /// Test converting to bytes.
