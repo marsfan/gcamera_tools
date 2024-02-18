@@ -226,7 +226,7 @@ mod tests {
             assert_eq!(chunk.as_bytes(), expected);
         }
 
-        /// test the size() method on a debug chunk
+        /// test the `size()` method on a debug chunk
         #[test]
         fn test_size() {
             let chunk = DebugChunk {
